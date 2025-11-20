@@ -1,0 +1,336 @@
+# 07. DTO Conventions
+
+> 📌 **먼저 읽기**: [00-CONVENTIONS-CORE.md](./00-CONVENTIONS-CORE.md)
+
+**목적**: 데이터 전송, Validation, Entity ↔ API 분리
+
+---
+
+## 1. Request DTO 템플릿
+
+```java
+// ✅ Record 사용 (Java 17+)
+public record Create{Domain}Request(
+    @NotBlank(message = "field1은 필수입니다")
+    @Size(max = 100, message = "field1은 100자 이하여야 합니다")
+    String field1,
+
+    @Size(max = 500)
+    String field2,
+
+    @NotNull
+    {Status}Enum status
+) {
+    // ✅ Compact constructor (추가 검증/가공)
+    public Create{Domain}Request {
+        if (field1 != null) {
+            field1 = field1.trim();
+        }
+    }
+}
+```
+
+---
+
+## 2. Response DTO 템플릿
+
+```java
+public record {Domain}Response(
+    Long id,
+    String field1,
+    String field2,
+    {Status}Enum status,
+    LocalDateTime createdAt,
+    LocalDateTime updatedAt
+) {
+    // ✅ 정적 팩토리 메서드: Entity → DTO
+    public static {Domain}Response from({Domain} entity) {
+        return new {Domain}Response(
+            entity.getId(),
+            entity.getField1(),
+            entity.getField2(),
+            entity.getStatus(),
+            entity.getCreatedAt(),
+            entity.getUpdatedAt()
+        );
+    }
+}
+```
+
+---
+
+## 3. DTO 네이밍
+
+### Request DTO
+
+```java
+Create{Domain}Request      // 생성
+Update{Domain}Request      // 전체 수정
+Update{Field}Request       // 부분 수정
+Search{Domain}Request      // 검색
+```
+
+### Response DTO
+
+```java
+{Domain}Response           // 기본 응답
+{Domain}DetailResponse     // 상세 응답 (중첩 포함)
+{Domain}SummaryResponse    // 요약 응답 (최소 필드)
+```
+
+---
+
+## 4. 중첩 DTO (DetailResponse)
+
+```java
+public record {Domain}DetailResponse(
+    Long id,
+    String field1,
+    String field2,
+    OwnerInfo owner,                    // 중첩
+    List<SubEntitySummary> subEntities, // 중첩 리스트
+    LocalDateTime createdAt
+) {
+    // ✅ 중첩 DTO는 내부 record로
+    public record OwnerInfo(
+        Long id,
+        String name,
+        String email
+    ) {}
+
+    public record SubEntitySummary(
+        Long id,
+        String title,
+        {Status}Enum status
+    ) {}
+
+    // ✅ 복잡한 변환
+    public static {Domain}DetailResponse from(
+        {Domain} entity,
+        User owner,
+        List<SubEntity> subEntities
+    ) {
+        return new {Domain}DetailResponse(
+            entity.getId(),
+            entity.getField1(),
+            entity.getField2(),
+            new OwnerInfo(
+                owner.getId(),
+                owner.getName(),
+                owner.getEmail()
+            ),
+            subEntities.stream()
+                .map(sub -> new SubEntitySummary(
+                    sub.getId(),
+                    sub.getTitle(),
+                    sub.getStatus()
+                ))
+                .toList(),
+            entity.getCreatedAt()
+        );
+    }
+}
+```
+
+---
+
+## 5. Validation Annotations
+
+```java
+public record Create{Domain}Request(
+    // 문자열
+    @NotBlank(message = "필드는 필수입니다")
+    String field1,
+
+    @Size(min = 1, max = 100)
+    String field2,
+
+    @Pattern(regexp = "^[a-zA-Z0-9]*$")
+    String field3,
+
+    // 숫자
+    @NotNull
+    @Positive
+    Integer count,
+
+    @Min(0) @Max(100)
+    Integer percentage,
+
+    // 날짜/시간
+    @PastOrPresent
+    LocalDate birthDate,
+
+    @Future
+    LocalDateTime eventDate,
+
+    // 컬렉션
+    @NotEmpty
+    @Size(min = 1, max = 10)
+    List<Long> ids,
+
+    // 이메일/URL
+    @Email
+    String email,
+
+    @URL
+    String website,
+
+    // Boolean
+    @NotNull
+    @AssertTrue
+    Boolean agreed
+) {}
+```
+
+---
+
+## 6. 공통 Response DTO
+
+### PageResponse
+
+```java
+public record PageResponse<T>(
+    List<T> content,
+    int page,
+    int size,
+    long totalElements,
+    int totalPages,
+    boolean hasNext
+) {
+    public static <T> PageResponse<T> from(Page<T> page) {
+        return new PageResponse<>(
+            page.getContent(),
+            page.getNumber(),
+            page.getSize(),
+            page.getTotalElements(),
+            page.getTotalPages(),
+            page.hasNext()
+        );
+    }
+}
+```
+
+### ErrorResponse
+
+```java
+public record ErrorResponse(
+    String code,
+    String message,
+    LocalDateTime timestamp,
+    List<FieldError> errors
+) {
+    public record FieldError(
+        String field,
+        Object rejectedValue,
+        String message
+    ) {}
+
+    public static ErrorResponse of(ErrorCode errorCode) {
+        return new ErrorResponse(
+            errorCode.getCode(),
+            errorCode.getMessage(),
+            LocalDateTime.now(),
+            null
+        );
+    }
+
+    public static ErrorResponse of(ErrorCode errorCode, BindingResult bindingResult) {
+        List<FieldError> fieldErrors = bindingResult.getFieldErrors().stream()
+            .map(error -> new FieldError(
+                error.getField(),
+                error.getRejectedValue(),
+                error.getDefaultMessage()
+            ))
+            .toList();
+
+        return new ErrorResponse(
+            errorCode.getCode(),
+            errorCode.getMessage(),
+            LocalDateTime.now(),
+            fieldErrors
+        );
+    }
+}
+```
+
+---
+
+## 7. 변환 규칙
+
+```java
+// ✅ Entity → DTO: DTO의 정적 팩토리 메서드
+UserResponse response = UserResponse.from(entity);
+
+// ✅ DTO → Entity: Entity의 정적 팩토리 메서드
+User entity = User.create(request.name(), request.email());
+
+// ❌ DTO에 toEntity() 금지
+public User toEntity() {  // ❌
+    return User.create(this.name, this.email);
+}
+
+// ✅ List 변환
+List<UserResponse> responses = entities.stream()
+    .map(UserResponse::from)
+    .toList();
+
+// ✅ Page 변환
+Page<UserResponse> responsePage = entityPage.map(UserResponse::from);
+```
+
+---
+
+## 8. 폴더 구조
+
+```
+domain/{domain}/dto/
+├── request/
+│   ├── Create{Domain}Request.java
+│   ├── Update{Domain}Request.java
+│   └── Search{Domain}Request.java
+└── response/
+    ├── {Domain}Response.java
+    ├── {Domain}DetailResponse.java
+    └── {Domain}SummaryResponse.java
+```
+
+---
+
+## 9. 자주 하는 실수
+
+```java
+// ❌ 일반 클래스 사용 (Record 필요)
+public class CreateUserRequest { }
+
+// ❌ toEntity() 메서드 (Entity 책임)
+public record Request(String name) { public User toEntity() { } }
+
+// ❌ @Valid 누락
+create(@RequestBody Request req) { }
+
+// ❌ Validation message 없음
+@NotBlank String name
+
+// ❌ Response DTO에 Validation
+public record Response(@NotBlank String name) {}
+
+// ❌ Entity 직접 반환
+ResponseEntity<User> create() { }
+
+// ❌ new 생성자 (from() 사용)
+return new UserResponse(entity.getId());
+```
+
+---
+
+## 체크리스트
+
+- [ ] Record 사용 (Java 17+)
+- [ ] request/response 폴더 분리
+- [ ] Validation annotation + message
+- [ ] 정적 팩토리 메서드 (from)
+- [ ] 명확한 네이밍 (Create/Update/Search)
+- [ ] Compact constructor (필요 시)
+- [ ] 중첩 DTO는 내부 record
+- [ ] toEntity() 메서드 없음
+- [ ] Response DTO에 Validation 없음
