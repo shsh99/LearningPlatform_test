@@ -37,18 +37,14 @@ public class {Domain} extends BaseTimeEntity {
     @Column(nullable = false, length = 100)
     private String field1;
 
-    @Column(length = 500)
-    private String field2;
-
     @Enumerated(EnumType.STRING)  // ✅ 항상 STRING
     @Column(nullable = false)
     private {Status}Enum status;
 
     // ===== 정적 팩토리 메서드 =====
-    public static {Domain} create(String field1, String field2) {
+    public static {Domain} create(String field1) {
         {Domain} entity = new {Domain}();
         entity.field1 = field1;
-        entity.field2 = field2;
         entity.status = {Status}Enum.ACTIVE;
         return entity;
     }
@@ -64,18 +60,6 @@ public class {Domain} extends BaseTimeEntity {
             throw new BusinessException("이미 활성화된 상태입니다");
         }
         this.status = {Status}Enum.ACTIVE;
-    }
-
-    public void delete() {
-        if (this.status == {Status}Enum.DELETED) {
-            throw new BusinessException("이미 삭제된 상태입니다");
-        }
-        this.status = {Status}Enum.DELETED;
-    }
-
-    // ===== 도메인 로직 =====
-    public boolean isActive() {
-        return this.status == {Status}Enum.ACTIVE;
     }
 
     // ===== Private 검증 메서드 =====
@@ -106,16 +90,12 @@ public class ChildEntity {
         this.parent = parent;
     }
 }
-```
 
-### @OneToMany (일대다)
-
-```java
 @Entity
 @Getter
 public class ParentEntity {
 
-    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
     private List<ChildEntity> children = new ArrayList<>();
 
     // ✅ 연관관계 편의 메서드
@@ -123,31 +103,6 @@ public class ParentEntity {
         this.children.add(child);
         child.assignParent(this);  // 양방향 동기화
     }
-
-    public void removeChild(ChildEntity child) {
-        this.children.remove(child);
-        child.assignParent(null);
-    }
-}
-```
-
-### @ManyToMany → 중간 엔티티로 대체
-
-```java
-// ❌ BAD: @ManyToMany 직접 사용
-@ManyToMany
-private List<Course> courses;
-
-// ✅ GOOD: 중간 엔티티
-@Entity
-public class Enrollment {
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Student student;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Course course;
-
-    private LocalDateTime enrolledAt;  // 추가 정보 가능
 }
 ```
 
@@ -182,7 +137,6 @@ public class {Domain} {
 ## 4. BaseEntity 패턴
 
 ```java
-// BaseTimeEntity
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 @Getter
@@ -195,13 +149,6 @@ public abstract class BaseTimeEntity {
     @LastModifiedDate
     @Column(nullable = false)
     private LocalDateTime updatedAt;
-}
-
-// 사용
-@Entity
-public class User extends BaseTimeEntity {
-    // id, createdAt, updatedAt 자동 관리
-    private String name;
 }
 ```
 
@@ -247,43 +194,17 @@ private {Domain}(String field1, String field2, String field3) {
 // ❌ 1. Setter 사용
 public void setName(String name) { }  // ⛔ 절대 금지!
 
-// ❌ 2. public 기본 생성자
-@NoArgsConstructor  // ❌ PROTECTED로
-public class {Domain} { }
-
-// ❌ 3. Enum ORDINAL 사용
+// ❌ 2. Enum ORDINAL 사용
 @Enumerated(EnumType.ORDINAL)  // ❌ STRING 사용
 private {Status}Enum status;
 
-// ❌ 4. EAGER 로딩
+// ❌ 3. EAGER 로딩
 @ManyToOne(fetch = FetchType.EAGER)  // ❌ LAZY 사용
 private ParentEntity parent;
 
-// ❌ 5. 양방향 연관관계 동기화 없음
-public void addChild(ChildEntity child) {
-    this.children.add(child);
-    // ❌ child.assignParent(this) 누락
-}
-
-// ❌ 6. 검증 로직 없음
+// ❌ 4. 검증 로직 없음
 public void updateTitle(String newTitle) {
     this.title = newTitle;  // ❌ 검증 없음
 }
-
-// ❌ 7. Date, Timestamp 사용
-private Date createdDate;  // ❌ LocalDateTime 사용
 ```
 
----
-
-## 체크리스트
-
-- [ ] `@Entity`, `@NoArgsConstructor(access = AccessLevel.PROTECTED)`
-- [ ] `@Getter` (⛔ Setter 없음!)
-- [ ] BaseTimeEntity 상속
-- [ ] 정적 팩토리 메서드 또는 Builder
-- [ ] 비즈니스 메서드로 상태 변경
-- [ ] `@Enumerated(EnumType.STRING)` 사용
-- [ ] 연관관계는 LAZY 로딩
-- [ ] Private 검증 메서드 분리
-- [ ] 도메인 로직 포함 (is, has, can)

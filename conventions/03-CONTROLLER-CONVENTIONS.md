@@ -17,14 +17,6 @@ public class {Domain}Controller {
 
     private final {Domain}Service {domain}Service;
 
-    // ✅ 목록 조회 (페이징)
-    @GetMapping
-    public ResponseEntity<PageResponse<{Domain}Response>> getAll(
-        @PageableDefault(size = 20, sort = "createdAt", direction = DESC)
-        Pageable pageable) {
-        return ResponseEntity.ok({domain}Service.findAll(pageable));
-    }
-
     // ✅ 단건 조회
     @GetMapping("/{id}")
     public ResponseEntity<{Domain}Response> getById(
@@ -38,29 +30,6 @@ public class {Domain}Controller {
         @Valid @RequestBody Create{Domain}Request request) {
         {Domain}Response response = {domain}Service.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-
-    // ✅ 전체 수정
-    @PutMapping("/{id}")
-    public ResponseEntity<{Domain}Response> update(
-        @PathVariable @Positive Long id,
-        @Valid @RequestBody Update{Domain}Request request) {
-        return ResponseEntity.ok({domain}Service.update(id, request));
-    }
-
-    // ✅ 부분 수정
-    @PatchMapping("/{id}/status")
-    public ResponseEntity<{Domain}Response> updateStatus(
-        @PathVariable @Positive Long id,
-        @Valid @RequestBody UpdateStatusRequest request) {
-        return ResponseEntity.ok({domain}Service.updateStatus(id, request));
-    }
-
-    // ✅ 삭제 (204 No Content)
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable @Positive Long id) {
-        {domain}Service.delete(id);
-        return ResponseEntity.noContent().build();
     }
 }
 ```
@@ -87,14 +56,11 @@ public class {Domain}Controller {
 
 ## 3. HTTP 상태 코드
 
-```java
-GET     /api/users          → 200 OK
-GET     /api/users/{id}     → 200 OK
-POST    /api/users          → 201 Created
-PUT     /api/users/{id}     → 200 OK
-PATCH   /api/users/{id}     → 200 OK
-DELETE  /api/users/{id}     → 204 No Content
-```
+| Method | Endpoint | Status |
+|--------|----------|--------|
+| GET | /api/users/{id} | 200 OK |
+| POST | /api/users | 201 Created |
+| DELETE | /api/users/{id} | 204 No Content |
 
 ---
 
@@ -150,51 +116,25 @@ public class {Domain}Controller {
 ## 6. 자주 하는 실수
 
 ```java
-// ❌ 1. @RestController 대신 @Controller
-@Controller  // ❌
-public class UserController { }
-
-// ❌ 2. @Valid 누락
+// ❌ 1. @Valid 누락
 @PostMapping
-public ResponseEntity<?> create(
-    @RequestBody CreateUserRequest request) { }  // ❌
+public ResponseEntity<?> create(@RequestBody CreateUserRequest request) { }
 
-// ❌ 3. ResponseEntity 없음
-@GetMapping("/{id}")
-public UserResponse getById(@PathVariable Long id) { }  // ❌
-
-// ❌ 4. try-catch
+// ❌ 2. try-catch 사용 (GlobalExceptionHandler가 처리)
 @GetMapping("/{id}")
 public ResponseEntity<?> getById(@PathVariable Long id) {
-    try {  // ❌ GlobalExceptionHandler가 처리
+    try {
         return ResponseEntity.ok(service.findById(id));
     } catch (Exception e) {
         return ResponseEntity.status(404).body(error);
     }
 }
 
-// ❌ 5. Business Logic
+// ❌ 3. Business Logic 및 Repository 직접 호출
 @PostMapping
 public ResponseEntity<?> create(@Valid @RequestBody CreateUserRequest req) {
-    if (req.age() < 18) {  // ❌ Service에서
-        throw new ValidationException("18세 이상만 가능");
-    }
-    User user = new User();  // ❌ Service에서
-    user.setName(req.name());  // ❌ Service에서
-    return ResponseEntity.ok(userRepository.save(user));  // ❌ Repository 직접 호출
+    User user = new User();  // ❌ Service에서 처리
+    return ResponseEntity.ok(userRepository.save(user));  // ❌ Service 호출
 }
 ```
 
----
-
-## 체크리스트
-
-- [ ] `@RestController`, `@RequestMapping`, `@Validated`
-- [ ] URL: 소문자, 케밥-케이스, 복수형
-- [ ] RESTful 매핑 (GET, POST, PUT, PATCH, DELETE)
-- [ ] `@Valid` (Request Body), `@Positive` 등 (Path Variable)
-- [ ] `ResponseEntity` 반환
-- [ ] 적절한 HTTP 상태 코드 (201, 200, 204)
-- [ ] Business logic 없음
-- [ ] Repository 직접 호출 없음
-- [ ] try-catch 없음

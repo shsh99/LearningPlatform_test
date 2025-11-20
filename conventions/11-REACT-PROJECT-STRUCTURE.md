@@ -228,21 +228,3 @@ export default defineConfig({
 });
 ```
 
----
-
-## 체크리스트
-
-- [ ] 폴더 구조 일관성
-- [ ] 컴포넌트 단일 책임
-- [ ] index.ts로 export 정리
-- [ ] 절대 경로 alias (@/) 설정
-- [ ] tsconfig strict 모드
-
----
-
-## 다음 문서
-
-- [10-REACT-TYPESCRIPT-CORE.md](./10-REACT-TYPESCRIPT-CORE.md) - 핵심 규칙
-- [12-REACT-COMPONENT-CONVENTIONS.md](./12-REACT-COMPONENT-CONVENTIONS.md) - 컴포넌트
-- [13-REACT-STATE-MANAGEMENT.md](./13-REACT-STATE-MANAGEMENT.md) - 상태 관리
-- [14-REACT-API-INTEGRATION.md](./14-REACT-API-INTEGRATION.md) - API 통신

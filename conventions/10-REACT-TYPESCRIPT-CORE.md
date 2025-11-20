@@ -313,24 +313,3 @@ export default UserPage;
 <input id="email" type="email" />
 ```
 
----
-
-## 체크리스트
-
-- [ ] TypeScript strict 모드
-- [ ] any 타입 사용 안 함
-- [ ] Props 타입 명시
-- [ ] 파일당 하나의 컴포넌트
-- [ ] 상태 불변성 유지
-- [ ] 고유한 key 사용
-- [ ] 접근성 (alt, htmlFor)
-- [ ] Import 순서 정리
-
----
-
-## 다음 문서
-
-- [11-REACT-PROJECT-STRUCTURE.md](./11-REACT-PROJECT-STRUCTURE.md) - 프로젝트 구조
-- [12-REACT-COMPONENT-CONVENTIONS.md](./12-REACT-COMPONENT-CONVENTIONS.md) - 컴포넌트 상세
-- [13-REACT-STATE-MANAGEMENT.md](./13-REACT-STATE-MANAGEMENT.md) - 상태 관리
-- [14-REACT-API-INTEGRATION.md](./14-REACT-API-INTEGRATION.md) - API 통신

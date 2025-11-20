@@ -86,47 +86,20 @@ Search{Domain}Request      // 검색
 public record {Domain}DetailResponse(
     Long id,
     String field1,
-    String field2,
     OwnerInfo owner,                    // 중첩
-    List<SubEntitySummary> subEntities, // 중첩 리스트
-    LocalDateTime createdAt
+    List<SubEntitySummary> subEntities  // 중첩 리스트
 ) {
     // ✅ 중첩 DTO는 내부 record로
-    public record OwnerInfo(
-        Long id,
-        String name,
-        String email
-    ) {}
-
-    public record SubEntitySummary(
-        Long id,
-        String title,
-        {Status}Enum status
-    ) {}
+    public record OwnerInfo(Long id, String name) {}
+    public record SubEntitySummary(Long id, String title) {}
 
     // ✅ 복잡한 변환
-    public static {Domain}DetailResponse from(
-        {Domain} entity,
-        User owner,
-        List<SubEntity> subEntities
-    ) {
+    public static {Domain}DetailResponse from({Domain} entity, User owner, List<SubEntity> subs) {
         return new {Domain}DetailResponse(
             entity.getId(),
             entity.getField1(),
-            entity.getField2(),
-            new OwnerInfo(
-                owner.getId(),
-                owner.getName(),
-                owner.getEmail()
-            ),
-            subEntities.stream()
-                .map(sub -> new SubEntitySummary(
-                    sub.getId(),
-                    sub.getTitle(),
-                    sub.getStatus()
-                ))
-                .toList(),
-            entity.getCreatedAt()
+            new OwnerInfo(owner.getId(), owner.getName()),
+            subs.stream().map(s -> new SubEntitySummary(s.getId(), s.getTitle())).toList()
         );
     }
 }
@@ -136,49 +109,20 @@ public record {Domain}DetailResponse(
 
 ## 5. Validation Annotations
 
+> 전체 목록은 [Jakarta Bean Validation 공식 문서](https://jakarta.ee/specifications/bean-validation/3.0/jakarta-bean-validation-spec-3.0.html#builtinconstraints) 참고
+
 ```java
+// 자주 사용하는 예시
 public record Create{Domain}Request(
-    // 문자열
     @NotBlank(message = "필드는 필수입니다")
+    @Size(max = 100)
     String field1,
 
-    @Size(min = 1, max = 100)
-    String field2,
-
-    @Pattern(regexp = "^[a-zA-Z0-9]*$")
-    String field3,
-
-    // 숫자
-    @NotNull
-    @Positive
+    @NotNull @Positive
     Integer count,
 
-    @Min(0) @Max(100)
-    Integer percentage,
-
-    // 날짜/시간
-    @PastOrPresent
-    LocalDate birthDate,
-
-    @Future
-    LocalDateTime eventDate,
-
-    // 컬렉션
-    @NotEmpty
-    @Size(min = 1, max = 10)
-    List<Long> ids,
-
-    // 이메일/URL
     @Email
-    String email,
-
-    @URL
-    String website,
-
-    // Boolean
-    @NotNull
-    @AssertTrue
-    Boolean agreed
+    String email
 ) {}
 ```
 
@@ -194,8 +138,7 @@ public record PageResponse<T>(
     int page,
     int size,
     long totalElements,
-    int totalPages,
-    boolean hasNext
+    int totalPages
 ) {
     public static <T> PageResponse<T> from(Page<T> page) {
         return new PageResponse<>(
@@ -203,8 +146,7 @@ public record PageResponse<T>(
             page.getNumber(),
             page.getSize(),
             page.getTotalElements(),
-            page.getTotalPages(),
-            page.hasNext()
+            page.getTotalPages()
         );
     }
 }
@@ -216,38 +158,13 @@ public record PageResponse<T>(
 public record ErrorResponse(
     String code,
     String message,
-    LocalDateTime timestamp,
-    List<FieldError> errors
+    LocalDateTime timestamp
 ) {
-    public record FieldError(
-        String field,
-        Object rejectedValue,
-        String message
-    ) {}
-
     public static ErrorResponse of(ErrorCode errorCode) {
         return new ErrorResponse(
             errorCode.getCode(),
             errorCode.getMessage(),
-            LocalDateTime.now(),
-            null
-        );
-    }
-
-    public static ErrorResponse of(ErrorCode errorCode, BindingResult bindingResult) {
-        List<FieldError> fieldErrors = bindingResult.getFieldErrors().stream()
-            .map(error -> new FieldError(
-                error.getField(),
-                error.getRejectedValue(),
-                error.getDefaultMessage()
-            ))
-            .toList();
-
-        return new ErrorResponse(
-            errorCode.getCode(),
-            errorCode.getMessage(),
-            LocalDateTime.now(),
-            fieldErrors
+            LocalDateTime.now()
         );
     }
 }
@@ -321,16 +238,3 @@ ResponseEntity<User> create() { }
 return new UserResponse(entity.getId());
 ```
 
----
-
-## 체크리스트
-
-- [ ] Record 사용 (Java 17+)
-- [ ] request/response 폴더 분리
-- [ ] Validation annotation + message
-- [ ] 정적 팩토리 메서드 (from)
-- [ ] 명확한 네이밍 (Create/Update/Search)
-- [ ] Compact constructor (필요 시)
-- [ ] 중첩 DTO는 내부 record
-- [ ] toEntity() 메서드 없음
-- [ ] Response DTO에 Validation 없음

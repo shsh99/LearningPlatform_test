@@ -230,22 +230,3 @@ const handleClick = useCallback(() => {
 // ⚠️ 주의: 필요한 경우에만 사용
 ```
 
----
-
-## 체크리스트
-
-- [ ] 컴포넌트 구조 일관성
-- [ ] Props 타입 명시
-- [ ] Early return 활용
-- [ ] 고유한 key 사용
-- [ ] 이벤트 타입 명시
-- [ ] 필요시 성능 최적화
-
----
-
-## 다음 문서
-
-- [10-REACT-TYPESCRIPT-CORE.md](./10-REACT-TYPESCRIPT-CORE.md) - 핵심 규칙
-- [11-REACT-PROJECT-STRUCTURE.md](./11-REACT-PROJECT-STRUCTURE.md) - 프로젝트 구조
-- [13-REACT-STATE-MANAGEMENT.md](./13-REACT-STATE-MANAGEMENT.md) - 상태 관리
-- [14-REACT-API-INTEGRATION.md](./14-REACT-API-INTEGRATION.md) - API 통신

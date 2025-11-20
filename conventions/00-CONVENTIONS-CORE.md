@@ -189,20 +189,3 @@ private UserStatus status;
 - Exception: [08-EXCEPTION-CONVENTIONS.md](./08-EXCEPTION-CONVENTIONS.md)
 
 프로젝트 구조: [01-PROJECT-STRUCTURE.md](./01-PROJECT-STRUCTURE.md)
-
----
-
-## 체크리스트
-
-모든 코드 작성 후 확인:
-
-- [ ] Google Java Style Guide 준수
-- [ ] 적절한 네이밍 (PascalCase, camelCase)
-- [ ] 필수 Annotation 사용
-- [ ] 레이어 책임 준수
-- [ ] Setter 사용 안 함 (Entity)
-- [ ] Enum은 STRING 타입
-- [ ] Transaction 적절히 관리
-- [ ] 예외는 GlobalExceptionHandler가 처리
-- [ ] Entity ↔ DTO 변환 규칙 준수
-- [ ] RESTful API 규칙 준수

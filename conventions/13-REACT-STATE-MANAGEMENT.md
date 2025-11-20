@@ -22,18 +22,10 @@ Server State   → React Query, SWR
 const [count, setCount] = useState<number>(0);
 const [user, setUser] = useState<User | null>(null);
 
-// ✅ 불변성 유지
-const [form, setForm] = useState({ name: '', email: '' });
-
-setForm(prev => ({
-  ...prev,
-  name: 'New Name',
-}));
-
-// ✅ 배열 업데이트
-setItems(prev => [...prev, newItem]);               // 추가
-setItems(prev => prev.filter(i => i.id !== id));    // 삭제
-setItems(prev => prev.map(i => i.id === id ? updated : i)); // 수정
+// ✅ 객체/배열 업데이트 (불변성 유지)
+setForm(prev => ({ ...prev, name: 'New Name' }));
+setItems(prev => [...prev, newItem]);
+setItems(prev => prev.filter(i => i.id !== id));
 ```
 
 ---
@@ -43,13 +35,9 @@ setItems(prev => prev.map(i => i.id === id ? updated : i)); // 수정
 ```typescript
 interface State {
   count: number;
-  isLoading: boolean;
 }
 
-type Action =
-  | { type: 'increment' }
-  | { type: 'decrement' }
-  | { type: 'setLoading'; payload: boolean };
+type Action = { type: 'increment' } | { type: 'decrement' };
 
 const reducer = (state: State, action: Action): State => {
   switch (action.type) {
@@ -57,22 +45,14 @@ const reducer = (state: State, action: Action): State => {
       return { ...state, count: state.count + 1 };
     case 'decrement':
       return { ...state, count: state.count - 1 };
-    case 'setLoading':
-      return { ...state, isLoading: action.payload };
     default:
       return state;
   }
 };
 
 export const Counter = () => {
-  const [state, dispatch] = useReducer(reducer, { count: 0, isLoading: false });
-
-  return (
-    <div>
-      <p>Count: {state.count}</p>
-      <button onClick={() => dispatch({ type: 'increment' })}>+</button>
-    </div>
-  );
+  const [state, dispatch] = useReducer(reducer, { count: 0 });
+  return <button onClick={() => dispatch({ type: 'increment' })}>+</button>;
 };
 ```
 
@@ -84,8 +64,7 @@ export const Counter = () => {
 // 1. Context 생성
 interface AuthContextValue {
   user: User | null;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  login: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -94,33 +73,23 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
 
-  const login = async (email: string, password: string) => {
-    const userData = await authService.login(email, password);
+  const login = async (email: string) => {
+    const userData = await authService.login(email);
     setUser(userData);
   };
 
-  const logout = () => {
-    setUser(null);
-  };
-
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// 3. Custom Hook
+// 3. Custom Hook + 사용
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) throw new Error('useAuth must be used within AuthProvider');
   return context;
-};
-
-// 4. 사용
-const Header = () => {
-  const { user, logout } = useAuth();
-  return <button onClick={logout}>{user?.name}</button>;
 };
 ```
 
@@ -138,23 +107,16 @@ import { create } from 'zustand';
 
 interface UserState {
   users: User[];
-  isLoading: boolean;
   fetchUsers: () => Promise<void>;
   addUser: (user: CreateUserRequest) => Promise<void>;
 }
 
 export const useUserStore = create<UserState>((set) => ({
   users: [],
-  isLoading: false,
 
   fetchUsers: async () => {
-    set({ isLoading: true });
-    try {
-      const users = await userService.getUsers();
-      set({ users, isLoading: false });
-    } catch (error) {
-      set({ isLoading: false });
-    }
+    const users = await userService.getUsers();
+    set({ users });
   },
 
   addUser: async (request) => {
@@ -165,37 +127,9 @@ export const useUserStore = create<UserState>((set) => ({
 
 // 사용
 const UserList = () => {
-  const { users, isLoading, fetchUsers } = useUserStore();
-
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
+  const { users, fetchUsers } = useUserStore();
   return <div>{users.map(u => <div key={u.id}>{u.name}</div>)}</div>;
 };
-```
-
-### Zustand Middleware
-
-```typescript
-import { create } from 'zustand';
-import { persist, devtools } from 'zustand/middleware';
-
-// ✅ LocalStorage 저장 + DevTools
-export const useAuthStore = create<AuthState>()(
-  devtools(
-    persist(
-      (set) => ({
-        user: null,
-        login: async (email, password) => {
-          const user = await authService.login(email, password);
-          set({ user });
-        },
-      }),
-      { name: 'auth-storage' }
-    )
-  )
-);
 ```
 
 ---
@@ -242,14 +176,6 @@ export const useUsers = () => {
   });
 };
 
-export const useUser = (userId: number) => {
-  return useQuery({
-    queryKey: ['users', userId],
-    queryFn: () => userService.getUser(userId),
-    enabled: !!userId, // userId 있을 때만 실행
-  });
-};
-
 // 사용
 const UserList = () => {
   const { data: users, isLoading, error } = useUsers();
@@ -261,38 +187,7 @@ const UserList = () => {
 };
 ```
 
-### useMutation (변경)
-
-```typescript
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-
-export const useCreateUser = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (request: CreateUserRequest) => userService.createUser(request),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] }); // 캐시 무효화
-    },
-  });
-};
-
-// 사용
-const CreateUserForm = () => {
-  const createUser = useCreateUser();
-
-  const handleSubmit = async (data: CreateUserRequest) => {
-    await createUser.mutateAsync(data);
-  };
-
-  return (
-    <form onSubmit={handleSubmit}>
-      {/* ... */}
-      <button disabled={createUser.isPending}>Create</button>
-    </form>
-  );
-};
-```
+> **useMutation**은 [14-REACT-QUERY-PATTERNS.md](./14-REACT-QUERY-PATTERNS.md) 참조
 
 ---
 
@@ -319,20 +214,3 @@ const CreateUserForm = () => {
   - 비동기 데이터
 ```
 
----
-
-## 체크리스트
-
-- [ ] 상태 분류에 따라 도구 선택
-- [ ] 불변성 유지
-- [ ] Context는 Custom Hook 래핑
-- [ ] React Query queryKey 명확히
-
----
-
-## 다음 문서
-
-- [10-REACT-TYPESCRIPT-CORE.md](./10-REACT-TYPESCRIPT-CORE.md) - 핵심 규칙
-- [11-REACT-PROJECT-STRUCTURE.md](./11-REACT-PROJECT-STRUCTURE.md) - 프로젝트 구조
-- [12-REACT-COMPONENT-CONVENTIONS.md](./12-REACT-COMPONENT-CONVENTIONS.md) - 컴포넌트
-- [14-REACT-API-INTEGRATION.md](./14-REACT-API-INTEGRATION.md) - API 통신

@@ -13,31 +13,20 @@ import axios from 'axios';
 export const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
   timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
-// Request Interceptor (토큰 추가)
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+// Request Interceptor (토큰)
+axiosInstance.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
 
-// Response Interceptor (에러 처리)
+// Response Interceptor (401 처리)
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
-    }
+    if (error.response?.status === 401) window.location.href = '/login';
     return Promise.reject(error);
   }
 );
@@ -73,21 +62,8 @@ export const userService = {
     return data;
   },
 
-  async getUser(id: number): Promise<User> {
-    const { data } = await axiosInstance.get<User>(API_ENDPOINTS.USER_BY_ID(id));
-    return data;
-  },
-
   async createUser(request: CreateUserRequest): Promise<User> {
     const { data } = await axiosInstance.post<User>(API_ENDPOINTS.USERS, request);
-    return data;
-  },
-
-  async updateUser(id: number, request: UpdateUserRequest): Promise<User> {
-    const { data } = await axiosInstance.put<User>(
-      API_ENDPOINTS.USER_BY_ID(id),
-      request
-    );
     return data;
   },
 
@@ -198,48 +174,11 @@ export const UserList = () => {
 };
 ```
 
----
-
-## 5. Custom Hooks (React Query 미사용 시)
-
-```typescript
-// hooks/useUser.ts
-import { useState, useEffect } from 'react';
-import { userService } from '@/services/userService';
-import type { User } from '@/types/user.types';
-
-export const useUser = (userId: number) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    const loadUser = async () => {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const data = await userService.getUser(userId);
-        setUser(data);
-      } catch (err) {
-        setError(err instanceof Error ? err : new Error('Failed to load user'));
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (userId) {
-      loadUser();
-    }
-  }, [userId]);
-
-  return { user, isLoading, error };
-};
-```
+> **권장**: Custom Hooks 대신 React Query 사용 (캐싱, 재시도, 낙관적 업데이트 지원)
 
 ---
 
-## 6. 에러 처리
+## 5. 에러 처리
 
 ```typescript
 // utils/errorHandler.ts
@@ -265,89 +204,3 @@ try {
   alert(errorMessage);
 }
 ```
-
----
-
-## 7. 로딩 & 에러 컴포넌트
-
-```typescript
-// components/common/LoadingSpinner.tsx
-export const LoadingSpinner = () => {
-  return <div className="spinner">Loading...</div>;
-};
-
-// components/common/ErrorMessage.tsx
-interface ErrorMessageProps {
-  error: Error;
-  onRetry?: () => void;
-}
-
-export const ErrorMessage = ({ error, onRetry }: ErrorMessageProps) => {
-  return (
-    <div className="error">
-      <p>Error: {error.message}</p>
-      {onRetry && <button onClick={onRetry}>Retry</button>}
-    </div>
-  );
-};
-```
-
----
-
-## 8. 파일 업로드
-
-```typescript
-// services/uploadService.ts
-export const uploadService = {
-  async uploadFile(file: File): Promise<string> {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const { data } = await axiosInstance.post<{ url: string }>('/api/upload', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-
-    return data.url;
-  },
-};
-
-// 사용
-const FileUpload = () => {
-  const [file, setFile] = useState<File | null>(null);
-
-  const handleUpload = async () => {
-    if (!file) return;
-    const url = await uploadService.uploadFile(file);
-    alert(`Uploaded: ${url}`);
-  };
-
-  return (
-    <div>
-      <input type="file" onChange={(e) => setFile(e.target.files?.[0] || null)} />
-      <button onClick={handleUpload}>Upload</button>
-    </div>
-  );
-};
-```
-
----
-
-## 체크리스트
-
-- [ ] Axios instance 설정
-- [ ] Interceptor 구현
-- [ ] Service Layer 분리
-- [ ] React Query 사용 (권장)
-- [ ] 에러 처리 일관성
-- [ ] 로딩 상태 관리
-
----
-
-## 다음 문서
-
-- [10-REACT-TYPESCRIPT-CORE.md](./10-REACT-TYPESCRIPT-CORE.md) - 핵심 규칙
-- [11-REACT-PROJECT-STRUCTURE.md](./11-REACT-PROJECT-STRUCTURE.md) - 프로젝트 구조
-- [12-REACT-COMPONENT-CONVENTIONS.md](./12-REACT-COMPONENT-CONVENTIONS.md) - 컴포넌트
-- [13-REACT-STATE-MANAGEMENT.md](./13-REACT-STATE-MANAGEMENT.md) - 상태 관리

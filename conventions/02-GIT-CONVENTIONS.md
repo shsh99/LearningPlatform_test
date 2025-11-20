@@ -146,201 +146,52 @@ git branch -d feat/123-user-login
 
 ---
 
-## 5. 자주 쓰는 명령어
+## 5. 민감 정보 관리
 
-### 브랜치
-```bash
-# 브랜치 목록
-git branch -a
+> 📌 **상세 가이드**: [09-GIT-SUBMODULE-CONVENTIONS.md](./09-GIT-SUBMODULE-CONVENTIONS.md) - Submodule을 활용한 민감 정보 관리
 
-# 원격 브랜치 삭제
-git push origin --delete feat/123-feature
-
-# 병합된 브랜치 일괄 삭제
-git branch --merged | grep -v "\*\|main\|dev" | xargs git branch -d
-```
-
-### 변경사항
-```bash
-# 그래프로 보기
-git log --oneline --graph --all
-
-# 특정 파일 이력
-git log -p 파일명
-
-# 임시 저장
-git stash
-git stash pop
-```
-
-### 충돌 해결
-```bash
-# dev 최신 반영
-git pull origin dev
-
-# 충돌 파일 확인
-git status
-
-# 수정 후
-git add .
-git commit -m "[Fix] 충돌 해결"
-git push
-```
-
----
-
-## 6. 민감 정보 관리
-
-### 원칙
+### 기본 원칙
 **절대 Git에 커밋하지 말 것:**
-- API 키, Secret Key
-- DB 비밀번호
-- AWS Access Key
-- OAuth Client Secret
+- API 키, Secret Key, DB 비밀번호
+- AWS Access Key, OAuth Client Secret
 - 개인정보 (이메일, 전화번호)
 
-### .gitignore 설정
+### .gitignore 필수 설정
 ```gitignore
-# 환경변수
 .env
 .env.*
 application-local.yml
 application-prod.yml
-
-# IDE
-.vscode/
-.idea/
-*.swp
-
-# OS
-.DS_Store
-Thumbs.db
-
-# 빌드
-node_modules/
-dist/
-build/
-target/
-*.log
-
-# 민감정보 (절대 커밋 금지!)
-*.pem
-*.key
-*secret*
-*password*
-credentials.json
-*.jks
-keystore.p12
 ```
-
-### 환경변수 관리
-
-**개발 환경:**
-```bash
-# .env (gitignore에 추가됨)
-DB_PASSWORD=dev_password
-JWT_SECRET=dev_secret_key_123
-AWS_ACCESS_KEY=AKIAIOSFODNN7EXAMPLE
-```
-
-**프로덕션 환경:**
-- GitHub Secrets 사용
-- AWS Systems Manager Parameter Store
-- Vault, AWS Secrets Manager
 
 ### 실수로 커밋한 경우
-
-**1. 즉시 키 무효화** (AWS, DB 비밀번호 변경)
-
-**2. Git 히스토리에서 제거** (협업 중이면 팀에 공지)
-```bash
-# 최근 커밋에서만 제거 (Push 전)
-git rm --cached .env
-git commit --amend
-
-# 히스토리 전체에서 제거 (위험! 협의 필요)
-git filter-branch --force --index-filter \
-  "git rm --cached --ignore-unmatch .env" \
-  --prune-empty --tag-name-filter cat -- --all
-```
-
-**3. Force Push 금지 → 새 키로 재배포**
-
-### 템플릿 파일 관리
-
-```bash
-# application.yml (커밋 O)
-spring:
-  datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-
-# application-example.yml (커밋 O, 팀원 참고용)
-spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/mydb
-    username: root
-    password: YOUR_PASSWORD_HERE
-```
+1. **즉시 키 무효화** (AWS, DB 비밀번호 변경)
+2. **팀에 공지 후 조치**
+3. **새 키로 재배포**
 
 ---
 
-## 7. .gitignore 예시
+## 6. .gitignore 예시
 
-### Java/Spring Boot
 ```gitignore
-# Gradle
-.gradle/
-build/
-!gradle/wrapper/gradle-wrapper.jar
-
-# Maven
-target/
-pom.xml.tag
-pom.xml.releaseBackup
-
 # 환경설정
-application-local.yml
-application-prod.yml
 .env
+.env.*
+application-local.yml
 
 # IDE
 .idea/
-*.iml
 .vscode/
 
 # 민감정보
 *.jks
-keystore.p12
 *secret*
 *password*
-credentials.json
 ```
 
 ---
 
-## 8. PR 템플릿
-
-### 기본 구조
-```markdown
-## 📝 작업 내용
-- 기능 설명
-
-## 🔧 주요 변경사항
-- 파일/기능 변경 내역
-
-## 🧪 테스트
-- [ ] 로컬 테스트
-- [ ] 통합 테스트
-
-## 💬 리뷰 포인트
-- 확인 필요 사항
-```
-
----
-
-## 9. 트러블슈팅
+## 7. 트러블슈팅
 
 ### 1. 잘못된 브랜치로 PR
 ```
@@ -350,39 +201,10 @@ GitHub에서 base 브랜치 변경: main → dev
 ### 2. 충돌 발생
 ```bash
 git pull origin dev
-# 충돌 파일 수정
-git add .
-git commit -m "[Fix] 충돌 해결"
-git push
+# 충돌 파일 수정 후 커밋
 ```
 
-### 3. 실수로 main Push
-```bash
-# ⚠️ force push 금지!
-# 팀에 연락 후 revert
-git revert <커밋해시>
-```
-
-### 4. 커밋 메시지 수정
-```bash
-# Push 전
-git commit --amend
-
-# Push 후
-# 그대로 두거나 새 커밋으로 수정
-```
-
----
-
-## ✅ 체크리스트
-
-- [ ] 브랜치 네이밍 규칙 준수
-- [ ] 커밋 메시지 형식 준수
-- [ ] main/dev에 직접 Push 금지
-- [ ] PR 템플릿 작성
-- [ ] 병합 후 브랜치 삭제
-- [ ] .gitignore 설정
-- [ ] 민감정보 커밋 안 함
+**PR 템플릿**: 별도 `.github/pull_request_template.md` 파일로 관리 권장
 
 ---
 

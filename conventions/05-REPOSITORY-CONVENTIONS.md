@@ -45,28 +45,16 @@ public interface {Domain}Repository extends JpaRepository<{Domain}, Long> {
 
 ```java
 // ✅ 조회
-findByField1()
-findByField1AndField2()
-findByField1OrField2()
-findByField1Containing()
-findByCreatedAtAfter()
-findByCreatedAtBetween()
-findByIdIn()
+findByField1AndField2()           // 복합 조건
+findByField1Containing()          // LIKE 검색
+findByCreatedAtBetween()          // 범위 검색
 
-// ✅ 존재 확인
-existsByField1()
-existsByField1AndOwnerId()
-
-// ✅ 개수
-countByOwnerId()
-countByStatus()
-
-// ✅ 삭제
-deleteByOwnerId()
+// ✅ 존재/개수
+existsByField1()                  // 존재 확인
+countByOwnerId()                  // 개수 조회
 
 // ✅ Top/First
-findFirstByOwnerIdOrderByCreatedAtDesc()
-findTop10ByStatusOrderByCreatedAtDesc()
+findFirstByOwnerIdOrderByCreatedAtDesc()  // 최신 1개
 ```
 
 ---
@@ -177,52 +165,28 @@ Page<{Domain}> findByOwnerIdNative(@Param("ownerId") Long ownerId, Pageable page
 
 ## 6. Custom Repository (QueryDSL)
 
-### Interface 정의
-
 ```java
+// Interface 정의
 public interface {Domain}RepositoryCustom {
-    List<{Domain}> findByComplexCondition({Domain}SearchCondition condition);
-    Page<{Domain}> searchWithDynamicQuery({Domain}SearchCondition condition, Pageable pageable);
+    List<{Domain}> searchByCondition({Domain}SearchCondition condition);
 }
-```
 
-### 구현체
-
-```java
+// 구현체
 @RequiredArgsConstructor
 public class {Domain}RepositoryImpl implements {Domain}RepositoryCustom {
-
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public List<{Domain}> findByComplexCondition({Domain}SearchCondition condition) {
+    public List<{Domain}> searchByCondition({Domain}SearchCondition condition) {
         return queryFactory
             .selectFrom({domain})
-            .where(
-                field1Eq(condition.getField1()),
-                statusIn(condition.getStatuses())
-            )
-            .orderBy({domain}.createdAt.desc())
+            .where(field1Eq(condition.getField1()))
             .fetch();
     }
 
     private BooleanExpression field1Eq(String field1) {
         return hasText(field1) ? {domain}.field1.eq(field1) : null;
     }
-
-    private BooleanExpression statusIn(List<{Status}Enum> statuses) {
-        return !isEmpty(statuses) ? {domain}.status.in(statuses) : null;
-    }
-}
-```
-
-### 메인 Repository에서 상속
-
-```java
-public interface {Domain}Repository
-    extends JpaRepository<{Domain}, Long>, {Domain}RepositoryCustom {
-
-    // Query Methods + Custom 메서드 모두 사용 가능
 }
 ```
 
@@ -231,32 +195,17 @@ public interface {Domain}Repository
 ## 7. 자주 하는 실수
 
 ```java
-// ❌ 너무 복잡한 Query Method (@Query 사용)
+// ❌ 1. 너무 복잡한 Query Method (@Query 사용)
 findByField1AndField2AndField3AndField4...
 
-// ❌ N+1 문제 무시 (Fetch Join 필요)
+// ❌ 2. N+1 문제 무시 (Fetch Join 필요)
 @Query("SELECT d FROM Domain d WHERE d.ownerId = :id")
 
-// ❌ @Modifying 없이 UPDATE/DELETE
+// ❌ 3. @Modifying 없이 UPDATE/DELETE
 @Query("UPDATE Domain d SET d.status = :status")
 
-// ❌ Native Query countQuery 누락 (페이징 시)
+// ❌ 4. Native Query countQuery 누락 (페이징 시)
 @Query(value = "SELECT * FROM domains", nativeQuery = true)
 Page<Domain> find(Pageable p);
-
-// ❌ Optional 남용 (List는 불필요)
-List<Optional<Domain>> findByOwnerId(Long id);
 ```
 
----
-
-## 체크리스트
-
-- [ ] JpaRepository 상속
-- [ ] Query Method 우선 사용
-- [ ] 복잡한 쿼리는 @Query (JPQL)
-- [ ] Fetch Join으로 N+1 해결
-- [ ] Pagination 지원 (Page/Slice)
-- [ ] @Modifying + @Transactional (Update/Delete)
-- [ ] Native Query는 최소화
-- [ ] Custom Repository 분리 (복잡한 경우)

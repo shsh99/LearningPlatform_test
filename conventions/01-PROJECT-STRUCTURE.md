@@ -260,30 +260,3 @@ com.company.ecommerce/
 └── security/ (SecurityConfig)
 ```
 
----
-
-## 체크리스트
-
-- [ ] Domain-Driven 구조 (domain/{domain})
-- [ ] 각 도메인: controller/service/repository/entity/dto
-- [ ] common/ 분리 (공통 컴포넌트만)
-- [ ] config/ 설정 클래스 분리
-- [ ] security/ 보안 관련 분리
-- [ ] 패키지 의존성 규칙 준수
-- [ ] 파일 네이밍 일관성
-- [ ] Common vs Domain 명확히 구분
-- [ ] Test 구조 (domain별 + integration)
-
----
-
-## 다음 단계
-
-프로젝트 구조를 이해했다면, 각 레이어별 컨벤션을 확인하세요:
-
-1. [00-CONVENTIONS-CORE.md](./00-CONVENTIONS-CORE.md) - 핵심 규칙
-2. [03-CONTROLLER-CONVENTIONS.md](./03-CONTROLLER-CONVENTIONS.md)
-3. [04-SERVICE-CONVENTIONS.md](./04-SERVICE-CONVENTIONS.md)
-4. [05-REPOSITORY-CONVENTIONS.md](./05-REPOSITORY-CONVENTIONS.md)
-5. [06-ENTITY-CONVENTIONS.md](./06-ENTITY-CONVENTIONS.md)
-6. [07-DTO-CONVENTIONS.md](./07-DTO-CONVENTIONS.md)
-7. [08-EXCEPTION-CONVENTIONS.md](./08-EXCEPTION-CONVENTIONS.md)

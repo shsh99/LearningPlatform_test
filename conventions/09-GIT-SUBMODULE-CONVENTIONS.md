@@ -206,32 +206,7 @@ jwt:
 
 ---
 
-## 7. .gitignore 필수 설정
-
-```gitignore
-# Submodule 디렉토리 (민감 정보!)
-src/main/resources/config/
-
-# .env 파일
-.env
-.env.*
-
-# IDE
-.idea/
-.vscode/
-
-# 민감정보
-*.jks
-*.p12
-*secret*
-*password*
-```
-
-**⚠️ 주의**: Submodule 자체는 `.gitmodules`로 관리되지만, **폴더 내용은 .gitignore에 추가 필수!**
-
----
-
-## 8. CI/CD 설정
+## 7. CI/CD 설정
 
 ### GitHub Actions 예시
 
@@ -271,85 +246,30 @@ jobs:
 ## 9. 트러블슈팅
 
 ### 1. Submodule 폴더가 비어있음
-
 ```bash
 git submodule update --init --recursive
 ```
 
 ### 2. detached HEAD 상태
-
 ```bash
 cd src/main/resources/config
 git checkout main
 ```
 
 ### 3. Permission denied (권한 없음)
-
 - Config 저장소 접근 권한 확인
-- SSH 키 설정 또는 Personal Access Token 사용
-
-### 4. Submodule 삭제
-
-```bash
-# 1. .gitmodules 편집 (해당 섹션 삭제)
-# 2. .git/config 편집 (해당 섹션 삭제)
-# 3. 실행
-git rm --cached src/main/resources/config
-rm -rf src/main/resources/config
-rm -rf .git/modules/src/main/resources/config
-
-git commit -m "[Chore] Submodule 제거"
-```
+- SSH 키 또는 Personal Access Token 사용
 
 ---
 
 ## 10. 보안 체크리스트
 
 - [ ] Config 저장소는 Private
-- [ ] .gitignore에 config/ 폴더 추가
+- [ ] .gitignore에 config/ 폴더 추가 ([02-GIT-CONVENTIONS.md](./02-GIT-CONVENTIONS.md) 참조)
 - [ ] 팀원만 Config 저장소 접근 권한 부여
 - [ ] Submodule 내용이 메인 저장소에 커밋되지 않았는지 확인
 - [ ] CI/CD에서 SUBMODULE_TOKEN 설정
-- [ ] 프로덕션은 AWS Secrets Manager/Vault 사용
-
----
-
-## 11. 프로덕션 배포 시
-
-**Submodule은 개발 환경용**, 프로덕션은 아래 방법 사용:
-
-### AWS Secrets Manager
-```yaml
-# application-prod.yml
-spring:
-  cloud:
-    aws:
-      secretsmanager:
-        enabled: true
-        region: ap-northeast-2
-```
-
-### 환경변수 주입 (Kubernetes/ECS)
-```yaml
-env:
-  - name: DB_PASSWORD
-    valueFrom:
-      secretKeyRef:
-        name: db-secret
-        key: password
-```
-
----
-
-## ✅ 체크리스트
-
-- [ ] Private config 저장소 생성
-- [ ] Submodule 추가 완료
-- [ ] .gitignore에 config/ 추가
-- [ ] 팀원 접근 권한 설정
-- [ ] application.yml에서 config import 설정
-- [ ] CI/CD에 SUBMODULE_TOKEN 설정
-- [ ] 프로덕션은 Secrets Manager 사용
+- [ ] 프로덕션은 AWS Secrets Manager/Vault 사용 (Submodule은 개발 환경 전용)
 
 ---
 

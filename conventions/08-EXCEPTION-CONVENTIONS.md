@@ -45,51 +45,20 @@ public class BusinessException extends RuntimeException {
 }
 ```
 
-### NotFoundException (404)
+### 계층 구조 예외
 
 ```java
-public class NotFoundException extends BusinessException {
+// 404
+public class NotFoundException extends BusinessException { }
+public class UserNotFoundException extends NotFoundException { }
 
-    public NotFoundException(ErrorCode errorCode) {
-        super(errorCode);
-    }
+// 400
+public class DuplicateException extends BusinessException { }
+public class ValidationException extends BusinessException { }
 
-    public NotFoundException(String message, ErrorCode errorCode) {
-        super(message, errorCode);
-    }
-}
-```
-
-### 도메인 특화 예외
-
-```java
-// ✅ 도메인별 NotFoundException
-public class UserNotFoundException extends NotFoundException {
-
-    public UserNotFoundException(Long id) {
-        super(ErrorCode.USER_NOT_FOUND);
-    }
-
-    public UserNotFoundException(String message) {
-        super(message, ErrorCode.USER_NOT_FOUND);
-    }
-}
-
-// ✅ 중복 예외
-public class DuplicateEmailException extends DuplicateException {
-
-    public DuplicateEmailException(String email) {
-        super("이미 사용 중인 이메일입니다: " + email, ErrorCode.DUPLICATE_EMAIL);
-    }
-}
-
-// ✅ 권한 예외
-public class UserAccessDeniedException extends ForbiddenException {
-
-    public UserAccessDeniedException(String message) {
-        super(message);
-    }
-}
+// 401, 403
+public class UnauthorizedException extends BusinessException { }
+public class ForbiddenException extends BusinessException { }
 ```
 
 ---
@@ -103,22 +72,12 @@ public enum ErrorCode {
 
     // ===== Common (C) =====
     INVALID_INPUT("C001", "잘못된 입력값입니다"),
-    UNAUTHORIZED("C002", "인증이 필요합니다"),
-    FORBIDDEN("C003", "권한이 없습니다"),
     INTERNAL_SERVER_ERROR("C999", "서버 오류가 발생했습니다"),
 
     // ===== User (U) =====
     USER_NOT_FOUND("U001", "사용자를 찾을 수 없습니다"),
     DUPLICATE_EMAIL("U002", "이미 사용 중인 이메일입니다"),
-    INVALID_PASSWORD("U003", "비밀번호가 일치하지 않습니다"),
-
-    // ===== Product (P) =====
-    PRODUCT_NOT_FOUND("P001", "상품을 찾을 수 없습니다"),
-    OUT_OF_STOCK("P002", "재고가 부족합니다"),
-
-    // ===== Auth (A) =====
-    INVALID_TOKEN("A001", "유효하지 않은 토큰입니다"),
-    EXPIRED_TOKEN("A002", "만료된 토큰입니다");
+    INVALID_PASSWORD("U003", "비밀번호가 일치하지 않습니다");
 
     private final String code;
     private final String message;
@@ -180,78 +139,7 @@ public class GlobalExceptionHandler {
 
 ---
 
-## 5. 예외 사용 패턴
-
-### Service에서 예외 발생
-
-```java
-@Service
-@Transactional(readOnly = true)
-public class UserService {
-
-    // ✅ GOOD: 명확한 예외
-    public UserResponse findById(Long id) {
-        User user = userRepository.findById(id)
-            .orElseThrow(() -> new UserNotFoundException(id));
-
-        return UserResponse.from(user);
-    }
-
-    // ✅ GOOD: 비즈니스 규칙 위반
-    @Transactional
-    public void activate(Long id) {
-        User user = userRepository.findById(id)
-            .orElseThrow(() -> new UserNotFoundException(id));
-
-        if (user.getStatus() == UserStatus.ACTIVE) {
-            throw new InvalidUserStatusException("이미 활성화된 상태입니다");
-        }
-
-        user.activate();
-    }
-
-    // ✅ GOOD: 중복 검사
-    @Transactional
-    public UserResponse create(CreateUserRequest request) {
-        if (userRepository.existsByEmail(request.email())) {
-            throw new DuplicateEmailException(request.email());
-        }
-
-        User user = User.create(request.name(), request.email());
-        User savedUser = userRepository.save(user);
-        return UserResponse.from(savedUser);
-    }
-}
-```
-
-### Controller에서는 예외 처리 안 함
-
-```java
-// ✅ GOOD: 예외는 던지기만
-@RestController
-public class UserController {
-
-    @GetMapping("/{id}")
-    public ResponseEntity<UserResponse> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.findById(id));
-        // Service에서 예외 발생 → GlobalExceptionHandler 처리
-    }
-}
-
-// ❌ BAD: Controller에서 try-catch
-@GetMapping("/{id}")
-public ResponseEntity<?> getById(@PathVariable Long id) {
-    try {  // ❌
-        return ResponseEntity.ok(userService.findById(id));
-    } catch (UserNotFoundException e) {
-        return ResponseEntity.status(404).body(new ErrorResponse(e.getMessage()));
-    }
-}
-```
-
----
-
-## 6. 에러 응답 예시
+## 5. 에러 응답 예시
 
 ### 404 Not Found
 
@@ -288,37 +176,17 @@ public ResponseEntity<?> getById(@PathVariable Long id) {
 
 ---
 
-## 7. 자주 하는 실수
+## 6. 자주 하는 실수
 
 ```java
 // ❌ Controller에서 try-catch
 try { return ResponseEntity.ok(service.findById(id)); }
 catch (Exception e) { return ResponseEntity.status(500).body(error); }
 
-// ❌ Exception 직접 상속 (RuntimeException 상속 필요)
-public class UserException extends Exception { }
-
 // ❌ ErrorCode 없이 예외 생성
 throw new BusinessException("에러 발생");
-
-// ❌ 일반적인 예외명 (구체적인 예외 사용)
-throw new RuntimeException("에러");
 
 // ❌ 예외 삼키기 (다시 던져야 함)
 catch (Exception e) { log.error("에러", e); }
 ```
 
----
-
-## 체크리스트
-
-- [ ] BusinessException 계층 구조
-- [ ] ErrorCode Enum 정의
-- [ ] 도메인별 예외 클래스
-- [ ] GlobalExceptionHandler 구현
-- [ ] ErrorResponse DTO
-- [ ] Service에서 예외 발생
-- [ ] Controller에서 예외 처리 안 함
-- [ ] 적절한 HTTP 상태 코드
-- [ ] 명확한 에러 메시지
-- [ ] Validation 에러 필드 정보
