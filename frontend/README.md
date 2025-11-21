@@ -1,73 +1,69 @@
-# React + TypeScript + Vite
+# 학습 플랫폼 프론트엔드
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 기술 스택
 
-Currently, two official plugins are available:
+- React 19.2
+- TypeScript 5.9
+- Vite 7.2
+- React Router DOM 7.9
+- Axios 1.13
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 개발 환경 설정
 
-## React Compiler
+### 필수 요구사항
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Node.js 18 이상
+- npm 9 이상
 
-## Expanding the ESLint configuration
+### 설치 및 실행
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+```bash
+# 의존성 설치
+npm install
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+# 개발 서버 실행 (포트 3000)
+npm run dev
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+# 프로덕션 빌드
+npm run build
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# 빌드 결과 미리보기
+npm run preview
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 프로젝트 구조
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
 ```
+src/
+├── api/           # API 클라이언트 및 엔드포인트
+├── contexts/      # React Context (전역 상태)
+├── pages/         # 페이지 컴포넌트
+└── types/         # TypeScript 타입 정의
+```
+
+## 주요 기능
+
+### 인증 (Authentication)
+
+- 회원가입 (이메일, 비밀번호, 이름)
+- 로그인 (이메일, 비밀번호)
+- JWT 토큰 기반 인증
+- 자동 로그인 유지 (localStorage)
+- 401 에러 자동 처리 및 로그인 페이지 리다이렉션
+
+### 라우팅
+
+- `/` - 홈 페이지 (로그인 상태에 따라 다른 화면)
+- `/login` - 로그인 페이지
+- `/signup` - 회원가입 페이지
+
+## 코딩 컨벤션
+
+프로젝트의 코딩 컨벤션은 `/conventions/frontend.md`를 참고하세요.
+
+### 주요 규칙
+
+- TypeScript type import: `import type { ... }`
+- React Hooks 사용
+- 함수형 컴포넌트
+- Context API를 통한 전역 상태 관리
