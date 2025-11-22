@@ -116,6 +116,16 @@
 
 ---
 
+### 📦 Monorepo
+
+**[../MONOREPO.md](../MONOREPO.md)** 🏗️
+- 프로젝트 구조 (Backend + Frontend)
+- 개발 워크플로우, 테스트 전략
+- 환경 설정, 배포 가이드
+- 컨벤션 통합 참조
+
+---
+
 ## 📖 참고 자료
 
 **Backend**: [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html) | [Spring Boot Docs](https://docs.spring.io/spring-boot/docs/3.2.x/reference/html/)
