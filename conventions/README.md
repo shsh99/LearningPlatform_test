@@ -91,6 +91,16 @@
 
 ---
 
+### 🧪 Testing
+
+15. **[15-TEST-CONVENTIONS.md](./15-TEST-CONVENTIONS.md)** 🧪
+    - Backend: JUnit5, MockMvc, @WebMvcTest
+    - Frontend: Jest, React Testing Library
+    - Given-When-Then 패턴
+    - Mock 전략
+
+---
+
 ### 🔄 Git & 협업
 
 2. **[02-GIT-CONVENTIONS.md](./02-GIT-CONVENTIONS.md)** 🔄
@@ -103,6 +113,16 @@
    - Submodule 설정 및 사용
    - 민감 정보 버전 관리
    - 팀 협업 설정
+
+---
+
+### 📦 Monorepo
+
+**[../MONOREPO.md](../MONOREPO.md)** 🏗️
+- 프로젝트 구조 (Backend + Frontend)
+- 개발 워크플로우, 테스트 전략
+- 환경 설정, 배포 가이드
+- 컨벤션 통합 참조
 
 ---
 
