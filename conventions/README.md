@@ -91,6 +91,16 @@
 
 ---
 
+### 🧪 Testing
+
+15. **[15-TEST-CONVENTIONS.md](./15-TEST-CONVENTIONS.md)** 🧪
+    - Backend: JUnit5, MockMvc, @WebMvcTest
+    - Frontend: Jest, React Testing Library
+    - Given-When-Then 패턴
+    - Mock 전략
+
+---
+
 ### 🔄 Git & 협업
 
 2. **[02-GIT-CONVENTIONS.md](./02-GIT-CONVENTIONS.md)** 🔄
