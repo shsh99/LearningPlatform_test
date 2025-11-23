@@ -33,7 +33,7 @@ public class AuthService {
         User user = User.create(request.email(), encodedPassword, request.name());
         User savedUser = userRepository.save(user);
 
-        String token = jwtTokenProvider.createToken(savedUser.getEmail());
+        String token = jwtTokenProvider.createToken(savedUser.getId(), savedUser.getEmail());
         return AuthResponse.of(savedUser, token);
     }
 
@@ -49,7 +49,7 @@ public class AuthService {
             throw new UnauthorizedException(ErrorCode.INVALID_CREDENTIALS);
         }
 
-        String token = jwtTokenProvider.createToken(user.getEmail());
+        String token = jwtTokenProvider.createToken(user.getId(), user.getEmail());
         return AuthResponse.of(user, token);
     }
 }

@@ -1,10 +1,8 @@
 package com.example.demo.global.exception;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 @Getter
-@RequiredArgsConstructor
 public enum ErrorCode {
 
     // User
@@ -19,10 +17,28 @@ public enum ErrorCode {
     INVALID_TOKEN("A004", "유효하지 않은 토큰입니다."),
     EXPIRED_TOKEN("A005", "만료된 토큰입니다."),
 
+    // Course
+    COURSE_NOT_FOUND("CO001", "강의를 찾을 수 없습니다."),
+
+    // CourseApplication
+    COURSE_APPLICATION_NOT_FOUND("CA001", "강의 개설 신청을 찾을 수 없습니다."),
+
+    // Enrollment
+    ALREADY_ENROLLED("E001", "이미 수강 신청한 강의입니다."),
+    ENROLLMENT_NOT_FOUND("E002", "수강 신청을 찾을 수 없습니다."),
+
+    // Term
+    TERM_NOT_FOUND("T001", "학기를 찾을 수 없습니다."),
+
     // Common
     INVALID_INPUT("C001", "잘못된 입력입니다."),
     INTERNAL_SERVER_ERROR("C002", "서버 내부 오류가 발생했습니다.");
 
     private final String code;
     private final String message;
+
+    ErrorCode(String code, String message) {
+        this.code = code;
+        this.message = message;
+    }
 }

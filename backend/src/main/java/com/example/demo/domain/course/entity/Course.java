@@ -40,6 +40,12 @@ public class Course extends BaseTimeEntity {
     }
 
     // ===== 비즈니스 메서드 =====
+    public void update(String title, String description, Integer maxStudents) {
+        this.title = title;
+        this.description = description;
+        this.maxStudents = maxStudents;
+    }
+
     public void approve() {
         this.status = CourseStatus.APPROVED;
     }
