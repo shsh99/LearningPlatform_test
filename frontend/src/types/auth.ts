@@ -13,6 +13,7 @@ export interface AuthResponse {
     id: number;
     email: string;
     name: string;
+    role: 'USER' | 'OPERATOR' | 'ADMIN';
     token: string;
 }
 
@@ -20,4 +21,5 @@ export interface User {
     id: number;
     email: string;
     name: string;
+    role: 'USER' | 'OPERATOR' | 'ADMIN';
 }
