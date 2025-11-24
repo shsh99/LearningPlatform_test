@@ -1,12 +1,14 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import type { User, AuthResponse } from '../types/auth';
+import type { User, AuthResponse, TokenResponse } from '../types/auth';
 
 interface AuthContextType {
     user: User | null;
-    token: string | null;
+    accessToken: string | null;
+    refreshToken: string | null;
     login: (authResponse: AuthResponse) => void;
     logout: () => void;
+    updateTokens: (tokens: TokenResponse) => void;
     isAuthenticated: boolean;
 }
 
@@ -18,39 +20,55 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
     const [user, setUser] = useState<User | null>(null);
-    const [token, setToken] = useState<string | null>(null);
+    const [accessToken, setAccessToken] = useState<string | null>(null);
+    const [refreshToken, setRefreshToken] = useState<string | null>(null);
 
     useEffect(() => {
-        const storedToken = localStorage.getItem('token');
+        const storedAccessToken = localStorage.getItem('accessToken');
+        const storedRefreshToken = localStorage.getItem('refreshToken');
         const storedUser = localStorage.getItem('user');
 
-        if (storedToken && storedUser) {
-            setToken(storedToken);
+        if (storedAccessToken && storedRefreshToken && storedUser) {
+            setAccessToken(storedAccessToken);
+            setRefreshToken(storedRefreshToken);
             setUser(JSON.parse(storedUser));
         }
     }, []);
 
     const login = (authResponse: AuthResponse) => {
-        const { token, ...userData } = authResponse;
-        setToken(token);
+        const { tokens, ...userData } = authResponse;
+        setAccessToken(tokens.accessToken);
+        setRefreshToken(tokens.refreshToken);
         setUser(userData);
-        localStorage.setItem('token', token);
+        localStorage.setItem('accessToken', tokens.accessToken);
+        localStorage.setItem('refreshToken', tokens.refreshToken);
         localStorage.setItem('user', JSON.stringify(userData));
     };
 
+    const updateTokens = (tokens: TokenResponse) => {
+        setAccessToken(tokens.accessToken);
+        setRefreshToken(tokens.refreshToken);
+        localStorage.setItem('accessToken', tokens.accessToken);
+        localStorage.setItem('refreshToken', tokens.refreshToken);
+    };
+
     const logout = () => {
-        setToken(null);
+        setAccessToken(null);
+        setRefreshToken(null);
         setUser(null);
-        localStorage.removeItem('token');
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
     };
 
     const value = {
         user,
-        token,
+        accessToken,
+        refreshToken,
         login,
         logout,
-        isAuthenticated: !!token && !!user,
+        updateTokens,
+        isAuthenticated: !!accessToken && !!user,
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
