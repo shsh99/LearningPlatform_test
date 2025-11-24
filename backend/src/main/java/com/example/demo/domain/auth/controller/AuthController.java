@@ -2,12 +2,19 @@ package com.example.demo.domain.auth.controller;
 
 import com.example.demo.domain.auth.dto.AuthResponse;
 import com.example.demo.domain.auth.dto.LoginRequest;
+import com.example.demo.domain.auth.dto.RefreshTokenRequest;
 import com.example.demo.domain.auth.dto.SignupRequest;
+import com.example.demo.domain.auth.dto.TokenResponse;
 import com.example.demo.domain.auth.service.AuthService;
+import com.example.demo.global.exception.ErrorCode;
+import com.example.demo.global.exception.UnauthorizedException;
+import com.example.demo.global.security.JwtTokenProvider;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @PostMapping("/signup")
     public ResponseEntity<AuthResponse> signup(@Valid @RequestBody SignupRequest request) {
@@ -30,5 +38,27 @@ public class AuthController {
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         AuthResponse response = authService.login(request);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<TokenResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
+        TokenResponse response = authService.refreshAccessToken(request.refreshToken());
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(HttpServletRequest request) {
+        String token = extractToken(request);
+        Long userId = jwtTokenProvider.getUserIdFromToken(token);
+        authService.logout(userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    private String extractToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        throw new UnauthorizedException(ErrorCode.INVALID_TOKEN);
     }
 }
