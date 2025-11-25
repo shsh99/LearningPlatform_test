@@ -3,7 +3,6 @@ package com.example.demo.global.email;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -15,7 +14,6 @@ public class ConsoleEmailService implements EmailService {
     private String frontendUrl;
 
     @Override
-    @Async
     public void sendPasswordResetEmail(String toEmail, String token) {
         String resetUrl = frontendUrl + "/reset-password/" + token;
 

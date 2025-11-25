@@ -33,3 +33,13 @@ export interface User {
     name: string;
     role: 'USER' | 'OPERATOR' | 'ADMIN';
 }
+
+export interface ForgotPasswordRequest {
+    email: string;
+}
+
+export interface ResetPasswordRequest {
+    token: string;
+    newPassword: string;
+    confirmPassword: string;
+}

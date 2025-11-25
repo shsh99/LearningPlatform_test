@@ -23,6 +23,7 @@ public enum ErrorCode {
     INVALID_RESET_TOKEN("A008", "유효하지 않은 재설정 토큰입니다."),
     RESET_TOKEN_EXPIRED("A009", "재설정 토큰이 만료되었습니다."),
     RESET_TOKEN_ALREADY_USED("A010", "이미 사용된 재설정 토큰입니다."),
+    SAME_AS_OLD_PASSWORD("A011", "새 비밀번호는 기존 비밀번호와 달라야 합니다."),
 
     // Course
     COURSE_NOT_FOUND("CO001", "강의를 찾을 수 없습니다."),
