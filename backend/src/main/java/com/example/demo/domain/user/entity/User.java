@@ -6,6 +6,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "users")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -32,6 +34,9 @@ public class User extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private UserStatus status;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     private User(String email, String password, String name, UserRole role) {
         this.email = email;
@@ -63,5 +68,10 @@ public class User extends BaseTimeEntity {
 
     public boolean isActive() {
         return this.status == UserStatus.ACTIVE;
+    }
+
+    public void delete() {
+        this.status = UserStatus.DELETED;
+        this.deletedAt = LocalDateTime.now();
     }
 }

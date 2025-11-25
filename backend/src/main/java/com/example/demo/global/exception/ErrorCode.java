@@ -11,6 +11,7 @@ public enum ErrorCode {
     USER_NOT_ACTIVE("U003", "활성화되지 않은 사용자입니다."),
     INVALID_CURRENT_PASSWORD("U004", "현재 비밀번호가 일치하지 않습니다."),
     PASSWORDS_DO_NOT_MATCH("U005", "새 비밀번호가 일치하지 않습니다."),
+    ACCOUNT_DELETED("U006", "탈퇴한 계정입니다."),
 
     // Auth
     INVALID_CREDENTIALS("A001", "이메일 또는 비밀번호가 올바르지 않습니다."),

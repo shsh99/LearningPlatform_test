@@ -4,6 +4,7 @@ import com.example.demo.domain.user.dto.ChangePasswordRequest;
 import com.example.demo.domain.user.dto.UpdateProfileRequest;
 import com.example.demo.domain.user.dto.UserProfileResponse;
 import com.example.demo.domain.user.dto.UserResponse;
+import com.example.demo.domain.user.dto.WithdrawRequest;
 import com.example.demo.domain.user.service.UserService;
 import com.example.demo.global.security.JwtTokenProvider;
 import jakarta.servlet.http.HttpServletRequest;
@@ -102,6 +103,24 @@ public class UserController {
         }
         Long userId = jwtTokenProvider.getUserIdFromToken(token);
         userService.changeMyPassword(userId, passwordRequest);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * 회원 탈퇴
+     * DELETE /api/users/me
+     * 권한: 인증된 사용자
+     */
+    @DeleteMapping("/me")
+    public ResponseEntity<Void> withdrawAccount(
+            HttpServletRequest request,
+            @Valid @RequestBody WithdrawRequest withdrawRequest) {
+        String token = request.getHeader("Authorization");
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+        Long userId = jwtTokenProvider.getUserIdFromToken(token);
+        userService.withdrawAccount(userId, withdrawRequest);
         return ResponseEntity.noContent().build();
     }
 }

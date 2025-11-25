@@ -1,5 +1,7 @@
 package com.example.demo.domain.user.service;
 
+import com.example.demo.domain.auth.repository.PasswordResetTokenRepository;
+import com.example.demo.domain.auth.repository.RefreshTokenRepository;
 import com.example.demo.domain.enrollment.entity.Enrollment;
 import com.example.demo.domain.enrollment.entity.EnrollmentStatus;
 import com.example.demo.domain.enrollment.repository.EnrollmentRepository;
@@ -10,6 +12,7 @@ import com.example.demo.domain.user.dto.ChangePasswordRequest;
 import com.example.demo.domain.user.dto.UpdateProfileRequest;
 import com.example.demo.domain.user.dto.UserProfileResponse;
 import com.example.demo.domain.user.dto.UserResponse;
+import com.example.demo.domain.user.dto.WithdrawRequest;
 import com.example.demo.domain.user.entity.User;
 import com.example.demo.domain.user.exception.UserNotFoundException;
 import com.example.demo.domain.user.repository.UserRepository;
@@ -35,6 +38,8 @@ public class UserServiceImpl implements UserService {
     private final InstructorAssignmentRepository instructorAssignmentRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
 
     @Override
     public List<UserResponse> findAll() {
@@ -124,5 +129,24 @@ public class UserServiceImpl implements UserService {
 
         String encodedPassword = passwordEncoder.encode(request.newPassword());
         user.updatePassword(encodedPassword);
+    }
+
+    @Override
+    @Transactional
+    public void withdrawAccount(Long userId, WithdrawRequest request) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new UserNotFoundException(userId));
+
+        // 비밀번호 검증
+        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+            throw new UnauthorizedException(ErrorCode.INVALID_CURRENT_PASSWORD);
+        }
+
+        // 회원 탈퇴 처리 (소프트 삭제)
+        user.delete();
+
+        // 토큰 삭제
+        refreshTokenRepository.deleteByUserId(userId);
+        passwordResetTokenRepository.deleteByUserId(userId);
     }
 }
