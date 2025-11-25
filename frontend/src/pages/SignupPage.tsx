@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/Card';
+import { validatePassword, validatePasswordConfirm, getPasswordHelperText } from '../utils/validation';
 
 export function SignupPage() {
     const navigate = useNavigate();
@@ -13,18 +14,56 @@ export function SignupPage() {
     const [formData, setFormData] = useState({
         email: '',
         password: '',
+        passwordConfirm: '',
         name: '',
     });
+    const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
+    const [passwordConfirmErrors, setPasswordConfirmErrors] = useState<string[]>([]);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+
+    const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newPassword = e.target.value;
+        setFormData({ ...formData, password: newPassword });
+
+        const validation = validatePassword(newPassword);
+        setPasswordErrors(validation.errors);
+
+        if (formData.passwordConfirm) {
+            const confirmValidation = validatePasswordConfirm(newPassword, formData.passwordConfirm);
+            setPasswordConfirmErrors(confirmValidation.errors);
+        }
+    };
+
+    const handlePasswordConfirmChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newPasswordConfirm = e.target.value;
+        setFormData({ ...formData, passwordConfirm: newPasswordConfirm });
+
+        const validation = validatePasswordConfirm(formData.password, newPasswordConfirm);
+        setPasswordConfirmErrors(validation.errors);
+    };
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setError('');
+
+        const validation = validatePassword(formData.password);
+        if (!validation.isValid) {
+            setPasswordErrors(validation.errors);
+            return;
+        }
+
+        const confirmValidation = validatePasswordConfirm(formData.password, formData.passwordConfirm);
+        if (!confirmValidation.isValid) {
+            setPasswordConfirmErrors(confirmValidation.errors);
+            return;
+        }
+
         setLoading(true);
 
         try {
-            const response = await authApi.signup(formData);
+            const { passwordConfirm, ...signupData } = formData;
+            const response = await authApi.signup(signupData);
             login(response);
             navigate('/');
         } catch (err: any) {
@@ -53,17 +92,47 @@ export function SignupPage() {
                                 placeholder="your@email.com"
                             />
 
-                            <Input
-                                label="비밀번호"
-                                type="password"
-                                value={formData.password}
-                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                required
-                                minLength={8}
-                                maxLength={20}
-                                placeholder="8-20자"
-                                helperText="8-20자 사이로 입력해주세요"
-                            />
+                            <div>
+                                <Input
+                                    label="비밀번호"
+                                    type="password"
+                                    value={formData.password}
+                                    onChange={handlePasswordChange}
+                                    required
+                                    placeholder="8-20자, 특수문자 포함"
+                                    helperText={getPasswordHelperText()}
+                                />
+                                {passwordErrors.length > 0 && (
+                                    <div className="mt-2 space-y-1">
+                                        {passwordErrors.map((error, index) => (
+                                            <p key={index} className="text-sm text-red-600">
+                                                • {error}
+                                            </p>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div>
+                                <Input
+                                    label="비밀번호 확인"
+                                    type="password"
+                                    value={formData.passwordConfirm}
+                                    onChange={handlePasswordConfirmChange}
+                                    required
+                                    placeholder="비밀번호를 다시 입력해주세요"
+                                    helperText="비밀번호를 다시 입력해주세요"
+                                />
+                                {passwordConfirmErrors.length > 0 && (
+                                    <div className="mt-2 space-y-1">
+                                        {passwordConfirmErrors.map((error, index) => (
+                                            <p key={index} className="text-sm text-red-600">
+                                                • {error}
+                                            </p>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
 
                             <Input
                                 label="이름"
@@ -83,7 +152,7 @@ export function SignupPage() {
                                 </div>
                             )}
 
-                            <Button type="submit" fullWidth disabled={loading}>
+                            <Button type="submit" fullWidth disabled={loading || passwordErrors.length > 0 || passwordConfirmErrors.length > 0}>
                                 {loading ? '처리 중...' : '회원가입'}
                             </Button>
                         </form>
