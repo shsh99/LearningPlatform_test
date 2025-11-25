@@ -3,13 +3,23 @@
     "allow": [
       "Bash(tree:*)",
       "Bash(wc:*)",
+      "Bash(dir:*)",
       "Bash(netstat:*)",
       "Bash(findstr:*)",
       "Bash(taskkill:*)",
       "Bash(./gradlew bootRun)",
       "Bash(cat:*)",
       "Bash(./gradlew test:*)",
-      "Bash(./gradlew bootRun:*)"
+      "Bash(./gradlew bootRun:*)",
+      "Bash(npm install)",
+      "Bash(./gradlew compileJava:*)",
+      "Bash(curl:*)",
+      "Bash(git checkout:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git merge feat/sis-bulk-actions --no-ff -m \"$(cat <<''EOF''\nMerge feat/sis-bulk-actions into dev\n\nSIS 페이지 일괄 처리 기능 추가\nEOF\n)\")",
+      "Bash(git merge feat/sis-progress-warning --no-ff -m \"$(cat <<''EOF''\nMerge feat/sis-progress-warning into dev\n\nSIS 페이지 시간 경과 경고 표시 기능 추가\nEOF\n)\")",
+      "Bash(git merge feat/sis-dashboard-stats --no-ff -m \"$(cat <<''EOF''\nMerge feat/sis-dashboard-stats into dev\n\nSIS 페이지 통계 대시보드 추가\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []
