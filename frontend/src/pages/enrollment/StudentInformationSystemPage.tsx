@@ -526,15 +526,15 @@ export const StudentInformationSystemPage = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {record.id}
                         </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {record.userKey}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {record.timeKey}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {record.enrollmentId}
-                      </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {record.userKey}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {record.timeKey}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {record.enrollmentId}
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {new Date(record.timestamp).toLocaleString('ko-KR')}
                         </td>
@@ -550,8 +550,7 @@ export const StudentInformationSystemPage = () => {
                   <div className="flex items-center justify-between">
                     {/* 현재 범위 표시 */}
                     <div className="text-sm text-gray-600">
-                      {(currentPage - 1) * itemsPerPage + 1}-
-                      {Math.min(currentPage * itemsPerPage, sortedRecords.length)} / {sortedRecords.length}건
+                      {(currentPage - 1) * itemsPerPage + 1}-{Math.min(currentPage * itemsPerPage, sortedRecords.length)} / {sortedRecords.length}건
                     </div>
 
                     {/* 페이지 버튼 */}
