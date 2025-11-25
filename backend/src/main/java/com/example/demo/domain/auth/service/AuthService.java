@@ -11,6 +11,7 @@ import com.example.demo.domain.auth.entity.RefreshToken;
 import com.example.demo.domain.auth.repository.PasswordResetTokenRepository;
 import com.example.demo.domain.auth.repository.RefreshTokenRepository;
 import com.example.demo.domain.user.entity.User;
+import com.example.demo.domain.user.entity.UserStatus;
 import com.example.demo.domain.user.repository.UserRepository;
 import com.example.demo.global.email.EmailService;
 import com.example.demo.global.exception.BusinessException;
@@ -56,6 +57,10 @@ public class AuthService {
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.email())
             .orElseThrow(() -> new UnauthorizedException(ErrorCode.INVALID_CREDENTIALS));
+
+        if (user.getStatus() == UserStatus.DELETED) {
+            throw new UnauthorizedException(ErrorCode.ACCOUNT_DELETED);
+        }
 
         if (!user.isActive()) {
             throw new UnauthorizedException(ErrorCode.USER_NOT_ACTIVE);

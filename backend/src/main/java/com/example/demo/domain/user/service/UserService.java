@@ -4,6 +4,7 @@ import com.example.demo.domain.user.dto.ChangePasswordRequest;
 import com.example.demo.domain.user.dto.UpdateProfileRequest;
 import com.example.demo.domain.user.dto.UserResponse;
 import com.example.demo.domain.user.dto.UserProfileResponse;
+import com.example.demo.domain.user.dto.WithdrawRequest;
 
 import java.util.List;
 
@@ -35,4 +36,9 @@ public interface UserService {
      * 비밀번호 변경
      */
     void changeMyPassword(Long userId, ChangePasswordRequest request);
+
+    /**
+     * 회원탈퇴
+     */
+    void withdrawAccount(Long userId, WithdrawRequest request);
 }
