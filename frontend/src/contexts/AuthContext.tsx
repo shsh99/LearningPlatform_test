@@ -9,6 +9,7 @@ interface AuthContextType {
     login: (authResponse: AuthResponse) => void;
     logout: () => void;
     updateTokens: (tokens: TokenResponse) => void;
+    updateUser: (user: User) => void;
     isAuthenticated: boolean;
 }
 
@@ -52,6 +53,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         localStorage.setItem('refreshToken', tokens.refreshToken);
     };
 
+    const updateUser = (updatedUser: User) => {
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+    };
+
     const logout = () => {
         setAccessToken(null);
         setRefreshToken(null);
@@ -68,6 +74,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         login,
         logout,
         updateTokens,
+        updateUser,
         isAuthenticated: !!accessToken && !!user,
     };
 
