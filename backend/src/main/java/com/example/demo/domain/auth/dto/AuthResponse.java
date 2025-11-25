@@ -8,15 +8,15 @@ public record AuthResponse(
     String email,
     String name,
     UserRole role,
-    String token
+    TokenResponse tokens
 ) {
-    public static AuthResponse of(User user, String token) {
+    public static AuthResponse of(User user, TokenResponse tokens) {
         return new AuthResponse(
             user.getId(),
             user.getEmail(),
             user.getName(),
             user.getRole(),
-            token
+            tokens
         );
     }
 }

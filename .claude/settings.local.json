@@ -2,7 +2,14 @@
   "permissions": {
     "allow": [
       "Bash(tree:*)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)",
+      "Bash(./gradlew bootRun)",
+      "Bash(cat:*)",
+      "Bash(./gradlew test:*)",
+      "Bash(./gradlew bootRun:*)"
     ],
     "deny": [],
     "ask": []

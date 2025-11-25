@@ -280,7 +280,7 @@ export function OperatorTermsPage() {
                                                             시작
                                                         </button>
                                                     )}
-                                                    {term.status === 'IN_PROGRESS' && (
+                                                    {term.status === 'ONGOING' && (
                                                         <button
                                                             onClick={() => handleStatusChange(term.id, 'complete')}
                                                             className="text-green-600 hover:text-green-800 font-medium"
@@ -288,7 +288,7 @@ export function OperatorTermsPage() {
                                                             완료
                                                         </button>
                                                     )}
-                                                    {(term.status === 'PLANNED' || term.status === 'IN_PROGRESS') && (
+                                                    {(term.status === 'PLANNED' || term.status === 'ONGOING') && (
                                                         <button
                                                             onClick={() => handleStatusChange(term.id, 'cancel')}
                                                             className="text-red-600 hover:text-red-800 font-medium"

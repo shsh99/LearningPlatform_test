@@ -1,17 +1,25 @@
 package com.example.demo.domain.user.service;
 
+import com.example.demo.domain.auth.repository.PasswordResetTokenRepository;
+import com.example.demo.domain.auth.repository.RefreshTokenRepository;
 import com.example.demo.domain.enrollment.entity.Enrollment;
 import com.example.demo.domain.enrollment.entity.EnrollmentStatus;
 import com.example.demo.domain.enrollment.repository.EnrollmentRepository;
 import com.example.demo.domain.timeschedule.entity.AssignmentStatus;
 import com.example.demo.domain.timeschedule.entity.InstructorAssignment;
 import com.example.demo.domain.timeschedule.repository.InstructorAssignmentRepository;
+import com.example.demo.domain.user.dto.ChangePasswordRequest;
+import com.example.demo.domain.user.dto.UpdateProfileRequest;
 import com.example.demo.domain.user.dto.UserProfileResponse;
 import com.example.demo.domain.user.dto.UserResponse;
+import com.example.demo.domain.user.dto.WithdrawRequest;
 import com.example.demo.domain.user.entity.User;
 import com.example.demo.domain.user.exception.UserNotFoundException;
 import com.example.demo.domain.user.repository.UserRepository;
+import com.example.demo.global.exception.ErrorCode;
+import com.example.demo.global.exception.UnauthorizedException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +37,9 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final InstructorAssignmentRepository instructorAssignmentRepository;
     private final EnrollmentRepository enrollmentRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
 
     @Override
     public List<UserResponse> findAll() {
@@ -89,5 +100,53 @@ public class UserServiceImpl implements UserService {
             .collect(Collectors.toList());
 
         return UserProfileResponse.of(user, assignmentInfos, enrollmentInfos);
+    }
+
+    @Override
+    @Transactional
+    public UserResponse updateMyProfile(Long userId, UpdateProfileRequest request) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new UserNotFoundException(userId));
+
+        user.updateName(request.name());
+
+        return UserResponse.from(user);
+    }
+
+    @Override
+    @Transactional
+    public void changeMyPassword(Long userId, ChangePasswordRequest request) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new UserNotFoundException(userId));
+
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
+            throw new UnauthorizedException(ErrorCode.INVALID_CURRENT_PASSWORD);
+        }
+
+        if (!request.newPassword().equals(request.confirmPassword())) {
+            throw new UnauthorizedException(ErrorCode.PASSWORDS_DO_NOT_MATCH);
+        }
+
+        String encodedPassword = passwordEncoder.encode(request.newPassword());
+        user.updatePassword(encodedPassword);
+    }
+
+    @Override
+    @Transactional
+    public void withdrawAccount(Long userId, WithdrawRequest request) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new UserNotFoundException(userId));
+
+        // 비밀번호 검증
+        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+            throw new UnauthorizedException(ErrorCode.INVALID_CURRENT_PASSWORD);
+        }
+
+        // 회원 탈퇴 처리 (소프트 삭제)
+        user.delete();
+
+        // 토큰 삭제
+        refreshTokenRepository.deleteByUserId(userId);
+        passwordResetTokenRepository.deleteByUserId(userId);
     }
 }

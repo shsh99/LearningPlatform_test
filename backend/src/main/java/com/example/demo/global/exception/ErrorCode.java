@@ -9,6 +9,9 @@ public enum ErrorCode {
     USER_NOT_FOUND("U001", "사용자를 찾을 수 없습니다."),
     USER_ALREADY_EXISTS("U002", "이미 존재하는 사용자입니다."),
     USER_NOT_ACTIVE("U003", "활성화되지 않은 사용자입니다."),
+    INVALID_CURRENT_PASSWORD("U004", "현재 비밀번호가 일치하지 않습니다."),
+    PASSWORDS_DO_NOT_MATCH("U005", "새 비밀번호가 일치하지 않습니다."),
+    ACCOUNT_DELETED("U006", "탈퇴한 계정입니다."),
 
     // Auth
     INVALID_CREDENTIALS("A001", "이메일 또는 비밀번호가 올바르지 않습니다."),
@@ -16,6 +19,12 @@ public enum ErrorCode {
     FORBIDDEN("A003", "권한이 없습니다."),
     INVALID_TOKEN("A004", "유효하지 않은 토큰입니다."),
     EXPIRED_TOKEN("A005", "만료된 토큰입니다."),
+    REFRESH_TOKEN_NOT_FOUND("A006", "Refresh Token을 찾을 수 없습니다."),
+    REFRESH_TOKEN_EXPIRED("A007", "Refresh Token이 만료되었습니다."),
+    INVALID_RESET_TOKEN("A008", "유효하지 않은 재설정 토큰입니다."),
+    RESET_TOKEN_EXPIRED("A009", "재설정 토큰이 만료되었습니다."),
+    RESET_TOKEN_ALREADY_USED("A010", "이미 사용된 재설정 토큰입니다."),
+    SAME_AS_OLD_PASSWORD("A011", "새 비밀번호는 기존 비밀번호와 달라야 합니다."),
 
     // Course
     COURSE_NOT_FOUND("CO001", "강의를 찾을 수 없습니다."),

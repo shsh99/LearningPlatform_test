@@ -22,3 +22,10 @@ export const getUserById = async (id: number): Promise<User> => {
   const response = await apiClient.get<User>(`/users/${id}`);
   return response.data;
 };
+
+// 회원 탈퇴
+export const withdrawAccount = async (password: string): Promise<void> => {
+  await apiClient.delete('/users/me', {
+    data: { password }
+  });
+};

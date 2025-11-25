@@ -1,10 +1,14 @@
 package com.example.demo.domain.user.controller;
 
+import com.example.demo.domain.user.dto.ChangePasswordRequest;
+import com.example.demo.domain.user.dto.UpdateProfileRequest;
 import com.example.demo.domain.user.dto.UserProfileResponse;
 import com.example.demo.domain.user.dto.UserResponse;
+import com.example.demo.domain.user.dto.WithdrawRequest;
 import com.example.demo.domain.user.service.UserService;
 import com.example.demo.global.security.JwtTokenProvider;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -64,5 +68,59 @@ public class UserController {
         Long userId = jwtTokenProvider.getUserIdFromToken(token);
         UserProfileResponse profile = userService.getMyProfile(userId);
         return ResponseEntity.ok(profile);
+    }
+
+    /**
+     * 내 프로필 수정 (이름 변경)
+     * PUT /api/users/me/profile
+     * 권한: 인증된 사용자
+     */
+    @PutMapping("/me/profile")
+    public ResponseEntity<UserResponse> updateMyProfile(
+            HttpServletRequest request,
+            @Valid @RequestBody UpdateProfileRequest updateRequest) {
+        String token = request.getHeader("Authorization");
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+        Long userId = jwtTokenProvider.getUserIdFromToken(token);
+        UserResponse updatedUser = userService.updateMyProfile(userId, updateRequest);
+        return ResponseEntity.ok(updatedUser);
+    }
+
+    /**
+     * 비밀번호 변경
+     * PUT /api/users/me/password
+     * 권한: 인증된 사용자
+     */
+    @PutMapping("/me/password")
+    public ResponseEntity<Void> changeMyPassword(
+            HttpServletRequest request,
+            @Valid @RequestBody ChangePasswordRequest passwordRequest) {
+        String token = request.getHeader("Authorization");
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+        Long userId = jwtTokenProvider.getUserIdFromToken(token);
+        userService.changeMyPassword(userId, passwordRequest);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * 회원 탈퇴
+     * DELETE /api/users/me
+     * 권한: 인증된 사용자
+     */
+    @DeleteMapping("/me")
+    public ResponseEntity<Void> withdrawAccount(
+            HttpServletRequest request,
+            @Valid @RequestBody WithdrawRequest withdrawRequest) {
+        String token = request.getHeader("Authorization");
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+        Long userId = jwtTokenProvider.getUserIdFromToken(token);
+        userService.withdrawAccount(userId, withdrawRequest);
+        return ResponseEntity.noContent().build();
     }
 }
