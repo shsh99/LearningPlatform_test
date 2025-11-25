@@ -35,3 +35,23 @@ export interface UserProfile {
   instructorAssignments: InstructorAssignmentInfo[];
   enrollments: EnrollmentInfo[];
 }
+
+export interface UpdateProfileRequest {
+  name: string;
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+export interface UserResponse {
+  id: number;
+  email: string;
+  name: string;
+  role: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
