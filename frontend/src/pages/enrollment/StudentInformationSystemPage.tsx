@@ -21,6 +21,9 @@ export const StudentInformationSystemPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
+  // 선택 상태 (일괄 처리용)
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+
   const loadRecords = async () => {
     try {
       setIsLoading(true);
@@ -107,6 +110,42 @@ export const StudentInformationSystemPage = () => {
   const handleItemsPerPageChange = (value: number) => {
     setItemsPerPage(value);
     setCurrentPage(1);
+  };
+
+  // 선택 핸들러
+  const handleSelectAll = () => {
+    if (selectedIds.size === paginatedRecords.length) {
+      // 전체 선택 해제
+      setSelectedIds(new Set());
+    } else {
+      // 현재 페이지 전체 선택
+      const newSelected = new Set<number>();
+      paginatedRecords.forEach(record => newSelected.add(record.id));
+      setSelectedIds(newSelected);
+    }
+  };
+
+  const handleSelectOne = (id: number) => {
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedIds.size === 0) return;
+
+    const confirmed = window.confirm(`선택된 ${selectedIds.size}개 항목을 삭제하시겠습니까?`);
+    if (confirmed) {
+      // 실제로는 API 호출이 필요하지만, 현재는 프론트엔드에서만 제거
+      const newRecords = records.filter(record => !selectedIds.has(record.id));
+      setRecords(newRecords);
+      setSelectedIds(new Set());
+      alert('선택된 항목이 삭제되었습니다.');
+    }
   };
 
   const sortedRecords = getSortedRecords();
@@ -204,6 +243,33 @@ export const StudentInformationSystemPage = () => {
             </div>
           )}
 
+          {/* 일괄 처리 액션 바 */}
+          {selectedIds.size > 0 && (
+            <div className="bg-indigo-600 text-white rounded-xl shadow-lg p-4 mb-6 border border-indigo-700">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <span className="font-semibold">
+                    {selectedIds.size}개 항목 선택됨
+                  </span>
+                  <button
+                    onClick={() => setSelectedIds(new Set())}
+                    className="text-sm text-indigo-200 hover:text-white underline"
+                  >
+                    선택 해제
+                  </button>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleBulkDelete}
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors"
+                  >
+                    선택 삭제
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {records.length === 0 ? (
             <div className="bg-white rounded-xl shadow-sm p-12 text-center">
               <p className="text-gray-500 text-lg mb-4">조회된 SIS 기록이 없습니다.</p>
@@ -213,6 +279,14 @@ export const StudentInformationSystemPage = () => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
+                    <th className="px-6 py-3 text-left">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.size === paginatedRecords.length && paginatedRecords.length > 0}
+                        onChange={handleSelectAll}
+                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                      />
+                    </th>
                     <th
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
                       onClick={() => handleSort('id')}
@@ -265,6 +339,14 @@ export const StudentInformationSystemPage = () => {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {paginatedRecords.map((record) => (
                     <tr key={record.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(record.id)}
+                          onChange={() => handleSelectOne(record.id)}
+                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                        />
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {record.id}
                       </td>
