@@ -16,6 +16,8 @@ public enum ErrorCode {
     FORBIDDEN("A003", "권한이 없습니다."),
     INVALID_TOKEN("A004", "유효하지 않은 토큰입니다."),
     EXPIRED_TOKEN("A005", "만료된 토큰입니다."),
+    REFRESH_TOKEN_NOT_FOUND("A006", "Refresh Token을 찾을 수 없습니다."),
+    REFRESH_TOKEN_EXPIRED("A007", "Refresh Token이 만료되었습니다."),
 
     // Course
     COURSE_NOT_FOUND("CO001", "강의를 찾을 수 없습니다."),
