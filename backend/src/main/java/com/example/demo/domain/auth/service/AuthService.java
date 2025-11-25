@@ -1,13 +1,19 @@
 package com.example.demo.domain.auth.service;
 
 import com.example.demo.domain.auth.dto.AuthResponse;
+import com.example.demo.domain.auth.dto.ForgotPasswordRequest;
 import com.example.demo.domain.auth.dto.LoginRequest;
+import com.example.demo.domain.auth.dto.ResetPasswordRequest;
 import com.example.demo.domain.auth.dto.SignupRequest;
 import com.example.demo.domain.auth.dto.TokenResponse;
+import com.example.demo.domain.auth.entity.PasswordResetToken;
 import com.example.demo.domain.auth.entity.RefreshToken;
+import com.example.demo.domain.auth.repository.PasswordResetTokenRepository;
 import com.example.demo.domain.auth.repository.RefreshTokenRepository;
 import com.example.demo.domain.user.entity.User;
 import com.example.demo.domain.user.repository.UserRepository;
+import com.example.demo.global.email.EmailService;
+import com.example.demo.global.exception.BusinessException;
 import com.example.demo.global.exception.DuplicateException;
 import com.example.demo.global.exception.ErrorCode;
 import com.example.demo.global.exception.UnauthorizedException;
@@ -18,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 @Transactional(readOnly = true)
@@ -28,6 +35,8 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final EmailService emailService;
 
     @Transactional
     public AuthResponse signup(SignupRequest request) {
@@ -91,6 +100,47 @@ public class AuthService {
     @Transactional
     public void logout(Long userId) {
         refreshTokenRepository.deleteByUserId(userId);
+    }
+
+    @Transactional
+    public void requestPasswordReset(ForgotPasswordRequest request) {
+        User user = userRepository.findByEmail(request.email())
+            .orElse(null);
+
+        if (user == null) {
+            return;
+        }
+
+        String token = UUID.randomUUID().toString();
+
+        PasswordResetToken resetToken = PasswordResetToken.create(user, token, 60);
+        passwordResetTokenRepository.save(resetToken);
+
+        emailService.sendPasswordResetEmail(user.getEmail(), token);
+    }
+
+    @Transactional
+    public void resetPassword(ResetPasswordRequest request) {
+        if (!request.newPassword().equals(request.confirmPassword())) {
+            throw new BusinessException(ErrorCode.PASSWORDS_DO_NOT_MATCH);
+        }
+
+        PasswordResetToken resetToken = passwordResetTokenRepository.findByTokenWithUser(request.token())
+            .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_RESET_TOKEN));
+
+        if (!resetToken.isValid()) {
+            if (resetToken.isExpired()) {
+                throw new BusinessException(ErrorCode.RESET_TOKEN_EXPIRED);
+            } else {
+                throw new BusinessException(ErrorCode.RESET_TOKEN_ALREADY_USED);
+            }
+        }
+
+        User user = resetToken.getUser();
+        String encodedPassword = passwordEncoder.encode(request.newPassword());
+        user.updatePassword(encodedPassword);
+
+        resetToken.markAsUsed();
     }
 
     private TokenResponse createTokens(User user) {

@@ -1,8 +1,10 @@
 package com.example.demo.domain.auth.controller;
 
 import com.example.demo.domain.auth.dto.AuthResponse;
+import com.example.demo.domain.auth.dto.ForgotPasswordRequest;
 import com.example.demo.domain.auth.dto.LoginRequest;
 import com.example.demo.domain.auth.dto.RefreshTokenRequest;
+import com.example.demo.domain.auth.dto.ResetPasswordRequest;
 import com.example.demo.domain.auth.dto.SignupRequest;
 import com.example.demo.domain.auth.dto.TokenResponse;
 import com.example.demo.domain.auth.service.AuthService;
@@ -52,6 +54,18 @@ public class AuthController {
         Long userId = jwtTokenProvider.getUserIdFromToken(token);
         authService.logout(userId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        authService.requestPasswordReset(request);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request);
+        return ResponseEntity.ok().build();
     }
 
     private String extractToken(HttpServletRequest request) {

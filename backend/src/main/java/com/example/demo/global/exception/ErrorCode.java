@@ -20,6 +20,9 @@ public enum ErrorCode {
     EXPIRED_TOKEN("A005", "만료된 토큰입니다."),
     REFRESH_TOKEN_NOT_FOUND("A006", "Refresh Token을 찾을 수 없습니다."),
     REFRESH_TOKEN_EXPIRED("A007", "Refresh Token이 만료되었습니다."),
+    INVALID_RESET_TOKEN("A008", "유효하지 않은 재설정 토큰입니다."),
+    RESET_TOKEN_EXPIRED("A009", "재설정 토큰이 만료되었습니다."),
+    RESET_TOKEN_ALREADY_USED("A010", "이미 사용된 재설정 토큰입니다."),
 
     // Course
     COURSE_NOT_FOUND("CO001", "강의를 찾을 수 없습니다."),
