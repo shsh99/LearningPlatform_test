@@ -26,6 +26,13 @@ export const getAllInstructorAssignments = async (): Promise<InstructorAssignmen
   return response.data;
 };
 
+export const getInstructorSchedule = async (instructorId: number, yearMonth?: string): Promise<InstructorAssignment[]> => {
+  const response = await apiClient.get<InstructorAssignment[]>(`/instructor-assignments/schedule/${instructorId}`, {
+    params: yearMonth ? { yearMonth } : {}
+  });
+  return response.data;
+};
+
 export const cancelInstructorAssignment = async (id: number): Promise<void> => {
   await apiClient.delete(`/instructor-assignments/${id}`);
 };

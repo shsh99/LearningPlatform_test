@@ -1,21 +1,28 @@
 import { useState, useEffect } from 'react';
 import { Navbar } from '../../components/Navbar';
 import { getAllCourseApplications, getCourseApplicationsByStatus, approveCourseApplication, rejectCourseApplication } from '../../api/courseApplication';
+import { getAllUsers } from '../../api/user';
+import { getDashboardStats } from '../../api/dashboard';
+import {
+  StatsCards,
+  CourseCalendar,
+  TermStatusChart,
+  ApplicationStatusChart,
+  InstructorStatsTable,
+  UserRoleChart,
+} from '../../components/dashboard';
 import type { CourseApplication, ApplicationStatus } from '../../types/courseApplication';
+import type { User } from '../../api/user';
+import type { DashboardStats } from '../../types/dashboard';
 
-type TabType = 'applications' | 'users';
-
-interface User {
-  id: number;
-  email: string;
-  name: string;
-  role: string;
-  status: string;
-  createdAt: string;
-}
+type TabType = 'dashboard' | 'applications' | 'users';
 
 export const OperatorDashboardPage = () => {
-  const [activeTab, setActiveTab] = useState<TabType>('applications');
+  const [activeTab, setActiveTab] = useState<TabType>('dashboard');
+
+  // 대시보드 통계 state
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
+  const [loadingDashboard, setLoadingDashboard] = useState(true);
 
   // 신청 관련 state
   const [applications, setApplications] = useState<CourseApplication[]>([]);
@@ -32,10 +39,26 @@ export const OperatorDashboardPage = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (activeTab === 'applications') {
+    if (activeTab === 'dashboard') {
+      fetchDashboardStats();
+    } else if (activeTab === 'applications') {
       fetchApplications();
     }
   }, [filterStatus, activeTab]);
+
+  const fetchDashboardStats = async () => {
+    try {
+      setLoadingDashboard(true);
+      setError(null);
+      const data = await getDashboardStats();
+      setDashboardStats(data);
+    } catch (err) {
+      setError('대시보드 데이터를 불러오는데 실패했습니다.');
+      console.error('Error fetching dashboard stats:', err);
+    } finally {
+      setLoadingDashboard(false);
+    }
+  };
 
   const fetchApplications = async () => {
     try {
@@ -57,13 +80,7 @@ export const OperatorDashboardPage = () => {
     try {
       setLoadingUsers(true);
       setError(null);
-      const response = await fetch('http://localhost:8080/api/users', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-      if (!response.ok) throw new Error('Failed to fetch users');
-      const data = await response.json();
+      const data = await getAllUsers();
       setUsers(data);
     } catch (err) {
       setError('유저 목록을 불러오는데 실패했습니다.');
@@ -232,6 +249,21 @@ export const OperatorDashboardPage = () => {
           <div className="border-b border-gray-200">
             <nav className="flex space-x-8 px-6" aria-label="Tabs">
               <button
+                onClick={() => setActiveTab('dashboard')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                  activeTab === 'dashboard'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                  </svg>
+                  대시보드
+                </div>
+              </button>
+              <button
                 onClick={() => setActiveTab('applications')}
                 className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                   activeTab === 'applications'
@@ -276,6 +308,50 @@ export const OperatorDashboardPage = () => {
                 </svg>
                 <p className="text-sm text-rose-700">{error}</p>
               </div>
+            )}
+
+            {/* 대시보드 탭 */}
+            {activeTab === 'dashboard' && (
+              <>
+                {loadingDashboard ? (
+                  <div className="text-center py-16">
+                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                    <p className="mt-4 text-gray-600">대시보드 데이터를 불러오는 중...</p>
+                  </div>
+                ) : dashboardStats ? (
+                  <div className="space-y-6">
+                    {/* 통계 카드 */}
+                    <StatsCards stats={dashboardStats} />
+
+                    {/* 차트 영역 */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <TermStatusChart stats={dashboardStats} />
+                      <ApplicationStatusChart stats={dashboardStats} />
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <UserRoleChart usersByRole={dashboardStats.usersByRole} />
+                      <InstructorStatsTable instructorStats={dashboardStats.instructorStats} />
+                    </div>
+
+                    {/* 캘린더 */}
+                    <CourseCalendar terms={dashboardStats.upcomingTerms} />
+                  </div>
+                ) : (
+                  <div className="text-center py-16">
+                    <svg className="mx-auto h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <p className="mt-4 text-gray-500 text-lg font-medium">대시보드 데이터를 불러올 수 없습니다</p>
+                    <button
+                      onClick={fetchDashboardStats}
+                      className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                    >
+                      다시 시도
+                    </button>
+                  </div>
+                )}
+              </>
             )}
 
             {/* 강의 개설 신청 관리 탭 */}

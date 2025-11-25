@@ -3,6 +3,7 @@
     "allow": [
       "Bash(tree:*)",
       "Bash(wc:*)",
+<<<<<<< Updated upstream
       "Bash(dir:*)",
       "Bash(netstat:*)",
       "Bash(findstr:*)",
@@ -20,6 +21,13 @@
       "Bash(git merge feat/sis-bulk-actions --no-ff -m \"$(cat <<''EOF''\nMerge feat/sis-bulk-actions into dev\n\nSIS 페이지 일괄 처리 기능 추가\nEOF\n)\")",
       "Bash(git merge feat/sis-progress-warning --no-ff -m \"$(cat <<''EOF''\nMerge feat/sis-progress-warning into dev\n\nSIS 페이지 시간 경과 경고 표시 기능 추가\nEOF\n)\")",
       "Bash(git merge feat/sis-dashboard-stats --no-ff -m \"$(cat <<''EOF''\nMerge feat/sis-dashboard-stats into dev\n\nSIS 페이지 통계 대시보드 추가\nEOF\n)\")"
+=======
+      "Bash(taskkill //F //PID 3544)",
+      "Bash(ping:*)",
+      "Bash(nul)",
+      "Bash(./gradlew bootRun:*)",
+      "Bash(git pull:*)"
+>>>>>>> Stashed changes
     ],
     "deny": [],
     "ask": []
