@@ -8,7 +8,8 @@
       "Bash(taskkill:*)",
       "Bash(./gradlew bootRun)",
       "Bash(cat:*)",
-      "Bash(./gradlew test:*)"
+      "Bash(./gradlew test:*)",
+      "Bash(./gradlew bootRun:*)"
     ],
     "deny": [],
     "ask": []
