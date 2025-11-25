@@ -137,6 +137,12 @@ public class AuthService {
         }
 
         User user = resetToken.getUser();
+
+        // 새 비밀번호가 기존 비밀번호와 같은지 확인
+        if (passwordEncoder.matches(request.newPassword(), user.getPassword())) {
+            throw new BusinessException(ErrorCode.SAME_AS_OLD_PASSWORD);
+        }
+
         String encodedPassword = passwordEncoder.encode(request.newPassword());
         user.updatePassword(encodedPassword);
 
