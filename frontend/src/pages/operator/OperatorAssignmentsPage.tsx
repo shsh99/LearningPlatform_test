@@ -184,11 +184,11 @@ export function OperatorAssignmentsPage() {
                                 >
                                     <option value={0}>강사를 선택하세요</option>
                                     {users.map(user => {
-                                        // 선택된 차수의 강의 ID 찾기
+                                        // 선택된 차수의 강의 제목 찾기
                                         const selectedTerm = terms.find(t => t.id === formData.termId);
                                         // 해당 강의의 신청자(개설자) 찾기
                                         const courseApplication = courseApplications.find(
-                                            app => app.courseId === selectedTerm?.courseId
+                                            app => app.title === selectedTerm?.courseTitle
                                         );
                                         const isInstructor = courseApplication && user.id === courseApplication.applicantId;
 
@@ -250,7 +250,7 @@ export function OperatorAssignmentsPage() {
                                         <tr key={assignment.id} className="hover:bg-gray-50">
                                             <td className="px-6 py-4 text-sm text-gray-900">{assignment.id}</td>
                                             <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                                                {assignment.courseName}
+                                                {assignment.courseTitle}
                                             </td>
                                             <td className="px-6 py-4 text-sm text-gray-900">
                                                 {assignment.termNumber}차
