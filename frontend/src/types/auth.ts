@@ -9,12 +9,22 @@ export interface LoginRequest {
     password: string;
 }
 
+export interface TokenResponse {
+    accessToken: string;
+    refreshToken: string;
+    expiresIn: number;
+}
+
+export interface RefreshTokenRequest {
+    refreshToken: string;
+}
+
 export interface AuthResponse {
     id: number;
     email: string;
     name: string;
     role: 'USER' | 'OPERATOR' | 'ADMIN';
-    token: string;
+    tokens: TokenResponse;
 }
 
 export interface User {
