@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Navbar } from '../components/Navbar';
 import { getMyProfile, updateMyProfile, changeMyPassword } from '../api/userProfile';
+import { withdrawAccount } from '../api/user';
 import type { UserProfile } from '../types/userProfile';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
@@ -8,7 +10,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { validateProfileName, validatePasswordChange } from '../utils/validation';
 
 export const MyProfilePage = () => {
-  const { user, updateUser } = useAuth();
+  const navigate = useNavigate();
+  const { user, updateUser, logout } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -29,6 +32,12 @@ export const MyProfilePage = () => {
   const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
   const [passwordSuccess, setPasswordSuccess] = useState('');
+
+  // 회원 탈퇴 상태
+  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
+  const [withdrawPassword, setWithdrawPassword] = useState('');
+  const [withdrawError, setWithdrawError] = useState('');
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
 
   useEffect(() => {
     loadProfile();
@@ -156,6 +165,46 @@ export const MyProfilePage = () => {
       }
     } finally {
       setIsUpdatingPassword(false);
+    }
+  };
+
+  // 회원 탈퇴 함수
+  const handleOpenWithdrawModal = () => {
+    setIsWithdrawModalOpen(true);
+    setWithdrawPassword('');
+    setWithdrawError('');
+  };
+
+  const handleCloseWithdrawModal = () => {
+    setIsWithdrawModalOpen(false);
+    setWithdrawPassword('');
+    setWithdrawError('');
+  };
+
+  const handleWithdraw = async () => {
+    if (!withdrawPassword) {
+      setWithdrawError('비밀번호를 입력해주세요.');
+      return;
+    }
+
+    try {
+      setIsWithdrawing(true);
+      await withdrawAccount(withdrawPassword);
+
+      alert('회원 탈퇴가 완료되었습니다.');
+      logout();
+      navigate('/login');
+    } catch (err: any) {
+      console.error('Failed to withdraw account:', err);
+      if (err.response?.status === 401) {
+        setWithdrawError(err.response?.data?.message || '비밀번호가 일치하지 않습니다.');
+      } else if (err.response?.data?.message) {
+        setWithdrawError(err.response.data.message);
+      } else {
+        setWithdrawError('회원 탈퇴에 실패했습니다. 다시 시도해주세요.');
+      }
+    } finally {
+      setIsWithdrawing(false);
     }
   };
 
@@ -395,8 +444,74 @@ export const MyProfilePage = () => {
               <p className="text-gray-500">아직 강의가 없습니다.</p>
             </div>
           )}
+
+          {/* 회원 탈퇴 */}
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-red-200">
+            <h2 className="text-lg font-bold text-red-700 mb-4">회원 탈퇴</h2>
+            <p className="text-sm text-gray-600 mb-4">
+              회원 탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다.
+            </p>
+            <Button
+              variant="secondary"
+              onClick={handleOpenWithdrawModal}
+              className="bg-red-50 text-red-700 hover:bg-red-100 border-red-200"
+            >
+              회원 탈퇴하기
+            </Button>
+          </div>
         </div>
       </div>
+
+      {/* 회원 탈퇴 확인 모달 */}
+      {isWithdrawModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">회원 탈퇴</h3>
+
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-800 font-medium mb-2">⚠️ 경고</p>
+              <ul className="text-sm text-red-700 space-y-1 list-disc list-inside">
+                <li>탈퇴 후 계정 정보는 복구할 수 없습니다.</li>
+                <li>진행 중인 강의가 있다면 자동으로 취소됩니다.</li>
+                <li>강사로 배정된 강의가 있다면 확인이 필요합니다.</li>
+              </ul>
+            </div>
+
+            {withdrawError && (
+              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-800 text-sm">{withdrawError}</p>
+              </div>
+            )}
+
+            <Input
+              type="password"
+              label="비밀번호 확인"
+              value={withdrawPassword}
+              onChange={(e) => setWithdrawPassword(e.target.value)}
+              placeholder="비밀번호를 입력하세요"
+              disabled={isWithdrawing}
+            />
+
+            <div className="flex gap-2 mt-6">
+              <Button
+                onClick={handleWithdraw}
+                disabled={isWithdrawing}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+              >
+                {isWithdrawing ? '탈퇴 처리 중...' : '탈퇴하기'}
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={handleCloseWithdrawModal}
+                disabled={isWithdrawing}
+                className="flex-1"
+              >
+                취소
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
