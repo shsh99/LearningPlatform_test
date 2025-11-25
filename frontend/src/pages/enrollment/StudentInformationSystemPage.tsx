@@ -148,6 +148,17 @@ export const StudentInformationSystemPage = () => {
     }
   };
 
+  // 시간 경과 경고 판단 (30일 이상 경과한 기록에 경고)
+  const getRecordWarningLevel = (timestamp: string): 'none' | 'warning' | 'danger' => {
+    const recordDate = new Date(timestamp);
+    const now = new Date();
+    const daysDiff = Math.floor((now.getTime() - recordDate.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (daysDiff >= 60) return 'danger'; // 60일 이상: 위험
+    if (daysDiff >= 30) return 'warning'; // 30일 이상: 경고
+    return 'none'; // 30일 미만: 정상
+  };
+
   const sortedRecords = getSortedRecords();
   const paginatedRecords = getPaginatedRecords();
   const totalPages = getTotalPages();
@@ -270,6 +281,27 @@ export const StudentInformationSystemPage = () => {
             </div>
           )}
 
+          {/* 경고 범례 */}
+          {records.length > 0 && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <div className="flex items-center gap-6">
+                <span className="text-sm font-medium text-gray-700">상태 표시:</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-white border-2 border-gray-200 rounded"></div>
+                  <span className="text-sm text-gray-600">정상 (30일 이내)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-yellow-100 border-2 border-yellow-400 rounded"></div>
+                  <span className="text-sm text-gray-600">경고 (30일 이상)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-red-100 border-2 border-red-400 rounded"></div>
+                  <span className="text-sm text-gray-600">위험 (60일 이상)</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           {records.length === 0 ? (
             <div className="bg-white rounded-xl shadow-sm p-12 text-center">
               <p className="text-gray-500 text-lg mb-4">조회된 SIS 기록이 없습니다.</p>
@@ -337,19 +369,29 @@ export const StudentInformationSystemPage = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {paginatedRecords.map((record) => (
-                    <tr key={record.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <input
-                          type="checkbox"
-                          checked={selectedIds.has(record.id)}
-                          onChange={() => handleSelectOne(record.id)}
-                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
-                        />
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {record.id}
-                      </td>
+                  {paginatedRecords.map((record) => {
+                    const warningLevel = getRecordWarningLevel(record.timestamp);
+                    const rowClassName = `hover:opacity-90 transition-opacity ${
+                      warningLevel === 'danger'
+                        ? 'bg-red-50'
+                        : warningLevel === 'warning'
+                        ? 'bg-yellow-50'
+                        : 'hover:bg-gray-50'
+                    }`;
+
+                    return (
+                      <tr key={record.id} className={rowClassName}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.has(record.id)}
+                            onChange={() => handleSelectOne(record.id)}
+                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                          />
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {record.id}
+                        </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {record.userKey}
                       </td>
@@ -359,11 +401,12 @@ export const StudentInformationSystemPage = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {record.enrollmentId}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(record.timestamp).toLocaleString('ko-KR')}
-                      </td>
-                    </tr>
-                  ))}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {new Date(record.timestamp).toLocaleString('ko-KR')}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
 
