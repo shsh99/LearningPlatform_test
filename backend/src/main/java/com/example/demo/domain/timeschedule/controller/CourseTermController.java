@@ -2,14 +2,17 @@ package com.example.demo.domain.timeschedule.controller;
 
 import com.example.demo.domain.timeschedule.dto.CreateCourseTermRequest;
 import com.example.demo.domain.timeschedule.dto.CourseTermResponse;
+import com.example.demo.domain.timeschedule.dto.UpdateCourseTermRequest;
 import com.example.demo.domain.timeschedule.service.CourseTermService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -46,6 +49,37 @@ public class CourseTermController {
         log.info("GET /api/course-terms");
         List<CourseTermResponse> response = courseTermService.findAll();
         return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<CourseTermResponse> updateTerm(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateCourseTermRequest request
+    ) {
+        log.info("PATCH /api/course-terms/{}", id);
+        CourseTermResponse response = courseTermService.updateTerm(id, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<CourseTermResponse>> searchTermsByDateRange(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+    ) {
+        log.info("GET /api/course-terms/search - startDate: {}, endDate: {}", startDate, endDate);
+        List<CourseTermResponse> response = courseTermService.searchByDateRange(startDate, endDate);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{id}/duplicate")
+    public ResponseEntity<CourseTermResponse> duplicateTerm(
+            @PathVariable Long id,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate newStartDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate newEndDate
+    ) {
+        log.info("POST /api/course-terms/{}/duplicate - newStartDate: {}, newEndDate: {}", id, newStartDate, newEndDate);
+        CourseTermResponse response = courseTermService.duplicateTerm(id, newStartDate, newEndDate);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PatchMapping("/{id}/start")

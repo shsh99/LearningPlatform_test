@@ -42,7 +42,7 @@ export const InstructorAssignmentManagementPage = () => {
   const loadTerms = async () => {
     try {
       const data = await getAllCourseTerms();
-      setTerms(data.filter(term => term.status === 'PLANNED' || term.status === 'ONGOING'));
+      setTerms(data.filter(term => term.status === 'SCHEDULED' || term.status === 'IN_PROGRESS'));
     } catch (err) {
       console.error('Failed to load terms:', err);
     }
