@@ -159,9 +159,60 @@ export const StudentInformationSystemPage = () => {
     return 'none'; // 30일 미만: 정상
   };
 
+  // 통계 계산 함수들
+  const getStatistics = () => {
+    if (records.length === 0) {
+      return {
+        totalRecords: 0,
+        uniqueUsers: 0,
+        uniqueTimes: 0,
+        normalCount: 0,
+        warningCount: 0,
+        dangerCount: 0,
+        oldestRecord: null,
+        newestRecord: null,
+        dateRange: 0,
+      };
+    }
+
+    const uniqueUsers = new Set(records.map(r => r.userKey)).size;
+    const uniqueTimes = new Set(records.map(r => r.timeKey)).size;
+
+    let normalCount = 0;
+    let warningCount = 0;
+    let dangerCount = 0;
+
+    records.forEach(record => {
+      const level = getRecordWarningLevel(record.timestamp);
+      if (level === 'danger') dangerCount++;
+      else if (level === 'warning') warningCount++;
+      else normalCount++;
+    });
+
+    const timestamps = records.map(r => new Date(r.timestamp).getTime());
+    const oldestTimestamp = Math.min(...timestamps);
+    const newestTimestamp = Math.max(...timestamps);
+    const oldestRecord = new Date(oldestTimestamp);
+    const newestRecord = new Date(newestTimestamp);
+    const dateRange = Math.floor((newestTimestamp - oldestTimestamp) / (1000 * 60 * 60 * 24));
+
+    return {
+      totalRecords: records.length,
+      uniqueUsers,
+      uniqueTimes,
+      normalCount,
+      warningCount,
+      dangerCount,
+      oldestRecord,
+      newestRecord,
+      dateRange,
+    };
+  };
+
   const sortedRecords = getSortedRecords();
   const paginatedRecords = getPaginatedRecords();
   const totalPages = getTotalPages();
+  const statistics = getStatistics();
 
   if (isLoading && records.length === 0) {
     return (
@@ -228,27 +279,110 @@ export const StudentInformationSystemPage = () => {
             </div>
           )}
 
-          {/* 통계 요약 */}
+          {/* 통계 대시보드 */}
           {records.length > 0 && (
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl shadow-sm p-6 mb-6 border border-blue-100">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-800 mb-2">📊 조회 결과</h3>
-                  <p className="text-gray-600">
-                    총 <span className="font-bold text-blue-600">{records.length}건</span> 조회됨
-                  </p>
+            <div className="mb-6">
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl shadow-sm p-6 border border-blue-100">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-bold text-gray-800">📊 통계 대시보드</h3>
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm text-gray-600">페이지당:</label>
+                    <select
+                      value={itemsPerPage}
+                      onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+                      className="px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm"
+                    >
+                      <option value={10}>10개씩</option>
+                      <option value={20}>20개씩</option>
+                      <option value={50}>50개씩</option>
+                    </select>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <label className="text-sm text-gray-600">페이지당:</label>
-                  <select
-                    value={itemsPerPage}
-                    onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
-                    className="px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm"
-                  >
-                    <option value={10}>10개씩</option>
-                    <option value={20}>20개씩</option>
-                    <option value={50}>50개씩</option>
-                  </select>
+
+                {/* 통계 카드 그리드 */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {/* 총 레코드 수 */}
+                  <div className="bg-white rounded-lg p-4 shadow-sm">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm text-gray-600">총 레코드</span>
+                      <span className="text-2xl">📝</span>
+                    </div>
+                    <div className="text-2xl font-bold text-blue-600">{statistics.totalRecords}</div>
+                    <div className="text-xs text-gray-500 mt-1">전체 SIS 기록</div>
+                  </div>
+
+                  {/* 고유 학생 수 */}
+                  <div className="bg-white rounded-lg p-4 shadow-sm">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm text-gray-600">고유 학생</span>
+                      <span className="text-2xl">👤</span>
+                    </div>
+                    <div className="text-2xl font-bold text-purple-600">{statistics.uniqueUsers}</div>
+                    <div className="text-xs text-gray-500 mt-1">서로 다른 학생 수</div>
+                  </div>
+
+                  {/* 고유 차수 수 */}
+                  <div className="bg-white rounded-lg p-4 shadow-sm">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm text-gray-600">고유 차수</span>
+                      <span className="text-2xl">🗓️</span>
+                    </div>
+                    <div className="text-2xl font-bold text-green-600">{statistics.uniqueTimes}</div>
+                    <div className="text-xs text-gray-500 mt-1">서로 다른 차수 수</div>
+                  </div>
+
+                  {/* 기간 */}
+                  <div className="bg-white rounded-lg p-4 shadow-sm">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm text-gray-600">기간</span>
+                      <span className="text-2xl">📅</span>
+                    </div>
+                    <div className="text-2xl font-bold text-orange-600">{statistics.dateRange}일</div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      {statistics.oldestRecord && statistics.newestRecord && (
+                        <>
+                          {statistics.oldestRecord.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })} ~ {' '}
+                          {statistics.newestRecord.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 상태 분포 */}
+                <div className="mt-4 bg-white rounded-lg p-4 shadow-sm">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-sm font-medium text-gray-700">상태 분포</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <span className="text-xl">✅</span>
+                      </div>
+                      <div>
+                        <div className="text-sm text-gray-600">정상</div>
+                        <div className="text-lg font-bold text-green-600">{statistics.normalCount}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                        <span className="text-xl">⚠️</span>
+                      </div>
+                      <div>
+                        <div className="text-sm text-gray-600">경고</div>
+                        <div className="text-lg font-bold text-yellow-600">{statistics.warningCount}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                        <span className="text-xl">🚨</span>
+                      </div>
+                      <div>
+                        <div className="text-sm text-gray-600">위험</div>
+                        <div className="text-lg font-bold text-red-600">{statistics.dangerCount}</div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
