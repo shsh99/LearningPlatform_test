@@ -3,6 +3,7 @@ export interface InstructorAssignment {
   termId: number;
   termNumber: number;
   courseTitle: string;
+  courseName: string;
   instructorId: number;
   instructorName: string;
   assignedById: number;
