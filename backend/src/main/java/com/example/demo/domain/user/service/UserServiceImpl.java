@@ -6,12 +6,17 @@ import com.example.demo.domain.enrollment.repository.EnrollmentRepository;
 import com.example.demo.domain.timeschedule.entity.AssignmentStatus;
 import com.example.demo.domain.timeschedule.entity.InstructorAssignment;
 import com.example.demo.domain.timeschedule.repository.InstructorAssignmentRepository;
+import com.example.demo.domain.user.dto.ChangePasswordRequest;
+import com.example.demo.domain.user.dto.UpdateProfileRequest;
 import com.example.demo.domain.user.dto.UserProfileResponse;
 import com.example.demo.domain.user.dto.UserResponse;
 import com.example.demo.domain.user.entity.User;
 import com.example.demo.domain.user.exception.UserNotFoundException;
 import com.example.demo.domain.user.repository.UserRepository;
+import com.example.demo.global.exception.ErrorCode;
+import com.example.demo.global.exception.UnauthorizedException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +34,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final InstructorAssignmentRepository instructorAssignmentRepository;
     private final EnrollmentRepository enrollmentRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public List<UserResponse> findAll() {
@@ -89,5 +95,34 @@ public class UserServiceImpl implements UserService {
             .collect(Collectors.toList());
 
         return UserProfileResponse.of(user, assignmentInfos, enrollmentInfos);
+    }
+
+    @Override
+    @Transactional
+    public UserResponse updateMyProfile(Long userId, UpdateProfileRequest request) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new UserNotFoundException(userId));
+
+        user.updateName(request.name());
+
+        return UserResponse.from(user);
+    }
+
+    @Override
+    @Transactional
+    public void changeMyPassword(Long userId, ChangePasswordRequest request) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new UserNotFoundException(userId));
+
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
+            throw new UnauthorizedException(ErrorCode.INVALID_CURRENT_PASSWORD);
+        }
+
+        if (!request.newPassword().equals(request.confirmPassword())) {
+            throw new UnauthorizedException(ErrorCode.PASSWORDS_DO_NOT_MATCH);
+        }
+
+        String encodedPassword = passwordEncoder.encode(request.newPassword());
+        user.updatePassword(encodedPassword);
     }
 }

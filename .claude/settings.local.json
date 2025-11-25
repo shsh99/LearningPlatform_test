@@ -6,7 +6,9 @@
       "Bash(netstat:*)",
       "Bash(findstr:*)",
       "Bash(taskkill:*)",
-      "Bash(./gradlew bootRun)"
+      "Bash(./gradlew bootRun)",
+      "Bash(cat:*)",
+      "Bash(./gradlew test:*)"
     ],
     "deny": [],
     "ask": []
