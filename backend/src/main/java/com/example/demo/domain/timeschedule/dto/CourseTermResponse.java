@@ -1,10 +1,13 @@
 package com.example.demo.domain.timeschedule.dto;
 
 import com.example.demo.domain.timeschedule.entity.CourseTerm;
+import com.example.demo.domain.timeschedule.entity.DayOfWeek;
 import com.example.demo.domain.timeschedule.entity.TermStatus;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.Set;
 
 public record CourseTermResponse(
     Long id,
@@ -13,6 +16,9 @@ public record CourseTermResponse(
     Integer termNumber,
     LocalDate startDate,
     LocalDate endDate,
+    Set<DayOfWeek> daysOfWeek,
+    LocalTime startTime,
+    LocalTime endTime,
     Integer maxStudents,
     Integer currentStudents,
     TermStatus status,
@@ -27,6 +33,9 @@ public record CourseTermResponse(
             term.getTermNumber(),
             term.getStartDate(),
             term.getEndDate(),
+            term.getDaysOfWeek(),
+            term.getStartTime(),
+            term.getEndTime(),
             term.getMaxStudents(),
             term.getCurrentStudents(),
             term.getStatus(),

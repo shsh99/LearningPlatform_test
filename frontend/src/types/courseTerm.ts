@@ -1,3 +1,5 @@
+export type DayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
+
 export interface CourseTerm {
   id: number;
   courseId: number;
@@ -5,10 +7,14 @@ export interface CourseTerm {
   termNumber: number;
   startDate: string;
   endDate: string;
+  daysOfWeek: DayOfWeek[];
+  startTime: string;
+  endTime: string;
   maxStudents: number;
   currentStudents: number;
-  status: 'PLANNED' | 'ONGOING' | 'COMPLETED' | 'CANCELLED';
+  status: 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface CreateCourseTermRequest {
@@ -16,5 +22,17 @@ export interface CreateCourseTermRequest {
   termNumber: number;
   startDate: string;
   endDate: string;
+  daysOfWeek: DayOfWeek[];
+  startTime: string;
+  endTime: string;
+  maxStudents: number;
+}
+
+export interface UpdateCourseTermRequest {
+  startDate: string;
+  endDate: string;
+  daysOfWeek: DayOfWeek[];
+  startTime: string;
+  endTime: string;
   maxStudents: number;
 }

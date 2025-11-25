@@ -18,6 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -105,6 +107,27 @@ public class InstructorAssignmentServiceImpl implements InstructorAssignmentServ
         log.debug("Finding all instructor assignments");
 
         return assignmentRepository.findAll().stream()
+            .map(InstructorAssignmentResponse::from)
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<InstructorAssignmentResponse> findInstructorSchedule(Long instructorId, YearMonth yearMonth) {
+        log.debug("Finding instructor schedule: instructorId={}, yearMonth={}", instructorId, yearMonth);
+
+        User instructor = userRepository.findById(instructorId)
+            .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND, "강사 ID: " + instructorId));
+
+        LocalDate startDate = yearMonth.atDay(1);
+        LocalDate endDate = yearMonth.atEndOfMonth();
+
+        return assignmentRepository.findByInstructor(instructor).stream()
+            .filter(assignment -> {
+                LocalDate termStart = assignment.getTerm().getStartDate();
+                LocalDate termEnd = assignment.getTerm().getEndDate();
+                // 차수 기간이 조회 월과 겹치는지 확인
+                return !(termEnd.isBefore(startDate) || termStart.isAfter(endDate));
+            })
             .map(InstructorAssignmentResponse::from)
             .collect(Collectors.toList());
     }

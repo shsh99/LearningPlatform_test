@@ -6,6 +6,7 @@ import com.example.demo.domain.course.entity.Course;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,4 +20,6 @@ public interface CourseTermRepository extends JpaRepository<CourseTerm, Long> {
     Optional<CourseTerm> findByCourseAndTermNumber(Course course, Integer termNumber);
 
     List<CourseTerm> findByCourseAndStatus(Course course, TermStatus status);
+
+    List<CourseTerm> findByStartDateBetween(LocalDate startDate, LocalDate endDate);
 }

@@ -8,6 +8,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "course_terms")
@@ -32,6 +35,18 @@ public class CourseTerm extends BaseTimeEntity {
     @Column(nullable = false)
     private LocalDate endDate;
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "course_term_days", joinColumns = @JoinColumn(name = "course_term_id"))
+    @Column(name = "day_of_week")
+    @Enumerated(EnumType.STRING)
+    private Set<DayOfWeek> daysOfWeek = new HashSet<>();
+
+    @Column(name = "start_time", nullable = false)
+    private LocalTime startTime;
+
+    @Column(name = "end_time", nullable = false)
+    private LocalTime endTime;
+
     @Column(nullable = false)
     private Integer maxStudents;
 
@@ -48,6 +63,9 @@ public class CourseTerm extends BaseTimeEntity {
             Integer termNumber,
             LocalDate startDate,
             LocalDate endDate,
+            Set<DayOfWeek> daysOfWeek,
+            LocalTime startTime,
+            LocalTime endTime,
             Integer maxStudents
     ) {
         CourseTerm term = new CourseTerm();
@@ -55,6 +73,9 @@ public class CourseTerm extends BaseTimeEntity {
         term.termNumber = termNumber;
         term.startDate = startDate;
         term.endDate = endDate;
+        term.daysOfWeek = new HashSet<>(daysOfWeek);
+        term.startTime = startTime;
+        term.endTime = endTime;
         term.maxStudents = maxStudents;
         term.currentStudents = 0;
         term.status = TermStatus.SCHEDULED;
@@ -100,5 +121,24 @@ public class CourseTerm extends BaseTimeEntity {
             throw new IllegalStateException("Completed terms cannot be cancelled");
         }
         this.status = TermStatus.CANCELLED;
+    }
+
+    public void update(
+            LocalDate startDate,
+            LocalDate endDate,
+            Set<DayOfWeek> daysOfWeek,
+            LocalTime startTime,
+            LocalTime endTime,
+            Integer maxStudents
+    ) {
+        if (this.status != TermStatus.SCHEDULED) {
+            throw new IllegalStateException("Only scheduled terms can be updated");
+        }
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.daysOfWeek = new HashSet<>(daysOfWeek);
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.maxStudents = maxStudents;
     }
 }
