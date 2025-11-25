@@ -47,6 +47,30 @@ application-prod.yml
 *.jks
 *.key
 *.pem
-*secret*
-*password*
 credentials.json
+
+# Specific sensitive files (avoid wildcards that catch source code)
+application-secret.yml
+secret.properties
+jwt-secret.key
+
+### Logs ###
+logs/
+*.log
+spring.log
+
+### OS ###
+.DS_Store
+Thumbs.db
+*~
+*.swp
+*.swo
+
+### Test ###
+test-output/
+coverage/
+*.lcov
+
+### Uploads ###
+uploads/
+temp/
