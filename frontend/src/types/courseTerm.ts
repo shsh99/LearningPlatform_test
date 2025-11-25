@@ -7,8 +7,14 @@ export interface CourseTerm {
   endDate: string;
   maxStudents: number;
   currentStudents: number;
-  status: 'PLANNED' | 'ONGOING' | 'COMPLETED' | 'CANCELLED';
+  status: 'SCHEDULED' | 'PLANNED' | 'ONGOING' | 'COMPLETED' | 'CANCELLED';
   createdAt: string;
+}
+
+export interface WeeklyScheduleInfo {
+  dayOfWeek: string;
+  startTime: string;
+  endTime: string;
 }
 
 export interface CreateCourseTermRequest {
@@ -17,4 +23,5 @@ export interface CreateCourseTermRequest {
   startDate: string;
   endDate: string;
   maxStudents: number;
+  weeklySchedules?: WeeklyScheduleInfo[];
 }

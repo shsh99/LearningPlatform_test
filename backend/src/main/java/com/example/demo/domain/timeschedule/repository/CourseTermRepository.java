@@ -19,4 +19,9 @@ public interface CourseTermRepository extends JpaRepository<CourseTerm, Long> {
     Optional<CourseTerm> findByCourseAndTermNumber(Course course, Integer termNumber);
 
     List<CourseTerm> findByCourseAndStatus(Course course, TermStatus status);
+
+    // ===== 통계용 =====
+    long countByStatus(TermStatus status);
+
+    List<CourseTerm> findByStatusIn(List<TermStatus> statuses);
 }

@@ -15,7 +15,12 @@ import { OperatorAssignmentsPage } from './pages/operator/OperatorAssignmentsPag
 import { CourseTermManagementPage } from './pages/timeschedule/CourseTermManagementPage';
 import { InstructorAssignmentManagementPage } from './pages/timeschedule/InstructorAssignmentManagementPage';
 import { InstructorInformationSystemPage } from './pages/timeschedule/InstructorInformationSystemPage';
+import { ScheduleManagementPage } from './pages/timeschedule/ScheduleManagementPage';
+import { ClassRoomManagementPage } from './pages/timeschedule/ClassRoomManagementPage';
 import { StudentInformationSystemPage } from './pages/enrollment/StudentInformationSystemPage';
+import StudentSchedulePage from './pages/timeschedule/StudentSchedulePage';
+import InstructorSchedulePage from './pages/timeschedule/InstructorSchedulePage';
+import StatisticsDashboardPage from './pages/operator/StatisticsDashboardPage';
 
 function App() {
     return (
@@ -37,7 +42,12 @@ function App() {
                     <Route path="/ts/terms" element={<CourseTermManagementPage />} />
                     <Route path="/ts/assignments" element={<InstructorAssignmentManagementPage />} />
                     <Route path="/ts/iis" element={<InstructorInformationSystemPage />} />
+                    <Route path="/ts/schedules" element={<ScheduleManagementPage />} />
+                    <Route path="/ts/classrooms" element={<ClassRoomManagementPage />} />
                     <Route path="/enrollment/sis" element={<StudentInformationSystemPage />} />
+                    <Route path="/my-schedule" element={<StudentSchedulePage />} />
+                    <Route path="/instructor-schedule" element={<InstructorSchedulePage />} />
+                    <Route path="/operator/statistics" element={<StatisticsDashboardPage />} />
                 </Routes>
             </BrowserRouter>
         </AuthProvider>

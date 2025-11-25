@@ -30,6 +30,14 @@ public enum ErrorCode {
     // Term
     TERM_NOT_FOUND("T001", "학기를 찾을 수 없습니다."),
 
+    // Schedule
+    SCHEDULE_NOT_FOUND("S001", "일정을 찾을 수 없습니다."),
+    SCHEDULE_CONFLICT("S002", "일정이 충돌합니다."),
+
+    // ClassRoom
+    CLASSROOM_NOT_FOUND("CR001", "강의실을 찾을 수 없습니다."),
+    DUPLICATE_CLASSROOM_NAME("CR002", "이미 존재하는 강의실 이름입니다."),
+
     // Common
     INVALID_INPUT("C001", "잘못된 입력입니다."),
     INTERNAL_SERVER_ERROR("C002", "서버 내부 오류가 발생했습니다.");

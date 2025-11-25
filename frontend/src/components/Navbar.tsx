@@ -46,6 +46,18 @@ export function Navbar() {
                       내 강의
                     </Link>
                     <Link
+                      to="/my-schedule"
+                      className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+                    >
+                      내 시간표
+                    </Link>
+                    <Link
+                      to="/instructor-schedule"
+                      className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+                    >
+                      강사 시간표
+                    </Link>
+                    <Link
                       to="/my-applications"
                       className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
                     >
@@ -75,6 +87,12 @@ export function Navbar() {
                       대시보드
                     </Link>
                     <Link
+                      to="/operator/statistics"
+                      className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+                    >
+                      통계
+                    </Link>
+                    <Link
                       to="/operator/terms"
                       className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
                     >
@@ -85,6 +103,18 @@ export function Navbar() {
                       className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
                     >
                       강사 배정
+                    </Link>
+                    <Link
+                      to="/ts/schedules"
+                      className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+                    >
+                      일정 관리
+                    </Link>
+                    <Link
+                      to="/ts/classrooms"
+                      className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+                    >
+                      강의실 관리
                     </Link>
                     <Link
                       to="/ts/iis"

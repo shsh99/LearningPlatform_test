@@ -22,4 +22,8 @@ public interface InstructorAssignmentRepository extends JpaRepository<Instructor
     List<InstructorAssignment> findByInstructorAndStatus(User instructor, AssignmentStatus status);
 
     boolean existsByTermAndStatus(CourseTerm term, AssignmentStatus status);
+
+    List<InstructorAssignment> findByTermId(Long termId);
+
+    List<InstructorAssignment> findByTermIdAndStatus(Long termId, AssignmentStatus status);
 }
