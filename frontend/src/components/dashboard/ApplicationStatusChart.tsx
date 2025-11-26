@@ -1,4 +1,4 @@
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { useState } from 'react';
 import type { DashboardStats } from '../../types/dashboard';
 
 interface ApplicationStatusChartProps {
@@ -12,6 +12,8 @@ const COLORS = {
 };
 
 export const ApplicationStatusChart = ({ stats }: ApplicationStatusChartProps) => {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
   const data = [
     { name: '대기중', value: stats.pendingApplications, color: COLORS.pending },
     { name: '승인', value: stats.approvedApplications, color: COLORS.approved },
@@ -19,6 +21,7 @@ export const ApplicationStatusChart = ({ stats }: ApplicationStatusChartProps) =
   ];
 
   const total = data.reduce((sum, item) => sum + item.value, 0);
+  const maxValue = Math.max(...data.map((d) => d.value), 1);
 
   if (total === 0) {
     return (
@@ -34,30 +37,37 @@ export const ApplicationStatusChart = ({ stats }: ApplicationStatusChartProps) =
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">강의 신청 현황</h3>
-      <div className="h-[300px]">
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={data} layout="vertical" margin={{ left: 20, right: 20 }}>
-            <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
-            <XAxis type="number" />
-            <YAxis dataKey="name" type="category" width={60} />
-            <Tooltip
-              formatter={(value: number) => [`${value}건`, '']}
-              contentStyle={{
-                backgroundColor: 'white',
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
-                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-              }}
-            />
-            <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+      <div className="space-y-4 py-4">
+        {data.map((item, index) => {
+          const percentage = maxValue > 0 ? (item.value / maxValue) * 100 : 0;
+          return (
+            <div
+              key={item.name}
+              className={'flex items-center gap-4 p-2 rounded-lg transition-colors ' + (hoveredIndex === index ? 'bg-gray-50' : '')}
+              onMouseEnter={() => setHoveredIndex(index)}
+              onMouseLeave={() => setHoveredIndex(null)}
+            >
+              <span className="w-16 text-sm text-gray-600 shrink-0">{item.name}</span>
+              <div className="flex-1 h-8 bg-gray-100 rounded-lg overflow-hidden relative">
+                <div
+                  className="h-full rounded-lg transition-all duration-500 ease-out flex items-center justify-end pr-2"
+                  style={{
+                    width: percentage + '%',
+                    backgroundColor: item.color,
+                    minWidth: item.value > 0 ? '40px' : '0',
+                  }}
+                >
+                  {item.value > 0 && (
+                    <span className="text-white text-sm font-medium">{item.value}건</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
-      <div className="mt-4 flex justify-center gap-6">
+
+      <div className="mt-4 flex justify-center gap-6 pt-4 border-t border-gray-100">
         {data.map((item) => (
           <div key={item.name} className="flex items-center gap-2 text-sm">
             <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
