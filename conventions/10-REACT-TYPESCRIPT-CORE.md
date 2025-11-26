@@ -1,69 +1,51 @@
 # 10. React + TypeScript Core Conventions
 
-**베이스**: [Airbnb React/JSX Style Guide](https://airbnb.io/javascript/react/) + TypeScript Best Practices
+**베이스**: Airbnb React/JSX Style Guide + TypeScript Best Practices
 
 ---
 
-## 1. 파일 및 네이밍
+## 네이밍
 
 ```typescript
-// 📁 파일명: PascalCase
-UserProfile.tsx
-ProductCard.tsx
-useUserData.ts      // 커스텀 훅
-userService.ts      // 서비스
-user.types.ts       // 타입
+// 파일: PascalCase
+UserProfile.tsx, useUserData.ts, user.types.ts
 
-// 🔤 컴포넌트: PascalCase
+// 컴포넌트/타입: PascalCase
 export const UserProfile = () => { };
+interface UserProps { }
 
-// 🔤 함수/변수: camelCase
+// 함수/변수: camelCase
 const getUserData = () => { };
 const isLoading = false;
 
-// 🔤 상수: UPPER_SNAKE_CASE
+// 상수: UPPER_SNAKE_CASE
 const MAX_RETRY_COUNT = 3;
-
-// 🔤 Type/Interface: PascalCase
-interface UserProps { }
-type Status = 'pending' | 'success';
-
-// 🔤 Props: camelCase (React 컴포넌트 값은 PascalCase)
-<Component userName="John" onUpdate={handleUpdate} />
-<Modal HeaderComponent={CustomHeader} />
 ```
 
 ---
 
-## 2. 컴포넌트 작성
-
-### 2.1 기본 구조
+## 컴포넌트 기본 구조
 
 ```typescript
-// Import
+// 1. Import
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/common';
-import type { User } from '@/types/user.types';
+import type { User } from '@/types';
 
-// Types
+// 2. Types
 interface UserProfileProps {
   userId: number;
 }
 
-// Component
+// 3. Component
 export const UserProfile = ({ userId }: UserProfileProps) => {
   // State
   const [user, setUser] = useState<User | null>(null);
 
   // Effects
-  useEffect(() => {
-    loadUser();
-  }, [userId]);
+  useEffect(() => { loadUser(); }, [userId]);
 
   // Handlers
-  const loadUser = async () => {
-    // ...
-  };
+  const loadUser = async () => { /* ... */ };
 
   // Early return
   if (!user) return <div>Loading...</div>;
@@ -73,21 +55,9 @@ export const UserProfile = ({ userId }: UserProfileProps) => {
 };
 ```
 
-### 2.2 파일당 하나의 컴포넌트
-
-```typescript
-// ✅ 권장
-// UserCard.tsx
-export const UserCard = () => { };
-
-// ❌ 비권장 (단, 작은 서브 컴포넌트는 예외)
-export const UserCard = () => { };
-export const UserList = () => { };
-```
-
 ---
 
-## 3. TypeScript 규칙
+## TypeScript 규칙
 
 ```typescript
 // ✅ 명시적 타입
@@ -106,35 +76,23 @@ function getData<T>(): T { }
 
 // ✅ Union Types
 type Status = 'idle' | 'loading' | 'success' | 'error';
-
-// ✅ Optional vs Nullable 명확히
-interface User {
-  name: string;        // 필수
-  email?: string;      // 있을 수도, 없을 수도
-  phone: string | null; // null 허용
-}
 ```
 
 ---
 
-## 4. Props
+## Props
 
 ```typescript
-// ✅ Destructuring
-export const Button = ({ children, onClick, disabled = false }: ButtonProps) => {
+// ✅ Destructuring + Default
+export const Button = ({
+  children,
+  onClick,
+  disabled = false
+}: ButtonProps) => {
   return <button onClick={onClick} disabled={disabled}>{children}</button>;
 };
 
-// ✅ Rest props
-const Button = ({ children, ...rest }: ButtonProps) => {
-  return <button {...rest}>{children}</button>;
-};
-
-// ✅ Boolean props (true 생략 가능)
-<Input disabled />           // ✅ disabled={true}와 동일
-<Input disabled={false} />   // 명시적 false
-
-// ✅ Children
+// ✅ Children 타입
 interface CardProps {
   children: React.ReactNode;
 }
@@ -142,78 +100,61 @@ interface CardProps {
 
 ---
 
-## 5. Hooks
+## Hooks
 
 ```typescript
-// ✅ 최상위에서만 호출
-const MyComponent = () => {
-  const [count, setCount] = useState(0); // ✅
-
-  if (count > 0) {
-    // const [name, setName] = useState(''); // ❌
-  }
-
-  return <div>{count}</div>;
-};
+// ✅ 최상위에서만 호출 (조건문 안 금지)
+const [count, setCount] = useState(0);
 
 // ✅ 커스텀 훅: use로 시작
 const useUser = (userId: number) => {
   const [user, setUser] = useState<User | null>(null);
-  // ...
   return { user };
 };
 
 // ✅ 의존성 배열 정확히
 useEffect(() => {
   fetchData(userId);
-}, [userId]); // userId 변경 시에만
+}, [userId]);
 ```
 
 ---
 
-## 6. State 관리
+## State 불변성
 
 ```typescript
-// ✅ 불변성 유지
-const [form, setForm] = useState({ name: '', email: '' });
-
-setForm(prev => ({
-  ...prev,
-  name: 'New Name',
-}));
-
-// ❌ 직접 수정 금지
-form.name = 'New Name'; // ❌
-setForm(form); // ❌
+// ✅ 객체 업데이트
+setForm(prev => ({ ...prev, name: 'New' }));
 
 // ✅ 배열 업데이트
 setItems(prev => [...prev, newItem]);           // 추가
 setItems(prev => prev.filter(i => i.id !== id)); // 삭제
+
+// ❌ 직접 수정 금지
+form.name = 'New'; // ❌
 ```
 
 ---
 
-## 7. 조건부 렌더링
+## 조건부 렌더링
 
 ```typescript
 // ✅ Early return
 if (isLoading) return <Spinner />;
 if (error) return <Error />;
 
-// ✅ 삼항 연산자
+// ✅ 삼항 / && 연산자
 {isLoggedIn ? <Profile /> : <Login />}
-
-// ✅ && 연산자
 {hasError && <ErrorMessage />}
 
 // ⚠️ falsy 값 주의
-{count && <div>{count}</div>}     // ❌ 0이면 "0" 렌더링
 {count > 0 && <div>{count}</div>} // ✅
+{count && <div>{count}</div>}     // ❌ 0이면 "0" 렌더링
 ```
 
 ---
 
-## 8. 리스트 렌더링
+## 리스트 렌더링
 
 ```typescript
 // ✅ 고유한 key
@@ -222,14 +163,11 @@ if (error) return <Error />;
 ))}
 
 // ❌ index를 key로 사용 금지
-{users.map((user, index) => (
-  <UserCard key={index} user={user} /> // ❌
-))}
 ```
 
 ---
 
-## 9. 이벤트 핸들러
+## 이벤트 핸들러
 
 ```typescript
 // ✅ 네이밍: handle + 동사
@@ -237,12 +175,6 @@ const handleClick = () => { };
 const handleSubmit = (e: React.FormEvent) => {
   e.preventDefault();
 };
-
-// ✅ Props: on + 동사
-interface ButtonProps {
-  onClick: () => void;
-  onSubmit?: () => void;
-}
 
 // ✅ 타입 명시
 const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -252,64 +184,21 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
 ---
 
-## 10. Import/Export
+## Import 순서
 
 ```typescript
-// ✅ Named Export 권장
-export const Button = () => { };
-export type { ButtonProps };
-
-// ✅ Import 순서
-import React, { useState } from 'react';           // 1. React
-import { useNavigate } from 'react-router-dom';    // 2. 외부 라이브러리
-import { Button } from '@/components/common';      // 3. 절대 경로 (@/)
-import { userService } from './userService';       // 4. 상대 경로
-import type { User } from '@/types';               // 5. 타입
-
-// ❌ Default Export는 최소화 (페이지 컴포넌트 등만)
-export default UserPage;
+import React, { useState } from 'react';        // 1. React
+import { useNavigate } from 'react-router-dom'; // 2. 외부 라이브러리
+import { Button } from '@/components/common';   // 3. 절대 경로 (@/)
+import { userService } from './userService';    // 4. 상대 경로
+import type { User } from '@/types';            // 5. 타입
 ```
 
 ---
 
-## 11. JSX 스타일
+## 상세 컨벤션 참조
 
-```typescript
-// ✅ Props가 짧으면 한 줄
-<Button onClick={handleClick}>Submit</Button>
-
-// ✅ Props가 길면 여러 줄 (각각 indent)
-<Button
-  onClick={handleClick}
-  disabled={isLoading}
-  variant="primary"
->
-  Submit
-</Button>
-
-// ✅ 자체 종료 태그에 공백
-<Input />          // ✅
-<Input/>           // ❌
-
-// ✅ Children이 없으면 자체 종료
-<Button />         // ✅
-<Button></Button>  // ❌
-```
-
----
-
-## 12. 접근성
-
-```typescript
-// ✅ img에 alt 필수
-<img src="avatar.jpg" alt="User avatar" />
-
-// ✅ button에 type 명시
-<button type="button">Click</button>
-<button type="submit">Submit</button>
-
-// ✅ label과 input 연결
-<label htmlFor="email">Email</label>
-<input id="email" type="email" />
-```
-
+- Component: [12-REACT-COMPONENT-CONVENTIONS.md](./12-REACT-COMPONENT-CONVENTIONS.md)
+- State: [13-REACT-STATE-MANAGEMENT.md](./13-REACT-STATE-MANAGEMENT.md)
+- API: [14-REACT-API-INTEGRATION.md](./14-REACT-API-INTEGRATION.md)
+- Test: [16-FRONTEND-TEST-CONVENTIONS.md](./16-FRONTEND-TEST-CONVENTIONS.md)

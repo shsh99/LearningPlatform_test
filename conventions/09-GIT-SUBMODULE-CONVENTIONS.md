@@ -1,280 +1,118 @@
 # 09. Git Submodule Conventions
 
-> 📌 **먼저 읽기**: [02-GIT-CONVENTIONS.md](./02-GIT-CONVENTIONS.md)
+> Private 저장소로 민감 정보(설정 파일) 관리
 
-**목적**: Git Submodule을 활용한 민감 정보 안전 관리
-
----
-
-## 1. Git Submodule이란?
-
-Private Git 저장소를 활용해 민감한 설정 파일을 별도로 관리하는 방법
-
-### 적합한 환경
-- ✅ 개발/로컬 환경
-- ✅ 소규모 팀 협업
-- ✅ 설정 파일 버전 관리 필요
-- ❌ 프로덕션 환경 (AWS Secrets Manager/Vault 권장)
+**적합**: 개발/로컬 환경, 소규모 팀
+**비적합**: 프로덕션 (AWS Secrets Manager/Vault 권장)
 
 ---
 
-## 2. 프로젝트 구조
+## 프로젝트 구조
 
 ```
 your-project/
-├── src/
-│   └── main/
-│       └── resources/
-│           ├── application.yml          (커밋 O, 환경변수 참조)
-│           └── config/                  (Submodule, 커밋 X)
-│               ├── application-dev.yml
-│               ├── application-local.yml
-│               └── application-prod.yml
-├── .gitignore
-└── .gitmodules                          (자동 생성)
+├── src/main/resources/
+│   ├── application.yml      # 커밋 O (환경변수 참조)
+│   └── config/              # Submodule (커밋 X)
+│       ├── application-dev.yml
+│       └── application-local.yml
+└── .gitmodules              # 자동 생성
 ```
 
 ---
 
-## 3. Submodule 설정 (최초 1회)
+## 초기 설정
 
-### Step 1: Private 저장소 생성
+### 1. Private 저장소 생성
+GitHub에서 `your-project-config` Private 저장소 생성
 
-GitHub에서 Private Repository 생성:
-```
-저장소명: your-project-config (예시)
-Public/Private: Private ✅
-```
-
-### Step 2: 설정 파일 업로드
-
+### 2. Submodule 추가
 ```bash
-# config 저장소 클론
-git clone https://github.com/your-org/your-project-config.git
-cd your-project-config
-
-# 설정 파일 작성
-cat > application-dev.yml <<EOF
-spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/dev_db
-    username: dev_user
-    password: dev_password_123
-jwt:
-  secret: dev_jwt_secret_key_12345
-aws:
-  access-key: AKIAIOSFODNN7EXAMPLE_DEV
-  secret-key: wJalrXUtnFEMI/K7MDENG/DEV_SECRET
-EOF
-
-# 커밋 & 푸시
-git add .
-git commit -m "[Init] 개발 환경 설정"
-git push origin main
-```
-
-### Step 3: 메인 프로젝트에 Submodule 추가
-
-```bash
-# 메인 프로젝트 디렉토리에서
 cd your-project
-
-# submodule 추가
-git submodule add https://github.com/your-org/your-project-config.git src/main/resources/config
-
-# .gitignore에 추가 (중요!)
+git submodule add https://github.com/org/your-project-config.git src/main/resources/config
 echo "src/main/resources/config/" >> .gitignore
-
-# 커밋
-git add .
-git commit -m "[Chore] Submodule 설정 추가"
-git push
+git commit -m "chore: Add config submodule"
 ```
 
 ---
 
-## 4. 팀원 초기 설정
-
-### 메인 프로젝트 클론 후
+## 팀원 설정
 
 ```bash
-# 1. 프로젝트 클론
-git clone https://github.com/your-org/your-project.git
-cd your-project
+# 클론 시 submodule 포함
+git clone --recurse-submodules https://github.com/org/your-project.git
 
-# 2. Submodule 초기화 & 다운로드
-git submodule init
-git submodule update
-
-# 또는 한 번에
+# 또는 기존 클론 후
 git submodule update --init --recursive
 ```
 
-### 클론 시 Submodule 함께 받기
-
-```bash
-# 한 번에 클론 + submodule
-git clone --recurse-submodules https://github.com/your-org/your-project.git
-```
-
 ---
 
-## 5. 일상적인 작업
+## 일상 작업
 
 ### Submodule 최신화
-
 ```bash
-# 메인 프로젝트에서 실행
 git submodule update --remote
-
-# 또는 config 폴더에서 직접 pull
-cd src/main/resources/config
-git pull origin main
-cd ../../../..
 ```
 
-### Submodule 설정 수정
-
+### 설정 수정
 ```bash
-# 1. config 폴더로 이동
 cd src/main/resources/config
+git checkout main && git pull
+# 수정 후
+git add . && git commit -m "fix: Update DB password"
+git push
 
-# 2. 브랜치 확인 (detached HEAD 상태일 수 있음)
-git checkout main
-git pull
-
-# 3. 수정
-vim application-dev.yml
-
-# 4. 커밋 & 푸시
-git add .
-git commit -m "[Fix] DB 비밀번호 변경"
-git push origin main
-
-# 5. 메인 프로젝트로 돌아가서 submodule 참조 업데이트
+# 메인 프로젝트에서
 cd ../../../..
 git add src/main/resources/config
-git commit -m "[Chore] Config submodule 업데이트"
-git push
+git commit -m "chore: Update config submodule"
 ```
 
 ---
 
-## 6. Spring Boot 통합
+## Spring Boot 통합
 
-### application.yml (메인, 커밋 O)
-
+### application.yml (메인)
 ```yaml
 spring:
-  profiles:
-    active: local  # 기본 프로파일
-  config:
-    import:
-      - classpath:config/application-${spring.profiles.active}.yml
-
-# 또는 환경변수 참조 방식
-spring:
-  datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+  profiles.active: local
+  config.import: classpath:config/application-${spring.profiles.active}.yml
 ```
 
-### application-local.yml (Submodule, 커밋 X)
-
-```yaml
-spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/mydb
-    username: root
-    password: local_password_123
-
-jwt:
-  secret: local_jwt_secret_key_abc123
-  expiration: 3600000
-```
-
-### 실행 시 프로파일 지정
-
+### 실행
 ```bash
-# local 환경
-./gradlew bootRun --args='--spring.profiles.active=local'
-
-# dev 환경
 ./gradlew bootRun --args='--spring.profiles.active=dev'
 ```
 
 ---
 
-## 7. CI/CD 설정
-
-### GitHub Actions 예시
+## CI/CD (GitHub Actions)
 
 ```yaml
-name: Build
-
-on: [push]
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true  # Submodule 포함
-          token: ${{ secrets.SUBMODULE_TOKEN }}
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-
-      - name: Build
-        run: ./gradlew build
+- uses: actions/checkout@v4
+  with:
+    submodules: true
+    token: ${{ secrets.SUBMODULE_TOKEN }}
 ```
 
-### SUBMODULE_TOKEN 설정
-
-1. GitHub → Settings → Developer settings → Personal access tokens
-2. Generate new token (classic)
-3. Scopes: `repo` 전체 선택
-4. 프로젝트 Settings → Secrets → New secret: `SUBMODULE_TOKEN`
+**SUBMODULE_TOKEN**: GitHub PAT (repo 권한) → Repository Secrets에 등록
 
 ---
 
-## 9. 트러블슈팅
+## 트러블슈팅
 
-### 1. Submodule 폴더가 비어있음
-```bash
-git submodule update --init --recursive
-```
-
-### 2. detached HEAD 상태
-```bash
-cd src/main/resources/config
-git checkout main
-```
-
-### 3. Permission denied (권한 없음)
-- Config 저장소 접근 권한 확인
-- SSH 키 또는 Personal Access Token 사용
+| 문제 | 해결 |
+|------|------|
+| 폴더 비어있음 | `git submodule update --init --recursive` |
+| detached HEAD | `cd config && git checkout main` |
+| 권한 없음 | Config 저장소 접근 권한 확인 |
 
 ---
 
-## 10. 보안 체크리스트
+## 보안 체크리스트
 
 - [ ] Config 저장소는 Private
-- [ ] .gitignore에 config/ 폴더 추가 ([02-GIT-CONVENTIONS.md](./02-GIT-CONVENTIONS.md) 참조)
-- [ ] 팀원만 Config 저장소 접근 권한 부여
-- [ ] Submodule 내용이 메인 저장소에 커밋되지 않았는지 확인
-- [ ] CI/CD에서 SUBMODULE_TOKEN 설정
-- [ ] 프로덕션은 AWS Secrets Manager/Vault 사용 (Submodule은 개발 환경 전용)
-
----
-
-## 📚 참고
-
-- [Git Submodule 공식 문서](https://git-scm.com/book/en/v2/Git-Tools-Submodules)
-- [Spring Boot Externalized Configuration](https://docs.spring.io/spring-boot/docs/current/reference/html/features.html#features.external-config)
-- [AWS Secrets Manager Spring Boot](https://docs.awspring.io/spring-cloud-aws/docs/current/reference/html/index.html#integrating-your-spring-cloud-application-with-the-aws-secrets-manager)
+- [ ] .gitignore에 config/ 추가
+- [ ] 팀원만 접근 권한
+- [ ] 프로덕션은 Secrets Manager 사용

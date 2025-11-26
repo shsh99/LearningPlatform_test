@@ -4,7 +4,7 @@
 >
 > **Backend**: Spring Boot 3.2 + Java 17-21
 >
-> **Frontend**: React 18+ + TypeScript 5+
+> **Frontend**: React 19 + TypeScript 5
 
 ---
 
@@ -16,45 +16,18 @@
 
 1. **[00-CONVENTIONS-CORE.md](./00-CONVENTIONS-CORE.md)** ⭐ **필수**
    - 모든 레이어에서 공통으로 적용되는 핵심 규칙
-   - 코딩 스타일, 네이밍, 레이어 책임 등
-   - **코드 작성 전 반드시 읽을 것**
 
 2. **[01-PROJECT-STRUCTURE.md](./01-PROJECT-STRUCTURE.md)**
-   - 프로젝트 구조 가이드
-   - Domain-Driven 구조
-   - 패키지 구성 및 의존성 규칙
+   - 프로젝트 구조, Domain-Driven 설계
 
 #### 📖 레이어별 컨벤션
 
-3. **[03-CONTROLLER-CONVENTIONS.md](./03-CONTROLLER-CONVENTIONS.md)**
-   - HTTP 요청/응답 처리
-   - RESTful API 규칙
-   - Validation
-
-4. **[04-SERVICE-CONVENTIONS.md](./04-SERVICE-CONVENTIONS.md)**
-   - Business Logic
-   - Transaction 관리
-   - Entity ↔ DTO 변환
-
-5. **[05-REPOSITORY-CONVENTIONS.md](./05-REPOSITORY-CONVENTIONS.md)**
-   - 데이터 접근
-   - Query Methods, JPQL
-   - N+1 문제 해결
-
-6. **[06-ENTITY-CONVENTIONS.md](./06-ENTITY-CONVENTIONS.md)**
-   - 도메인 모델
-   - **Setter 금지!**
-   - 연관관계 매핑
-
-7. **[07-DTO-CONVENTIONS.md](./07-DTO-CONVENTIONS.md)**
-   - Request/Response DTO
-   - Validation
-   - Record 사용
-
-8. **[08-EXCEPTION-CONVENTIONS.md](./08-EXCEPTION-CONVENTIONS.md)**
-   - 예외 계층 구조
-   - ErrorCode
-   - GlobalExceptionHandler
+3. **[03-CONTROLLER-CONVENTIONS.md](./03-CONTROLLER-CONVENTIONS.md)** - HTTP, RESTful API
+4. **[04-SERVICE-CONVENTIONS.md](./04-SERVICE-CONVENTIONS.md)** - Business Logic, Transaction
+5. **[05-REPOSITORY-CONVENTIONS.md](./05-REPOSITORY-CONVENTIONS.md)** - 데이터 접근, N+1 해결
+6. **[06-ENTITY-CONVENTIONS.md](./06-ENTITY-CONVENTIONS.md)** - 도메인 모델, **Setter 금지!**
+7. **[07-DTO-CONVENTIONS.md](./07-DTO-CONVENTIONS.md)** - Request/Response, Record
+8. **[08-EXCEPTION-CONVENTIONS.md](./08-EXCEPTION-CONVENTIONS.md)** - 예외 계층, ErrorCode
 
 ---
 
@@ -64,70 +37,39 @@
 
 10. **[10-REACT-TYPESCRIPT-CORE.md](./10-REACT-TYPESCRIPT-CORE.md)** ⭐ **필수**
     - React + TypeScript 핵심 규칙
-    - 코딩 스타일, 네이밍, 타입 정의
-    - 컴포넌트 작성 기본 규칙
 
 11. **[11-REACT-PROJECT-STRUCTURE.md](./11-REACT-PROJECT-STRUCTURE.md)**
     - 프로젝트 폴더 구조
-    - 파일 구성 및 네이밍
-    - 절대 경로 설정
 
 #### 📖 상세 컨벤션
 
-12. **[12-REACT-COMPONENT-CONVENTIONS.md](./12-REACT-COMPONENT-CONVENTIONS.md)**
-    - 컴포넌트 작성 규칙
-    - Props 관리
-    - 조건부 렌더링, 리스트 렌더링
-
-13. **[13-REACT-STATE-MANAGEMENT.md](./13-REACT-STATE-MANAGEMENT.md)**
-    - 상태 관리 전략
-    - useState, useReducer, Context API
-    - Zustand, React Query
-
-14. **[14-REACT-API-INTEGRATION.md](./14-REACT-API-INTEGRATION.md)**
-    - API 통신 규칙
-    - Axios 설정, Interceptor
-    - 에러 처리, 로딩 상태
+12. **[12-REACT-COMPONENT-CONVENTIONS.md](./12-REACT-COMPONENT-CONVENTIONS.md)** - 컴포넌트 작성
+13. **[13-REACT-STATE-MANAGEMENT.md](./13-REACT-STATE-MANAGEMENT.md)** - 상태 관리
+14. **[14-REACT-API-INTEGRATION.md](./14-REACT-API-INTEGRATION.md)** - API 통신, Axios
 
 ---
 
 ### 🧪 Testing
 
-15. **[15-TEST-CONVENTIONS.md](./15-TEST-CONVENTIONS.md)** 🧪
-    - Backend: JUnit5, MockMvc, @WebMvcTest
-    - Frontend: Jest, React Testing Library
-    - Given-When-Then 패턴
-    - Mock 전략
+15. **[15-BACKEND-TEST-CONVENTIONS.md](./15-BACKEND-TEST-CONVENTIONS.md)** - JUnit5, MockMvc
+16. **[16-FRONTEND-TEST-CONVENTIONS.md](./16-FRONTEND-TEST-CONVENTIONS.md)** - Jest, RTL, MSW
 
 ---
 
 ### 🔄 Git & 협업
 
-2. **[02-GIT-CONVENTIONS.md](./02-GIT-CONVENTIONS.md)** 🔄
-   - Git 브랜치 전략
-   - 커밋 메시지 규칙
-   - PR 작성 가이드
-   - 민감 정보 관리
-
-9. **[09-GIT-SUBMODULE-CONVENTIONS.md](./09-GIT-SUBMODULE-CONVENTIONS.md)** 🔐
-   - Submodule 설정 및 사용
-   - 민감 정보 버전 관리
-   - 팀 협업 설정
+2. **[02-GIT-CONVENTIONS.md](./02-GIT-CONVENTIONS.md)** - 브랜치, 커밋, PR
+9. **[09-GIT-SUBMODULE-CONVENTIONS.md](./09-GIT-SUBMODULE-CONVENTIONS.md)** - 민감 정보 관리
 
 ---
 
 ### 📦 Monorepo
 
-**[../MONOREPO.md](../MONOREPO.md)** 🏗️
-- 프로젝트 구조 (Backend + Frontend)
-- 개발 워크플로우, 테스트 전략
-- 환경 설정, 배포 가이드
-- 컨벤션 통합 참조
+**[../MONOREPO.md](../MONOREPO.md)** - 프로젝트 구조, 환경 설정, 배포
 
 ---
 
 ## 📖 참고 자료
 
-**Backend**: [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html) | [Spring Boot Docs](https://docs.spring.io/spring-boot/docs/3.2.x/reference/html/)
-
-**Frontend**: [Airbnb React/JSX Guide](https://airbnb.io/javascript/react/) | [React Docs](https://react.dev/) | [TypeScript Handbook](https://www.typescriptlang.org/docs/handbook/intro.html)
+- **Backend**: [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html) | [Spring Boot Docs](https://docs.spring.io/spring-boot/docs/3.2.x/reference/html/)
+- **Frontend**: [Airbnb React/JSX Guide](https://airbnb.io/javascript/react/) | [React Docs](https://react.dev/)
