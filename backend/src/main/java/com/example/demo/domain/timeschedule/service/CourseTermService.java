@@ -1,6 +1,7 @@
 package com.example.demo.domain.timeschedule.service;
 
 import com.example.demo.domain.timeschedule.dto.CreateCourseTermRequest;
+import com.example.demo.domain.timeschedule.dto.CourseTermDetailResponse;
 import com.example.demo.domain.timeschedule.dto.CourseTermResponse;
 import com.example.demo.domain.timeschedule.dto.UpdateCourseTermRequest;
 
@@ -11,6 +12,7 @@ public interface CourseTermService {
     CourseTermResponse createTerm(CreateCourseTermRequest request);
     CourseTermResponse updateTerm(Long id, UpdateCourseTermRequest request);
     CourseTermResponse findById(Long id);
+    CourseTermDetailResponse findDetailById(Long id);
     List<CourseTermResponse> findByCourseId(Long courseId);
     List<CourseTermResponse> findAll();
     List<CourseTermResponse> searchByDateRange(LocalDate startDate, LocalDate endDate);
