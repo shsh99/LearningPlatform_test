@@ -147,6 +147,27 @@ export const StudentInformationSystemPage = () => {
     );
   };
 
+  const getProgressPercentage = (record: StudentInformationSystem) => {
+    // 수료 상태는 무조건 100%로 표시
+    if (record.enrollmentStatus === 'COMPLETED') {
+      return 100;
+    }
+    return record.progressPercentage;
+  };
+
+  const getProgressBarColor = (status: string) => {
+    switch (status) {
+      case 'COMPLETED':
+        return 'bg-green-600'; // 수료: 초록색
+      case 'ENROLLED':
+        return 'bg-blue-600'; // 수강중: 파란색
+      case 'CANCELLED':
+        return 'bg-gray-400'; // 취소: 회색
+      default:
+        return 'bg-gray-400';
+    }
+  };
+
   if (isLoading && records.length === 0) {
     return (
       <>
@@ -326,22 +347,48 @@ export const StudentInformationSystemPage = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredRecords.map((record, index) => (
-                      <tr key={record.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {index + 1}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <div className="text-gray-900 font-medium">{record.studentName}</div>
-                          <div className="text-gray-500 text-xs">(user{record.userKey})</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <div className="text-gray-900 font-medium">{record.courseTitle}</div>
-                          <div className="text-gray-500 text-xs">(차수{record.termNumber})</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {record.progressPercentage}%
-                        </td>
+                    {filteredRecords.map((record, index) => {
+                      const isCancelled = record.enrollmentStatus === 'CANCELLED';
+                      const progressPercentage = getProgressPercentage(record);
+                      const progressBarColor = getProgressBarColor(record.enrollmentStatus);
+
+                      return (
+                        <tr
+                          key={record.id}
+                          className={`hover:bg-gray-50 ${isCancelled ? 'opacity-60 bg-gray-50' : ''}`}
+                        >
+                          <td className={`px-6 py-4 whitespace-nowrap text-sm ${isCancelled ? 'text-gray-500' : 'text-gray-900'}`}>
+                            {index + 1}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <div className={`font-medium ${isCancelled ? 'text-gray-500' : 'text-gray-900'}`}>
+                              {record.studentName}
+                            </div>
+                            <div className="text-gray-400 text-xs">(user{record.userKey})</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <div className={`font-medium ${isCancelled ? 'text-gray-500' : 'text-gray-900'}`}>
+                              {record.courseTitle}
+                            </div>
+                            <div className="text-gray-400 text-xs">(차수{record.termNumber})</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <div className="flex items-center gap-3">
+                              <div className="flex-1 max-w-[120px]">
+                                <div className="flex items-center gap-2">
+                                  <div className="flex-1 bg-gray-200 rounded-full h-2">
+                                    <div
+                                      className={`${progressBarColor} h-2 rounded-full transition-all duration-300`}
+                                      style={{ width: `${progressPercentage}%` }}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                              <span className={`font-medium min-w-[45px] text-right ${isCancelled ? 'text-red-600' : 'text-gray-900'}`}>
+                                {progressPercentage}%
+                              </span>
+                            </div>
+                          </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                           {getStatusBadge(record.enrollmentStatus)}
                         </td>
@@ -387,7 +434,8 @@ export const StudentInformationSystemPage = () => {
                           </div>
                         </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

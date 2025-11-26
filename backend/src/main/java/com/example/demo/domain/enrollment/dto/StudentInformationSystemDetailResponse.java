@@ -33,6 +33,9 @@ public record StudentInformationSystemDetailResponse(
         var term = enrollment.getTerm();
         var course = term.getCourse();
 
+        // 수료 상태일 경우 100%, 그 외에는 0% (추후 실제 진도율 계산 로직 추가 예정)
+        Integer progressPercentage = enrollment.getStatus() == EnrollmentStatus.COMPLETED ? 100 : 0;
+
         return new StudentInformationSystemDetailResponse(
             sis.getId(),
             sis.getUserKey(),
@@ -45,7 +48,7 @@ public record StudentInformationSystemDetailResponse(
             term.getTermNumber(),
             enrollment.getStatus(),
             enrollment.getCreatedAt(),
-            0  // 임시 진도율, 추후 실제 계산 로직 추가
+            progressPercentage
         );
     }
 }
