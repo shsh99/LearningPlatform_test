@@ -78,7 +78,7 @@ class CourseTermServiceTest {
 
         // then
         assertThat(result.termNumber()).isEqualTo(1);
-        assertThat(result.dayOfWeek()).isEqualTo(DayOfWeek.MONDAY);
+        assertThat(result.daysOfWeek()).contains(DayOfWeek.MONDAY);
         assertThat(result.startTime()).isEqualTo(LocalTime.of(9, 0));
         assertThat(result.endTime()).isEqualTo(LocalTime.of(18, 0));
         assertThat(result.status()).isEqualTo(TermStatus.SCHEDULED);
@@ -95,7 +95,7 @@ class CourseTermServiceTest {
             1,
             LocalDate.of(2025, 1, 1),
             LocalDate.of(2025, 3, 31),
-            DayOfWeek.MONDAY,
+            Set.of(DayOfWeek.MONDAY),
             LocalTime.of(9, 0),
             LocalTime.of(18, 0),
             30
@@ -117,7 +117,7 @@ class CourseTermServiceTest {
             1,
             LocalDate.of(2025, 3, 31),
             LocalDate.of(2025, 1, 1),  // 종료일이 시작일보다 이전
-            DayOfWeek.MONDAY,
+            Set.of(DayOfWeek.MONDAY),
             LocalTime.of(9, 0),
             LocalTime.of(18, 0),
             30
@@ -140,7 +140,7 @@ class CourseTermServiceTest {
             1,
             LocalDate.of(2025, 1, 1),
             LocalDate.of(2025, 3, 31),
-            DayOfWeek.MONDAY,
+            Set.of(DayOfWeek.MONDAY),
             LocalTime.of(18, 0),
             LocalTime.of(9, 0),  // 종료 시간이 시작 시간보다 이전
             30
@@ -163,7 +163,7 @@ class CourseTermServiceTest {
             1,
             LocalDate.of(2025, 1, 1),
             LocalDate.of(2025, 3, 31),
-            DayOfWeek.MONDAY,
+            Set.of(DayOfWeek.MONDAY),
             LocalTime.of(9, 0),
             LocalTime.of(18, 0),
             30
@@ -175,7 +175,7 @@ class CourseTermServiceTest {
 
         // then
         assertThat(result.termNumber()).isEqualTo(1);
-        assertThat(result.dayOfWeek()).isEqualTo(DayOfWeek.MONDAY);
+        assertThat(result.daysOfWeek()).contains(DayOfWeek.MONDAY);
         verify(courseTermRepository).findById(1L);
     }
 
@@ -200,7 +200,7 @@ class CourseTermServiceTest {
             1,
             LocalDate.of(2025, 1, 1),
             LocalDate.of(2025, 3, 31),
-            DayOfWeek.MONDAY,
+            Set.of(DayOfWeek.MONDAY),
             LocalTime.of(9, 0),
             LocalTime.of(18, 0),
             30
@@ -209,7 +209,7 @@ class CourseTermServiceTest {
         UpdateCourseTermRequest request = new UpdateCourseTermRequest(
             LocalDate.of(2025, 2, 1),
             LocalDate.of(2025, 4, 30),
-            DayOfWeek.WEDNESDAY,
+            Set.of(DayOfWeek.WEDNESDAY),
             LocalTime.of(10, 0),
             LocalTime.of(17, 0),
             25
@@ -223,7 +223,7 @@ class CourseTermServiceTest {
         // then
         assertThat(result.startDate()).isEqualTo(LocalDate.of(2025, 2, 1));
         assertThat(result.endDate()).isEqualTo(LocalDate.of(2025, 4, 30));
-        assertThat(result.dayOfWeek()).isEqualTo(DayOfWeek.WEDNESDAY);
+        assertThat(result.daysOfWeek()).contains(DayOfWeek.WEDNESDAY);
         assertThat(result.startTime()).isEqualTo(LocalTime.of(10, 0));
         assertThat(result.endTime()).isEqualTo(LocalTime.of(17, 0));
         assertThat(result.maxStudents()).isEqualTo(25);
@@ -239,7 +239,7 @@ class CourseTermServiceTest {
             1,
             LocalDate.of(2025, 1, 1),
             LocalDate.of(2025, 3, 31),
-            DayOfWeek.MONDAY,
+            Set.of(DayOfWeek.MONDAY),
             LocalTime.of(9, 0),
             LocalTime.of(18, 0),
             30
@@ -248,7 +248,7 @@ class CourseTermServiceTest {
         UpdateCourseTermRequest request = new UpdateCourseTermRequest(
             LocalDate.of(2025, 4, 30),
             LocalDate.of(2025, 2, 1),  // 종료일이 시작일보다 이전
-            DayOfWeek.WEDNESDAY,
+            Set.of(DayOfWeek.WEDNESDAY),
             LocalTime.of(10, 0),
             LocalTime.of(17, 0),
             25
@@ -269,9 +269,9 @@ class CourseTermServiceTest {
         Course course = Course.create("Spring Boot 입문", "설명", 30);
         List<CourseTerm> terms = List.of(
             CourseTerm.create(course, 1, LocalDate.of(2025, 1, 1), LocalDate.of(2025, 3, 31),
-                DayOfWeek.MONDAY, LocalTime.of(9, 0), LocalTime.of(18, 0), 30),
+                Set.of(DayOfWeek.MONDAY), LocalTime.of(9, 0), LocalTime.of(18, 0), 30),
             CourseTerm.create(course, 2, LocalDate.of(2025, 4, 1), LocalDate.of(2025, 6, 30),
-                DayOfWeek.TUESDAY, LocalTime.of(9, 0), LocalTime.of(18, 0), 30)
+                Set.of(DayOfWeek.TUESDAY), LocalTime.of(9, 0), LocalTime.of(18, 0), 30)
         );
 
         given(courseTermRepository.findByStartDateBetween(
@@ -301,7 +301,7 @@ class CourseTermServiceTest {
             1,
             LocalDate.of(2025, 1, 1),
             LocalDate.of(2025, 3, 31),
-            DayOfWeek.MONDAY,
+            Set.of(DayOfWeek.MONDAY),
             LocalTime.of(9, 0),
             LocalTime.of(18, 0),
             30
@@ -314,7 +314,7 @@ class CourseTermServiceTest {
             2,  // 다음 차수 번호
             LocalDate.of(2025, 4, 1),
             LocalDate.of(2025, 6, 30),
-            DayOfWeek.MONDAY,
+            Set.of(DayOfWeek.MONDAY),
             LocalTime.of(9, 0),
             LocalTime.of(18, 0),
             30
@@ -335,7 +335,7 @@ class CourseTermServiceTest {
         assertThat(result.termNumber()).isEqualTo(2);
         assertThat(result.startDate()).isEqualTo(LocalDate.of(2025, 4, 1));
         assertThat(result.endDate()).isEqualTo(LocalDate.of(2025, 6, 30));
-        assertThat(result.dayOfWeek()).isEqualTo(DayOfWeek.MONDAY);  // 원본과 동일
+        assertThat(result.daysOfWeek()).contains(DayOfWeek.MONDAY);  // 원본과 동일
         assertThat(result.startTime()).isEqualTo(LocalTime.of(9, 0));  // 원본과 동일
         assertThat(result.endTime()).isEqualTo(LocalTime.of(18, 0));  // 원본과 동일
         verify(courseTermRepository).save(any(CourseTerm.class));
@@ -351,7 +351,7 @@ class CourseTermServiceTest {
             1,
             LocalDate.of(2025, 1, 1),
             LocalDate.of(2025, 3, 31),
-            DayOfWeek.MONDAY,
+            Set.of(DayOfWeek.MONDAY),
             LocalTime.of(9, 0),
             LocalTime.of(18, 0),
             30
@@ -379,7 +379,7 @@ class CourseTermServiceTest {
             1,
             LocalDate.of(2025, 1, 1),
             LocalDate.of(2025, 3, 31),
-            DayOfWeek.MONDAY,
+            Set.of(DayOfWeek.MONDAY),
             LocalTime.of(9, 0),
             LocalTime.of(18, 0),
             30
@@ -403,7 +403,7 @@ class CourseTermServiceTest {
             1,
             LocalDate.of(2025, 1, 1),
             LocalDate.of(2025, 3, 31),
-            DayOfWeek.MONDAY,
+            Set.of(DayOfWeek.MONDAY),
             LocalTime.of(9, 0),
             LocalTime.of(18, 0),
             30
@@ -428,7 +428,7 @@ class CourseTermServiceTest {
             1,
             LocalDate.of(2025, 1, 1),
             LocalDate.of(2025, 3, 31),
-            DayOfWeek.MONDAY,
+            Set.of(DayOfWeek.MONDAY),
             LocalTime.of(9, 0),
             LocalTime.of(18, 0),
             30
