@@ -3,6 +3,7 @@ package com.example.demo.domain.timeschedule.service;
 import com.example.demo.domain.timeschedule.dto.AssignInstructorRequest;
 import com.example.demo.domain.timeschedule.dto.InstructorAssignmentResponse;
 
+import java.time.YearMonth;
 import java.util.List;
 
 public interface InstructorAssignmentService {
@@ -10,6 +11,7 @@ public interface InstructorAssignmentService {
     InstructorAssignmentResponse findById(Long id);
     List<InstructorAssignmentResponse> findByTermId(Long termId);
     List<InstructorAssignmentResponse> findByInstructorId(Long instructorId);
+    List<InstructorAssignmentResponse> findInstructorSchedule(Long instructorId, YearMonth yearMonth);
     List<InstructorAssignmentResponse> findAll();
     void cancelAssignment(Long id);
 }

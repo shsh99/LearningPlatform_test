@@ -5,6 +5,9 @@ export interface User {
   email: string;
   name: string;
   role: 'USER' | 'OPERATOR' | 'ADMIN';
+  status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
+  createdAt: string;
+  updatedAt: string;
 }
 
 /**

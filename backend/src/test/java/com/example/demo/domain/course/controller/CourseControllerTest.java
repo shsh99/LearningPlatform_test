@@ -11,6 +11,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
@@ -38,6 +39,7 @@ class CourseControllerTest {
 
     @Test
     @DisplayName("강의 생성")
+    @WithMockUser(roles = "OPERATOR")
     void createCourse() throws Exception {
         // given
         CourseResponse response = new CourseResponse(
@@ -143,6 +145,7 @@ class CourseControllerTest {
 
     @Test
     @DisplayName("강의 수정")
+    @WithMockUser(roles = "OPERATOR")
     void updateCourse() throws Exception {
         // given
         CourseResponse response = new CourseResponse(
@@ -173,6 +176,7 @@ class CourseControllerTest {
 
     @Test
     @DisplayName("강의 삭제")
+    @WithMockUser(roles = "ADMIN")
     void deleteCourse() throws Exception {
         // when & then
         mockMvc.perform(delete("/api/courses/1"))
@@ -183,6 +187,7 @@ class CourseControllerTest {
 
     @Test
     @DisplayName("강의 승인")
+    @WithMockUser(roles = "OPERATOR")
     void approveCourse() throws Exception {
         // given
         CourseResponse response = new CourseResponse(
@@ -204,6 +209,7 @@ class CourseControllerTest {
 
     @Test
     @DisplayName("강의 거부")
+    @WithMockUser(roles = "OPERATOR")
     void rejectCourse() throws Exception {
         // given
         CourseResponse response = new CourseResponse(
@@ -225,6 +231,7 @@ class CourseControllerTest {
 
     @Test
     @DisplayName("Validation 실패 - 제목 누락")
+    @WithMockUser(roles = "OPERATOR")
     void createCourse_ValidationFailed() throws Exception {
         // when & then
         mockMvc.perform(post("/api/courses")

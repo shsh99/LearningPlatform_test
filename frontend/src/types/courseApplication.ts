@@ -8,6 +8,7 @@ export type ApplicationStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
  */
 export interface CourseApplication {
   id: number;
+  courseId: number;
   applicantId: number;
   applicantName: string;
   applicantEmail: string;

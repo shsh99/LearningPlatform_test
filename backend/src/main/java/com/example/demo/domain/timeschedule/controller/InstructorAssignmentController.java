@@ -6,10 +6,12 @@ import com.example.demo.domain.timeschedule.service.InstructorAssignmentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.YearMonth;
 import java.util.List;
 
 @RestController
@@ -52,6 +54,18 @@ public class InstructorAssignmentController {
     public ResponseEntity<List<InstructorAssignmentResponse>> getAllAssignments() {
         log.info("GET /api/instructor-assignments");
         List<InstructorAssignmentResponse> response = assignmentService.findAll();
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/schedule/{instructorId}")
+    public ResponseEntity<List<InstructorAssignmentResponse>> getInstructorSchedule(
+            @PathVariable Long instructorId,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth
+    ) {
+        // yearMonth가 없으면 현재 월로 기본값 설정
+        YearMonth targetMonth = (yearMonth != null) ? yearMonth : YearMonth.now();
+        log.info("GET /api/instructor-assignments/schedule/{} - yearMonth: {}", instructorId, targetMonth);
+        List<InstructorAssignmentResponse> response = assignmentService.findInstructorSchedule(instructorId, targetMonth);
         return ResponseEntity.ok(response);
     }
 
