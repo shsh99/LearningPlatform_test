@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AxiosError } from 'axios';
 import { Navbar } from '../components/Navbar';
 import { getMyProfile, updateMyProfile, changeMyPassword } from '../api/userProfile';
 import { withdrawAccount } from '../api/user';
@@ -95,9 +96,9 @@ export const MyProfilePage = () => {
       await loadProfile();
       setIsEditingName(false);
       setNameError('');
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to update profile:', err);
-      if (err.response?.data?.message) {
+      if (err instanceof AxiosError && err.response?.data?.message) {
         setNameError(err.response.data.message);
       } else {
         setNameError('프로필 수정에 실패했습니다.');
@@ -154,12 +155,16 @@ export const MyProfilePage = () => {
         setIsChangingPassword(false);
         setPasswordSuccess('');
       }, 3000);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to change password:', err);
-      if (err.response?.status === 401) {
-        setPasswordErrors([err.response?.data?.message || '현재 비밀번호가 일치하지 않습니다.']);
-      } else if (err.response?.data?.message) {
-        setPasswordErrors([err.response.data.message]);
+      if (err instanceof AxiosError) {
+        if (err.response?.status === 401) {
+          setPasswordErrors([err.response?.data?.message || '현재 비밀번호가 일치하지 않습니다.']);
+        } else if (err.response?.data?.message) {
+          setPasswordErrors([err.response.data.message]);
+        } else {
+          setPasswordErrors(['비밀번호 변경에 실패했습니다.']);
+        }
       } else {
         setPasswordErrors(['비밀번호 변경에 실패했습니다.']);
       }
@@ -194,12 +199,16 @@ export const MyProfilePage = () => {
       alert('회원 탈퇴가 완료되었습니다.');
       logout();
       navigate('/login');
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to withdraw account:', err);
-      if (err.response?.status === 401) {
-        setWithdrawError(err.response?.data?.message || '비밀번호가 일치하지 않습니다.');
-      } else if (err.response?.data?.message) {
-        setWithdrawError(err.response.data.message);
+      if (err instanceof AxiosError) {
+        if (err.response?.status === 401) {
+          setWithdrawError(err.response?.data?.message || '비밀번호가 일치하지 않습니다.');
+        } else if (err.response?.data?.message) {
+          setWithdrawError(err.response.data.message);
+        } else {
+          setWithdrawError('회원 탈퇴에 실패했습니다. 다시 시도해주세요.');
+        }
       } else {
         setWithdrawError('회원 탈퇴에 실패했습니다. 다시 시도해주세요.');
       }

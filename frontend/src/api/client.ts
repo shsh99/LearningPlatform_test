@@ -13,7 +13,7 @@ export const apiClient = axios.create({
 let isRefreshing = false;
 let failedRequestsQueue: Array<{
     resolve: (token: string) => void;
-    reject: (error: any) => void;
+    reject: (error: unknown) => void;
 }> = [];
 
 apiClient.interceptors.request.use(

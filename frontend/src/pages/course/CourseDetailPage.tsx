@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { AxiosError } from 'axios';
 import { getCourseById } from '../../api/course';
 import { enrollCourse } from '../../api/enrollment';
 import type { Course } from '../../types/course';
@@ -58,9 +59,11 @@ export const CourseDetailPage = () => {
       });
       alert('수강 신청이 완료되었습니다!');
       navigate('/my-enrollments');
-    } catch (err: any) {
+    } catch (err) {
       const errorMessage =
-        err.response?.data?.message || '수강 신청에 실패했습니다.';
+        err instanceof AxiosError
+          ? err.response?.data?.message || '수강 신청에 실패했습니다.'
+          : '수강 신청에 실패했습니다.';
       setError(errorMessage);
       console.error('Error enrolling course:', err);
     } finally {
