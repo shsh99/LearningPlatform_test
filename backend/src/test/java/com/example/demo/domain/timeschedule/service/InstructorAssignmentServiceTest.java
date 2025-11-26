@@ -26,6 +26,7 @@ import java.time.LocalTime;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -61,7 +62,7 @@ class InstructorAssignmentServiceTest {
             1,
             LocalDate.of(2025, 1, 1),
             LocalDate.of(2025, 3, 31),
-            DayOfWeek.MONDAY,
+            Set.of(DayOfWeek.MONDAY),
             LocalTime.of(9, 0),
             LocalTime.of(18, 0),
             30
@@ -114,7 +115,7 @@ class InstructorAssignmentServiceTest {
             1,
             LocalDate.of(2025, 1, 1),
             LocalDate.of(2025, 3, 31),
-            DayOfWeek.MONDAY,
+            Set.of(DayOfWeek.MONDAY),
             LocalTime.of(9, 0),
             LocalTime.of(18, 0),
             30
@@ -140,7 +141,7 @@ class InstructorAssignmentServiceTest {
             1,
             LocalDate.of(2025, 1, 1),
             LocalDate.of(2025, 3, 31),
-            DayOfWeek.MONDAY,
+            Set.of(DayOfWeek.MONDAY),
             LocalTime.of(9, 0),
             LocalTime.of(18, 0),
             30
@@ -171,7 +172,7 @@ class InstructorAssignmentServiceTest {
             1,
             LocalDate.of(2025, 1, 1),
             LocalDate.of(2025, 3, 31),
-            DayOfWeek.MONDAY,
+            Set.of(DayOfWeek.MONDAY),
             LocalTime.of(9, 0),
             LocalTime.of(18, 0),
             30
@@ -208,7 +209,7 @@ class InstructorAssignmentServiceTest {
             1,
             LocalDate.of(2025, 1, 1),
             LocalDate.of(2025, 3, 31),
-            DayOfWeek.MONDAY,
+            Set.of(DayOfWeek.MONDAY),
             LocalTime.of(9, 0),
             LocalTime.of(18, 0),
             30
@@ -218,7 +219,7 @@ class InstructorAssignmentServiceTest {
             2,
             LocalDate.of(2025, 4, 1),
             LocalDate.of(2025, 6, 30),
-            DayOfWeek.TUESDAY,
+            Set.of(DayOfWeek.TUESDAY),
             LocalTime.of(9, 0),
             LocalTime.of(18, 0),
             30
@@ -256,7 +257,7 @@ class InstructorAssignmentServiceTest {
             1,
             LocalDate.of(2025, 1, 1),
             LocalDate.of(2025, 3, 31),
-            DayOfWeek.MONDAY,
+            Set.of(DayOfWeek.MONDAY),
             LocalTime.of(9, 0),
             LocalTime.of(18, 0),
             30
@@ -268,7 +269,7 @@ class InstructorAssignmentServiceTest {
             2,
             LocalDate.of(2025, 4, 1),
             LocalDate.of(2025, 6, 30),
-            DayOfWeek.TUESDAY,
+            Set.of(DayOfWeek.TUESDAY),
             LocalTime.of(9, 0),
             LocalTime.of(18, 0),
             30
@@ -309,7 +310,7 @@ class InstructorAssignmentServiceTest {
             1,
             LocalDate.of(2025, 2, 15),
             LocalDate.of(2025, 4, 15),
-            DayOfWeek.MONDAY,
+            Set.of(DayOfWeek.MONDAY),
             LocalTime.of(9, 0),
             LocalTime.of(18, 0),
             30
@@ -347,7 +348,7 @@ class InstructorAssignmentServiceTest {
             1,
             LocalDate.of(2025, 1, 1),
             LocalDate.of(2025, 3, 31),
-            DayOfWeek.MONDAY,
+            Set.of(DayOfWeek.MONDAY),
             LocalTime.of(9, 0),
             LocalTime.of(18, 0),
             30
@@ -383,7 +384,7 @@ class InstructorAssignmentServiceTest {
             1,
             LocalDate.of(2025, 1, 1),
             LocalDate.of(2025, 3, 31),
-            DayOfWeek.MONDAY,
+            Set.of(DayOfWeek.MONDAY),
             LocalTime.of(9, 0),
             LocalTime.of(18, 0),
             30

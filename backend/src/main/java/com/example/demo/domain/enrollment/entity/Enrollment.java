@@ -42,6 +42,17 @@ public class Enrollment extends BaseTimeEntity {
         return enrollment;
     }
 
+    /**
+     * 관리자의 직접 등록 (ENROLLED 상태로 바로 생성)
+     */
+    public static Enrollment createEnrolled(User student, CourseTerm term) {
+        Enrollment enrollment = new Enrollment();
+        enrollment.student = student;
+        enrollment.term = term;
+        enrollment.status = EnrollmentStatus.ENROLLED;
+        return enrollment;
+    }
+
     // ===== 비즈니스 메서드 =====
     public void cancel() {
         if (this.status == EnrollmentStatus.CANCELLED) {

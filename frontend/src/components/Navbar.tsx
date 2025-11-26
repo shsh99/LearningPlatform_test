@@ -40,10 +40,10 @@ export function Navbar() {
                 {user?.role === 'USER' && (
                   <>
                     <Link
-                      to="/my-enrollments"
+                      to="/my-learning"
                       className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
                     >
-                      내 강의
+                      내 강의실
                     </Link>
                     <Link
                       to="/my-applications"

@@ -3,6 +3,7 @@ import type {
   Enrollment,
   CreateEnrollmentRequest,
   EnrollmentResponse,
+  DirectEnrollmentRequest,
 } from '../types/enrollment';
 
 /**
@@ -86,6 +87,17 @@ export const completeEnrollment = async (
 ): Promise<EnrollmentResponse> => {
   const response = await apiClient.post<EnrollmentResponse>(
     `/enrollments/${id}/complete`
+  );
+  return response.data;
+};
+
+// 관리자의 직접 수강 신청
+export const directEnrollment = async (
+  request: DirectEnrollmentRequest
+): Promise<EnrollmentResponse> => {
+  const response = await apiClient.post<EnrollmentResponse>(
+    '/enrollments/direct',
+    request
   );
   return response.data;
 };

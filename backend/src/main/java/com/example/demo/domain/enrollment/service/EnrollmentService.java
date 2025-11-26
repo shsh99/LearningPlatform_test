@@ -1,6 +1,7 @@
 package com.example.demo.domain.enrollment.service;
 
 import com.example.demo.domain.enrollment.dto.CreateEnrollmentRequest;
+import com.example.demo.domain.enrollment.dto.DirectEnrollmentRequest;
 import com.example.demo.domain.enrollment.dto.EnrollmentResponse;
 
 import java.util.List;
@@ -10,6 +11,11 @@ public interface EnrollmentService {
      * 수강 신청 생성
      */
     EnrollmentResponse createEnrollment(CreateEnrollmentRequest request);
+
+    /**
+     * 관리자의 직접 수강 신청 (운영자용)
+     */
+    EnrollmentResponse directEnrollment(DirectEnrollmentRequest request);
 
     /**
      * 수강 신청 단건 조회

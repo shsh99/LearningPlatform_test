@@ -1,6 +1,7 @@
 package com.example.demo.domain.enrollment.service;
 
 import com.example.demo.domain.enrollment.dto.CreateEnrollmentRequest;
+import com.example.demo.domain.enrollment.dto.DirectEnrollmentRequest;
 import com.example.demo.domain.enrollment.dto.EnrollmentResponse;
 import com.example.demo.domain.enrollment.entity.Enrollment;
 import com.example.demo.domain.enrollment.entity.EnrollmentStatus;
@@ -14,6 +15,8 @@ import com.example.demo.domain.timeschedule.repository.CourseTermRepository;
 import com.example.demo.domain.user.entity.User;
 import com.example.demo.domain.user.exception.UserNotFoundException;
 import com.example.demo.domain.user.repository.UserRepository;
+import com.example.demo.global.exception.BusinessException;
+import com.example.demo.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,6 +59,46 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         sisRepository.save(sis);
 
         return EnrollmentResponse.from(saved);
+    }
+
+    @Override
+    @Transactional
+    public EnrollmentResponse directEnrollment(DirectEnrollmentRequest request) {
+        // 1. 유저 조회
+        User user = userRepository.findById(request.userId())
+            .orElseThrow(() -> new UserNotFoundException(request.userId()));
+
+        // 2. 차수 조회
+        CourseTerm term = courseTermRepository.findById(request.termId())
+            .orElseThrow(() -> new TermNotFoundException(request.termId()));
+
+        // 3. 중복 신청 확인
+        boolean exists = enrollmentRepository.existsByTermAndStudent(term, user);
+        if (exists) {
+            throw new BusinessException(ErrorCode.ALREADY_ENROLLED);
+        }
+
+        // 4. 정원 확인
+        if (term.getCurrentStudents() >= term.getMaxStudents()) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT, "정원이 초과되었습니다.");
+        }
+
+        // 5. 수강 신청 생성 (관리자는 바로 ENROLLED 상태로)
+        Enrollment enrollment = Enrollment.createEnrolled(user, term);
+        Enrollment savedEnrollment = enrollmentRepository.save(enrollment);
+
+        // 6. 차수 수강생 수 증가
+        term.increaseStudentCount();
+
+        // 7. SIS 레코드 생성
+        StudentInformationSystem sis = StudentInformationSystem.create(
+            user.getId(),
+            term.getId(),
+            savedEnrollment
+        );
+        sisRepository.save(sis);
+
+        return EnrollmentResponse.from(savedEnrollment);
     }
 
     @Override

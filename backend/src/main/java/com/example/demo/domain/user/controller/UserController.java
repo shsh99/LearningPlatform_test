@@ -55,6 +55,18 @@ public class UserController {
     }
 
     /**
+     * 유저 검색 (이메일 또는 이름으로)
+     * GET /api/users/search?q={query}
+     * 권한: OPERATOR 이상
+     */
+    @GetMapping("/search")
+    @PreAuthorize("hasAnyRole('OPERATOR', 'ADMIN')")
+    public ResponseEntity<List<com.example.demo.domain.user.dto.UserSearchResponse>> searchUsers(@RequestParam String q) {
+        List<com.example.demo.domain.user.dto.UserSearchResponse> users = userService.searchUsers(q);
+        return ResponseEntity.ok(users);
+    }
+
+    /**
      * 내 프로필 조회 (본인 정보 + 강사 배정 강의 + 수강 강의)
      * GET /api/users/me/profile
      * 권한: 인증된 사용자

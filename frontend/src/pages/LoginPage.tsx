@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { AxiosError } from 'axios';
 import { authApi } from '../api/auth';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -29,8 +30,12 @@ export function LoginPage() {
             } else {
                 navigate('/');
             }
-        } catch (err: any) {
-            setError(err.response?.data?.message || '로그인에 실패했습니다.');
+        } catch (err) {
+            if (err instanceof AxiosError) {
+                setError(err.response?.data?.message || '로그인에 실패했습니다.');
+            } else {
+                setError('로그인에 실패했습니다.');
+            }
         } finally {
             setLoading(false);
         }

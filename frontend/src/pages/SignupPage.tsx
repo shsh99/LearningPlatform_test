@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { AxiosError } from 'axios';
 import { authApi } from '../api/auth';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/Button';
@@ -66,8 +67,12 @@ export function SignupPage() {
             const response = await authApi.signup(signupData);
             login(response);
             navigate('/');
-        } catch (err: any) {
-            setError(err.response?.data?.message || '회원가입에 실패했습니다.');
+        } catch (err) {
+            if (err instanceof AxiosError) {
+                setError(err.response?.data?.message || '회원가입에 실패했습니다.');
+            } else {
+                setError('회원가입에 실패했습니다.');
+            }
         } finally {
             setLoading(false);
         }

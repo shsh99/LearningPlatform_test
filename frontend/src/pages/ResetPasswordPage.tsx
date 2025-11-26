@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
+import { AxiosError } from 'axios';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { authApi } from '../api/auth';
@@ -45,19 +46,23 @@ export const ResetPasswordPage = () => {
 
       alert('비밀번호가 성공적으로 변경되었습니다.');
       navigate('/login');
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to reset password:', err);
 
-      if (err.response?.data?.message) {
-        setErrors([err.response.data.message]);
-      } else if (err.response?.data?.code === 'A011') {
-        setErrors(['새 비밀번호는 기존 비밀번호와 달라야 합니다.']);
-      } else if (err.response?.data?.code === 'A009') {
-        setErrors(['재설정 토큰이 만료되었습니다. 다시 요청해주세요.']);
-      } else if (err.response?.data?.code === 'A010') {
-        setErrors(['이미 사용된 재설정 토큰입니다.']);
-      } else if (err.response?.data?.code === 'A008') {
-        setErrors(['유효하지 않은 재설정 토큰입니다.']);
+      if (err instanceof AxiosError) {
+        if (err.response?.data?.message) {
+          setErrors([err.response.data.message]);
+        } else if (err.response?.data?.code === 'A011') {
+          setErrors(['새 비밀번호는 기존 비밀번호와 달라야 합니다.']);
+        } else if (err.response?.data?.code === 'A009') {
+          setErrors(['재설정 토큰이 만료되었습니다. 다시 요청해주세요.']);
+        } else if (err.response?.data?.code === 'A010') {
+          setErrors(['이미 사용된 재설정 토큰입니다.']);
+        } else if (err.response?.data?.code === 'A008') {
+          setErrors(['유효하지 않은 재설정 토큰입니다.']);
+        } else {
+          setErrors(['비밀번호 재설정에 실패했습니다. 다시 시도해주세요.']);
+        }
       } else {
         setErrors(['비밀번호 재설정에 실패했습니다. 다시 시도해주세요.']);
       }

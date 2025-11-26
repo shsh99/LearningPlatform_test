@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { AxiosError } from 'axios';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { authApi } from '../api/auth';
@@ -29,9 +30,13 @@ export const ForgotPasswordPage = () => {
       setIsSubmitting(true);
       await authApi.forgotPassword({ email });
       setIsSuccess(true);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to send reset email:', err);
-      setError('비밀번호 재설정 요청에 실패했습니다. 다시 시도해주세요.');
+      if (err instanceof AxiosError) {
+        setError(err.response?.data?.message || '비밀번호 재설정 요청에 실패했습니다. 다시 시도해주세요.');
+      } else {
+        setError('비밀번호 재설정 요청에 실패했습니다. 다시 시도해주세요.');
+      }
     } finally {
       setIsSubmitting(false);
     }

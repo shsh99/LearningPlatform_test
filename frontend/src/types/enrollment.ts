@@ -31,3 +31,8 @@ export interface EnrollmentResponse {
   status: EnrollmentStatus;
   enrolledAt: string;
 }
+
+export interface DirectEnrollmentRequest {
+  userId: number;
+  termId: number;
+}
