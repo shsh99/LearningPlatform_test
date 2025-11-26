@@ -1,6 +1,7 @@
 package com.example.demo.domain.enrollment.controller;
 
 import com.example.demo.domain.enrollment.dto.CreateEnrollmentRequest;
+import com.example.demo.domain.enrollment.dto.DirectEnrollmentRequest;
 import com.example.demo.domain.enrollment.dto.EnrollmentResponse;
 import com.example.demo.domain.enrollment.service.EnrollmentService;
 import jakarta.validation.Valid;
@@ -8,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,6 +30,19 @@ public class EnrollmentController {
     public ResponseEntity<EnrollmentResponse> createEnrollment(@Valid @RequestBody CreateEnrollmentRequest request) {
         log.info("POST /api/enrollments - termId: {}, studentId: {}", request.termId(), request.studentId());
         EnrollmentResponse response = enrollmentService.createEnrollment(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    /**
+     * 관리자의 직접 수강 신청
+     * POST /api/enrollments/direct
+     * 권한: OPERATOR 이상
+     */
+    @PostMapping("/direct")
+    @PreAuthorize("hasAnyRole('OPERATOR', 'ADMIN')")
+    public ResponseEntity<EnrollmentResponse> directEnrollment(@Valid @RequestBody DirectEnrollmentRequest request) {
+        log.info("POST /api/enrollments/direct - userId: {}, termId: {}", request.userId(), request.termId());
+        EnrollmentResponse response = enrollmentService.directEnrollment(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

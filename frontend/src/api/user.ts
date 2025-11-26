@@ -1,4 +1,5 @@
 import { apiClient } from './client';
+import type { UserSearchResponse } from '../types/user';
 
 export interface User {
   id: number;
@@ -31,4 +32,12 @@ export const withdrawAccount = async (password: string): Promise<void> => {
   await apiClient.delete('/users/me', {
     data: { password }
   });
+};
+
+// 사용자 검색 (관리자용)
+export const searchUsers = async (query: string): Promise<UserSearchResponse[]> => {
+  const response = await apiClient.get<UserSearchResponse[]>('/users/search', {
+    params: { q: query }
+  });
+  return response.data;
 };

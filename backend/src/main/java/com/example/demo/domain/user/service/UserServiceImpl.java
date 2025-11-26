@@ -56,6 +56,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public List<com.example.demo.domain.user.dto.UserSearchResponse> searchUsers(String query) {
+        List<User> users = userRepository.searchActiveUsers(query);
+        return users.stream()
+            .map(com.example.demo.domain.user.dto.UserSearchResponse::from)
+            .collect(Collectors.toList());
+    }
+
+    @Override
     public UserProfileResponse getMyProfile(Long userId) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new UserNotFoundException(userId));
