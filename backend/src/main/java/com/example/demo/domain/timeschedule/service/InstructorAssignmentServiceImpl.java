@@ -1,5 +1,7 @@
 package com.example.demo.domain.timeschedule.service;
 
+import com.example.demo.domain.enrollment.entity.EnrollmentStatus;
+import com.example.demo.domain.enrollment.repository.EnrollmentRepository;
 import com.example.demo.domain.timeschedule.dto.AssignInstructorRequest;
 import com.example.demo.domain.timeschedule.dto.InstructorAssignmentResponse;
 import com.example.demo.domain.timeschedule.entity.CourseTerm;
@@ -11,6 +13,7 @@ import com.example.demo.domain.timeschedule.repository.InstructorAssignmentRepos
 import com.example.demo.domain.timeschedule.repository.InstructorInformationSystemRepository;
 import com.example.demo.domain.user.entity.User;
 import com.example.demo.domain.user.repository.UserRepository;
+import com.example.demo.global.exception.BusinessException;
 import com.example.demo.global.exception.ErrorCode;
 import com.example.demo.global.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +36,7 @@ public class InstructorAssignmentServiceImpl implements InstructorAssignmentServ
     private final CourseTermRepository courseTermRepository;
     private final UserRepository userRepository;
     private final InstructorInformationSystemRepository iisRepository;
+    private final EnrollmentRepository enrollmentRepository;
 
     @Override
     @Transactional
@@ -139,6 +143,17 @@ public class InstructorAssignmentServiceImpl implements InstructorAssignmentServ
 
         InstructorAssignment assignment = assignmentRepository.findById(id)
             .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND, "강사 배정 ID: " + id));
+
+        // 수강생 확인 로직
+        CourseTerm term = assignment.getTerm();
+        long enrolledCount = enrollmentRepository.countByTermAndStatus(term, EnrollmentStatus.ENROLLED);
+
+        if (enrolledCount > 0) {
+            throw new BusinessException(
+                ErrorCode.INVALID_INPUT,
+                String.format("해당 차수에 %d명의 수강생이 등록되어 있어 배정을 해제할 수 없습니다.", enrolledCount)
+            );
+        }
 
         assignment.cancel();
 

@@ -23,7 +23,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleBadRequest(BusinessException e) {
         log.warn("BusinessException: {}", e.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .body(ErrorResponse.of(e.getErrorCode()));
+            .body(ErrorResponse.of(e.getErrorCode(), e.getMessage()));
     }
 
     @ExceptionHandler(UnauthorizedException.class)
