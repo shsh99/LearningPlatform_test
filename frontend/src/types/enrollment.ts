@@ -24,13 +24,12 @@ export interface CreateEnrollmentRequest {
 export interface EnrollmentResponse {
   id: number;
   termId: number;
-  courseName: string;
+  courseTitle: string;
   termNumber: number;
   studentId: number;
   studentName: string;
   status: EnrollmentStatus;
-  createdAt: string;
-  updatedAt: string;
+  enrolledAt: string;
 }
 
 export interface DirectEnrollmentRequest {

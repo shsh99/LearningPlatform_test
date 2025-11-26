@@ -94,6 +94,20 @@ public class EnrollmentController {
     }
 
     /**
+     * 차수별 + 상태별 수강 신청 목록 조회
+     * GET /api/enrollments/term/{termId}/status/{status}
+     */
+    @GetMapping("/term/{termId}/status/{status}")
+    public ResponseEntity<List<EnrollmentResponse>> getEnrollmentsByTermAndStatus(
+        @PathVariable Long termId,
+        @PathVariable String status
+    ) {
+        log.info("GET /api/enrollments/term/{}/status/{}", termId, status);
+        List<EnrollmentResponse> response = enrollmentService.findByTermIdAndStatus(termId, status);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
      * 수강 취소
      * DELETE /api/enrollments/{id}
      */

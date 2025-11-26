@@ -1,5 +1,6 @@
 package com.example.demo.domain.timeschedule.controller;
 
+import com.example.demo.domain.timeschedule.dto.CourseTermDetailResponse;
 import com.example.demo.domain.timeschedule.dto.CreateCourseTermRequest;
 import com.example.demo.domain.timeschedule.dto.CourseTermResponse;
 import com.example.demo.domain.timeschedule.dto.UpdateCourseTermRequest;
@@ -34,6 +35,17 @@ public class CourseTermController {
     public ResponseEntity<CourseTermResponse> getTermById(@PathVariable Long id) {
         log.info("GET /api/course-terms/{}", id);
         CourseTermResponse response = courseTermService.findById(id);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 강의 기수 상세 조회 (수강생 목록 포함)
+     * GET /api/course-terms/{id}/detail
+     */
+    @GetMapping("/{id}/detail")
+    public ResponseEntity<CourseTermDetailResponse> getTermDetail(@PathVariable Long id) {
+        log.info("GET /api/course-terms/{}/detail", id);
+        CourseTermDetailResponse response = courseTermService.findDetailById(id);
         return ResponseEntity.ok(response);
     }
 

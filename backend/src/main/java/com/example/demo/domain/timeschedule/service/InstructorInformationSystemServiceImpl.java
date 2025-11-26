@@ -1,5 +1,6 @@
 package com.example.demo.domain.timeschedule.service;
 
+import com.example.demo.domain.timeschedule.dto.InstructorInformationSystemDetailResponse;
 import com.example.demo.domain.timeschedule.dto.InstructorInformationSystemResponse;
 import com.example.demo.domain.timeschedule.repository.InstructorInformationSystemRepository;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +42,35 @@ public class InstructorInformationSystemServiceImpl implements InstructorInforma
     public List<InstructorInformationSystemResponse> findAll() {
         return iisRepository.findAll().stream()
             .map(InstructorInformationSystemResponse::from)
+            .collect(Collectors.toList());
+    }
+
+    // Enhanced methods with detailed information
+    @Override
+    public List<InstructorInformationSystemDetailResponse> findAllDetailed() {
+        return iisRepository.findAllWithDetails().stream()
+            .map(InstructorInformationSystemDetailResponse::from)
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<InstructorInformationSystemDetailResponse> findByUserKeyDetailed(Long userKey) {
+        return iisRepository.findByUserKey(userKey).stream()
+            .map(InstructorInformationSystemDetailResponse::from)
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<InstructorInformationSystemDetailResponse> findByTimeKeyDetailed(Long timeKey) {
+        return iisRepository.findByTimeKey(timeKey).stream()
+            .map(InstructorInformationSystemDetailResponse::from)
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<InstructorInformationSystemDetailResponse> findByUserKeyAndTimeKeyDetailed(Long userKey, Long timeKey) {
+        return iisRepository.findByUserKeyAndTimeKey(userKey, timeKey).stream()
+            .map(InstructorInformationSystemDetailResponse::from)
             .collect(Collectors.toList());
     }
 }

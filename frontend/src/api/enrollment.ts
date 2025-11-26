@@ -58,6 +58,24 @@ export const getEnrollmentsByStudentAndStatus = async (
   return response.data;
 };
 
+// 차수별 상태별 수강 신청 목록 조회
+export const getEnrollmentsByTermAndStatus = async (
+  termId: number,
+  status: string
+): Promise<EnrollmentResponse[]> => {
+  const response = await apiClient.get<EnrollmentResponse[]>(
+    `/enrollments/term/${termId}/status/${status}`
+  );
+  return response.data;
+};
+
+// 차수별 ENROLLED 학생 목록 조회 (편의 함수)
+export const getEnrolledStudentsByTerm = async (
+  termId: number
+): Promise<EnrollmentResponse[]> => {
+  return getEnrollmentsByTermAndStatus(termId, 'ENROLLED');
+};
+
 // 수강 취소
 export const cancelEnrollment = async (id: number): Promise<void> => {
   await apiClient.delete(`/enrollments/${id}`);

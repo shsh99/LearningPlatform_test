@@ -36,4 +36,14 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
         @Param("student") User student,
         @Param("status") EnrollmentStatus status
     );
+
+    @Query("SELECT e FROM Enrollment e " +
+           "JOIN FETCH e.student s " +
+           "WHERE e.term = :term " +
+           "AND e.status = :status " +
+           "ORDER BY e.createdAt DESC")
+    List<Enrollment> findEnrollmentsWithStudentByTermAndStatus(
+        @Param("term") CourseTerm term,
+        @Param("status") EnrollmentStatus status
+    );
 }

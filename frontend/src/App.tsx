@@ -15,6 +15,7 @@ import { OperatorDashboardPage } from './pages/operator/OperatorDashboardPage';
 import { OperatorTermsPage } from './pages/operator/OperatorTermsPage';
 import { OperatorAssignmentsPage } from './pages/operator/OperatorAssignmentsPage';
 import { CourseTermManagementPage } from './pages/timeschedule/CourseTermManagementPage';
+import { CourseTermDetailPage } from './pages/timeschedule/CourseTermDetailPage';
 import { InstructorAssignmentManagementPage } from './pages/timeschedule/InstructorAssignmentManagementPage';
 import { InstructorInformationSystemPage } from './pages/timeschedule/InstructorInformationSystemPage';
 import { StudentInformationSystemPage } from './pages/enrollment/StudentInformationSystemPage';
@@ -40,6 +41,7 @@ function App() {
                     <Route path="/operator/terms" element={<OperatorTermsPage />} />
                     <Route path="/operator/assignments" element={<OperatorAssignmentsPage />} />
                     <Route path="/ts/terms" element={<CourseTermManagementPage />} />
+                    <Route path="/ts/terms/:id" element={<CourseTermDetailPage />} />
                     <Route path="/ts/assignments" element={<InstructorAssignmentManagementPage />} />
                     <Route path="/ts/iis" element={<InstructorInformationSystemPage />} />
                     <Route path="/enrollment/sis" element={<StudentInformationSystemPage />} />

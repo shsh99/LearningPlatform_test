@@ -141,6 +141,18 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     }
 
     @Override
+    public List<EnrollmentResponse> findByTermIdAndStatus(Long termId, String status) {
+        CourseTerm term = courseTermRepository.findById(termId)
+            .orElseThrow(() -> new TermNotFoundException(termId));
+
+        EnrollmentStatus enrollmentStatus = EnrollmentStatus.valueOf(status.toUpperCase());
+
+        return enrollmentRepository.findEnrollmentsWithStudentByTermAndStatus(term, enrollmentStatus).stream()
+            .map(EnrollmentResponse::from)
+            .collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional
     public void cancelEnrollment(Long id) {
         Enrollment enrollment = enrollmentRepository.findById(id)

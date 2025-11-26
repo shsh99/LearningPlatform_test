@@ -2,12 +2,18 @@ package com.example.demo.domain.timeschedule.service;
 
 import com.example.demo.domain.course.entity.Course;
 import com.example.demo.domain.course.repository.CourseRepository;
+import com.example.demo.domain.enrollment.entity.Enrollment;
+import com.example.demo.domain.enrollment.repository.EnrollmentRepository;
+import com.example.demo.domain.timeschedule.dto.CourseTermDetailResponse;
 import com.example.demo.domain.timeschedule.dto.CreateCourseTermRequest;
 import com.example.demo.domain.timeschedule.dto.CourseTermResponse;
 import com.example.demo.domain.timeschedule.dto.UpdateCourseTermRequest;
+import com.example.demo.domain.timeschedule.entity.AssignmentStatus;
 import com.example.demo.domain.timeschedule.entity.CourseTerm;
+import com.example.demo.domain.timeschedule.entity.InstructorAssignment;
 import com.example.demo.domain.timeschedule.exception.TermNotFoundException;
 import com.example.demo.domain.timeschedule.repository.CourseTermRepository;
+import com.example.demo.domain.timeschedule.repository.InstructorAssignmentRepository;
 import com.example.demo.global.exception.ErrorCode;
 import com.example.demo.global.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +33,8 @@ public class CourseTermServiceImpl implements CourseTermService {
 
     private final CourseTermRepository courseTermRepository;
     private final CourseRepository courseRepository;
+    private final EnrollmentRepository enrollmentRepository;
+    private final InstructorAssignmentRepository instructorAssignmentRepository;
 
     @Override
     @Transactional
@@ -74,6 +82,26 @@ public class CourseTermServiceImpl implements CourseTermService {
             .orElseThrow(() -> new TermNotFoundException(id));
 
         return CourseTermResponse.from(term);
+    }
+
+    @Override
+    public CourseTermDetailResponse findDetailById(Long id) {
+        log.debug("Finding course term detail: id={}", id);
+
+        // 1. CourseTerm 조회
+        CourseTerm term = courseTermRepository.findById(id)
+            .orElseThrow(() -> new TermNotFoundException(id));
+
+        // 2. 수강생 목록 조회
+        List<Enrollment> enrollments = enrollmentRepository.findByTerm(term);
+
+        // 3. 현재 배정된 강사 조회 (ASSIGNED 상태만)
+        InstructorAssignment currentInstructor = instructorAssignmentRepository
+            .findByTermAndStatus(term, AssignmentStatus.ASSIGNED)
+            .orElse(null);
+
+        // 4. DTO 변환 및 반환
+        return CourseTermDetailResponse.from(term, enrollments, currentInstructor);
     }
 
     @Override

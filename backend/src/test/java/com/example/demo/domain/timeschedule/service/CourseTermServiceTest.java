@@ -2,11 +2,20 @@ package com.example.demo.domain.timeschedule.service;
 
 import com.example.demo.domain.course.entity.Course;
 import com.example.demo.domain.course.repository.CourseRepository;
+import com.example.demo.domain.enrollment.entity.Enrollment;
+import com.example.demo.domain.enrollment.entity.EnrollmentStatus;
+import com.example.demo.domain.enrollment.repository.EnrollmentRepository;
+import com.example.demo.domain.timeschedule.dto.CourseTermDetailResponse;
 import com.example.demo.domain.timeschedule.dto.CourseTermResponse;
 import com.example.demo.domain.timeschedule.dto.CreateCourseTermRequest;
 import com.example.demo.domain.timeschedule.dto.UpdateCourseTermRequest;
+import com.example.demo.domain.timeschedule.entity.AssignmentStatus;
 import com.example.demo.domain.timeschedule.entity.CourseTerm;
 import com.example.demo.domain.timeschedule.entity.DayOfWeek;
+import com.example.demo.domain.timeschedule.entity.InstructorAssignment;
+import com.example.demo.domain.timeschedule.repository.InstructorAssignmentRepository;
+import com.example.demo.domain.user.entity.User;
+import com.example.demo.domain.user.entity.UserRole;
 
 import java.util.Set;
 import com.example.demo.domain.timeschedule.entity.TermStatus;
@@ -42,6 +51,12 @@ class CourseTermServiceTest {
 
     @Mock
     private CourseRepository courseRepository;
+
+    @Mock
+    private EnrollmentRepository enrollmentRepository;
+
+    @Mock
+    private InstructorAssignmentRepository instructorAssignmentRepository;
 
     @Test
     @DisplayName("차수 생성")
@@ -440,5 +455,213 @@ class CourseTermServiceTest {
 
         // then
         verify(courseTermRepository).findById(1L);
+    }
+
+    @Test
+    @DisplayName("차수 상세 조회 - 수강생과 강사 포함")
+    void findDetailById_withEnrollmentsAndInstructor() {
+        // given
+        Course course = Course.create("Spring Boot 입문", "설명", 30);
+        CourseTerm term = CourseTerm.create(
+            course,
+            1,
+            LocalDate.of(2025, 1, 1),
+            LocalDate.of(2025, 3, 31),
+            Set.of(DayOfWeek.MONDAY),
+            LocalTime.of(9, 0),
+            LocalTime.of(18, 0),
+            30
+        );
+
+        User student1 = User.create("student1@test.com", "password", "홍길동", UserRole.STUDENT);
+        User student2 = User.create("student2@test.com", "password", "김철수", UserRole.STUDENT);
+        User instructor = User.create("instructor@test.com", "password", "강사님", UserRole.INSTRUCTOR);
+
+        Enrollment enrollment1 = Enrollment.create(term, student1);
+        Enrollment enrollment2 = Enrollment.create(term, student2);
+        List<Enrollment> enrollments = List.of(enrollment1, enrollment2);
+
+        InstructorAssignment assignment = InstructorAssignment.create(term, instructor, instructor);
+
+        given(courseTermRepository.findById(1L)).willReturn(Optional.of(term));
+        given(enrollmentRepository.findByTerm(term)).willReturn(enrollments);
+        given(instructorAssignmentRepository.findByTermAndStatus(term, AssignmentStatus.ASSIGNED))
+            .willReturn(Optional.of(assignment));
+
+        // when
+        CourseTermDetailResponse result = courseTermService.findDetailById(1L);
+
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.id()).isEqualTo(term.getId());
+        assertThat(result.courseTitle()).isEqualTo("Spring Boot 입문");
+        assertThat(result.termNumber()).isEqualTo(1);
+        assertThat(result.enrolledStudents()).hasSize(2);
+        assertThat(result.instructor()).isNotNull();
+        assertThat(result.instructor().instructorName()).isEqualTo("강사님");
+        assertThat(result.enrolledStudents().get(0).studentName()).isEqualTo("홍길동");
+        assertThat(result.enrolledStudents().get(0).studentEmail()).contains("***"); // 이메일 마스킹 확인
+        verify(courseTermRepository).findById(1L);
+        verify(enrollmentRepository).findByTerm(term);
+        verify(instructorAssignmentRepository).findByTermAndStatus(term, AssignmentStatus.ASSIGNED);
+    }
+
+    @Test
+    @DisplayName("차수 상세 조회 - 강사 없음")
+    void findDetailById_withoutInstructor() {
+        // given
+        Course course = Course.create("Spring Boot 입문", "설명", 30);
+        CourseTerm term = CourseTerm.create(
+            course,
+            1,
+            LocalDate.of(2025, 1, 1),
+            LocalDate.of(2025, 3, 31),
+            Set.of(DayOfWeek.MONDAY),
+            LocalTime.of(9, 0),
+            LocalTime.of(18, 0),
+            30
+        );
+
+        User student = User.create("student@test.com", "password", "홍길동", UserRole.STUDENT);
+        Enrollment enrollment = Enrollment.create(term, student);
+
+        given(courseTermRepository.findById(1L)).willReturn(Optional.of(term));
+        given(enrollmentRepository.findByTerm(term)).willReturn(List.of(enrollment));
+        given(instructorAssignmentRepository.findByTermAndStatus(term, AssignmentStatus.ASSIGNED))
+            .willReturn(Optional.empty());
+
+        // when
+        CourseTermDetailResponse result = courseTermService.findDetailById(1L);
+
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.instructor()).isNull();
+        assertThat(result.enrolledStudents()).hasSize(1);
+        verify(instructorAssignmentRepository).findByTermAndStatus(term, AssignmentStatus.ASSIGNED);
+    }
+
+    @Test
+    @DisplayName("차수 상세 조회 - 수강생 없음")
+    void findDetailById_withoutEnrollments() {
+        // given
+        Course course = Course.create("Spring Boot 입문", "설명", 30);
+        CourseTerm term = CourseTerm.create(
+            course,
+            1,
+            LocalDate.of(2025, 1, 1),
+            LocalDate.of(2025, 3, 31),
+            Set.of(DayOfWeek.MONDAY),
+            LocalTime.of(9, 0),
+            LocalTime.of(18, 0),
+            30
+        );
+
+        given(courseTermRepository.findById(1L)).willReturn(Optional.of(term));
+        given(enrollmentRepository.findByTerm(term)).willReturn(List.of());
+        given(instructorAssignmentRepository.findByTermAndStatus(term, AssignmentStatus.ASSIGNED))
+            .willReturn(Optional.empty());
+
+        // when
+        CourseTermDetailResponse result = courseTermService.findDetailById(1L);
+
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.enrolledStudents()).isEmpty();
+        assertThat(result.instructor()).isNull();
+        verify(enrollmentRepository).findByTerm(term);
+    }
+
+    @Test
+    @DisplayName("차수 상세 조회 - 취소된 수강생 제외")
+    void findDetailById_excludeCancelledEnrollments() {
+        // given
+        Course course = Course.create("Spring Boot 입문", "설명", 30);
+        CourseTerm term = CourseTerm.create(
+            course,
+            1,
+            LocalDate.of(2025, 1, 1),
+            LocalDate.of(2025, 3, 31),
+            Set.of(DayOfWeek.MONDAY),
+            LocalTime.of(9, 0),
+            LocalTime.of(18, 0),
+            30
+        );
+
+        User student1 = User.create("enrolled@test.com", "password", "수강중학생", UserRole.STUDENT);
+        User student2 = User.create("cancelled@test.com", "password", "취소학생", UserRole.STUDENT);
+        User student3 = User.create("completed@test.com", "password", "완료학생", UserRole.STUDENT);
+
+        Enrollment enrollment1 = Enrollment.create(term, student1); // ENROLLED
+        Enrollment enrollment2 = Enrollment.create(term, student2);
+        enrollment2.cancel(); // CANCELLED
+        Enrollment enrollment3 = Enrollment.create(term, student3);
+        enrollment3.complete(); // COMPLETED
+
+        List<Enrollment> enrollments = List.of(enrollment1, enrollment2, enrollment3);
+
+        given(courseTermRepository.findById(1L)).willReturn(Optional.of(term));
+        given(enrollmentRepository.findByTerm(term)).willReturn(enrollments);
+        given(instructorAssignmentRepository.findByTermAndStatus(term, AssignmentStatus.ASSIGNED))
+            .willReturn(Optional.empty());
+
+        // when
+        CourseTermDetailResponse result = courseTermService.findDetailById(1L);
+
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.enrolledStudents()).hasSize(2); // ENROLLED + COMPLETED만 포함
+        assertThat(result.enrolledStudents())
+            .extracting("studentName")
+            .containsExactlyInAnyOrder("수강중학생", "완료학생");
+        assertThat(result.enrolledStudents())
+            .extracting("status")
+            .containsExactlyInAnyOrder(EnrollmentStatus.ENROLLED, EnrollmentStatus.COMPLETED);
+    }
+
+    @Test
+    @DisplayName("차수 상세 조회 - 이메일 마스킹 확인")
+    void findDetailById_emailMasking() {
+        // given
+        Course course = Course.create("Spring Boot 입문", "설명", 30);
+        CourseTerm term = CourseTerm.create(
+            course,
+            1,
+            LocalDate.of(2025, 1, 1),
+            LocalDate.of(2025, 3, 31),
+            Set.of(DayOfWeek.MONDAY),
+            LocalTime.of(9, 0),
+            LocalTime.of(18, 0),
+            30
+        );
+
+        User student1 = User.create("user@example.com", "password", "학생1", UserRole.STUDENT);
+        User student2 = User.create("ab@test.com", "password", "학생2", UserRole.STUDENT);
+
+        Enrollment enrollment1 = Enrollment.create(term, student1);
+        Enrollment enrollment2 = Enrollment.create(term, student2);
+
+        given(courseTermRepository.findById(1L)).willReturn(Optional.of(term));
+        given(enrollmentRepository.findByTerm(term)).willReturn(List.of(enrollment1, enrollment2));
+        given(instructorAssignmentRepository.findByTermAndStatus(term, AssignmentStatus.ASSIGNED))
+            .willReturn(Optional.empty());
+
+        // when
+        CourseTermDetailResponse result = courseTermService.findDetailById(1L);
+
+        // then
+        assertThat(result.enrolledStudents().get(0).studentEmail()).isEqualTo("use***@example.com");
+        assertThat(result.enrolledStudents().get(1).studentEmail()).isEqualTo("a***@test.com");
+    }
+
+    @Test
+    @DisplayName("차수 상세 조회 - 존재하지 않는 차수")
+    void findDetailById_notFound() {
+        // given
+        given(courseTermRepository.findById(999L)).willReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> courseTermService.findDetailById(999L))
+            .isInstanceOf(TermNotFoundException.class);
+        verify(courseTermRepository).findById(999L);
     }
 }
