@@ -4,6 +4,7 @@ import com.example.demo.domain.user.dto.ChangePasswordRequest;
 import com.example.demo.domain.user.dto.UpdateProfileRequest;
 import com.example.demo.domain.user.dto.UserResponse;
 import com.example.demo.domain.user.dto.UserProfileResponse;
+import com.example.demo.domain.user.dto.UserSearchResponse;
 import com.example.demo.domain.user.dto.WithdrawRequest;
 
 import java.util.List;
@@ -21,6 +22,11 @@ public interface UserService {
      * 유저 단건 조회
      */
     UserResponse findById(Long id);
+
+    /**
+     * 유저 검색 (이메일 또는 이름으로)
+     */
+    List<UserSearchResponse> searchUsers(String query);
 
     /**
      * 유저 프로필 조회 (본인 정보 + 강사 배정 강의 + 수강 강의)

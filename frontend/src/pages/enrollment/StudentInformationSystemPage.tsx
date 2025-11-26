@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Navbar } from '../../components/Navbar';
 import { StudentDetailModal } from '../../components/StudentDetailModal';
+import { DirectEnrollmentModal } from '../../components/DirectEnrollmentModal';
 import { getStudentInformationSystems, cancelEnrollment, completeEnrollment } from '../../api/studentInformationSystem';
 import type { StudentInformationSystem } from '../../types/studentInformationSystem';
 
@@ -13,6 +14,7 @@ export const StudentInformationSystemPage = () => {
   // Modal state
   const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEnrollModalOpen, setIsEnrollModalOpen] = useState(false);
 
   // Filter states - Level 1 (Always visible)
   const [searchQuery, setSearchQuery] = useState('');
@@ -185,7 +187,15 @@ export const StudentInformationSystemPage = () => {
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-50 to-blue-50 py-8">
         <div className="max-w-7xl mx-auto px-4">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">SIS 관리</h1>
+            <div className="flex items-center justify-between mb-2">
+              <h1 className="text-3xl font-bold text-gray-900">SIS 관리</h1>
+              <button
+                onClick={() => setIsEnrollModalOpen(true)}
+                className="px-6 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-sm"
+              >
+                + 수강생 등록
+              </button>
+            </div>
             <p className="text-gray-600">학생 수강 정보를 조회하고 관리할 수 있습니다.</p>
           </div>
 
@@ -452,6 +462,16 @@ export const StudentInformationSystemPage = () => {
           studentId={selectedStudentId}
         />
       )}
+
+      {/* Direct Enrollment Modal */}
+      <DirectEnrollmentModal
+        isOpen={isEnrollModalOpen}
+        onClose={() => setIsEnrollModalOpen(false)}
+        onSuccess={() => {
+          loadRecords();
+          alert('수강 신청이 완료되었습니다.');
+        }}
+      />
     </>
   );
 };

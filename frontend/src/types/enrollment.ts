@@ -32,3 +32,8 @@ export interface EnrollmentResponse {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface DirectEnrollmentRequest {
+  userId: number;
+  termId: number;
+}
