@@ -34,3 +34,14 @@ yarn-error.log*
 .env
 .env.local
 .env.*.local
+
+# Gradle 캐시 및 빌드 파일 무시
+.gradle/
+build/
+out/
+bin/
+
+# IntelliJ/IDE 설정 파일 무시 (선택사항)
+.idea/
+*.iml
+*.iws

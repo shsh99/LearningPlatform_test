@@ -1,6 +1,6 @@
 package com.example.demo.domain.enrollment.controller;
 
-import com.example.demo.domain.enrollment.dto.StudentInformationSystemResponse;
+import com.example.demo.domain.enrollment.dto.StudentInformationSystemDetailResponse;
 import com.example.demo.domain.enrollment.service.StudentInformationSystemService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,20 +18,28 @@ public class StudentInformationSystemController {
     private final StudentInformationSystemService sisService;
 
     @GetMapping
-    public ResponseEntity<List<StudentInformationSystemResponse>> getAll(
-        @RequestParam(required = false) Long userKey,
-        @RequestParam(required = false) Long timeKey
-    ) {
-        log.info("GET /api/student-information-system - userKey: {}, timeKey: {}", userKey, timeKey);
+    public ResponseEntity<List<StudentInformationSystemDetailResponse>> getAll() {
+        log.info("GET /api/student-information-system - Get all with details");
+        return ResponseEntity.ok(sisService.findAllWithDetails());
+    }
 
-        if (userKey != null && timeKey != null) {
-            return ResponseEntity.ok(sisService.findByUserKeyAndTimeKey(userKey, timeKey));
-        } else if (userKey != null) {
-            return ResponseEntity.ok(sisService.findByUserKey(userKey));
-        } else if (timeKey != null) {
-            return ResponseEntity.ok(sisService.findByTimeKey(timeKey));
-        } else {
-            return ResponseEntity.ok(sisService.findAll());
-        }
+    @GetMapping("/{id}")
+    public ResponseEntity<StudentInformationSystemDetailResponse> getDetail(@PathVariable Long id) {
+        log.info("GET /api/student-information-system/{} - Get detail", id);
+        return ResponseEntity.ok(sisService.findDetailById(id));
+    }
+
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<Void> cancelEnrollment(@PathVariable Long id) {
+        log.info("POST /api/student-information-system/{}/cancel - Cancel enrollment", id);
+        sisService.cancelEnrollment(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{id}/complete")
+    public ResponseEntity<Void> completeEnrollment(@PathVariable Long id) {
+        log.info("POST /api/student-information-system/{}/complete - Complete enrollment", id);
+        sisService.completeEnrollment(id);
+        return ResponseEntity.ok().build();
     }
 }
