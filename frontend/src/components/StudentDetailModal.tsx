@@ -76,7 +76,7 @@ export const StudentDetailModal = ({ isOpen, onClose, studentId }: StudentDetail
                     <label className="block text-sm font-medium text-gray-500 mb-1">수강 상태</label>
                     <div>
                       {student.enrollmentStatus === 'ENROLLED' && (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-[#6600FF]/10 text-[#6600FF]">
                           [수강중]🟢
                         </span>
                       )}
@@ -96,7 +96,7 @@ export const StudentDetailModal = ({ isOpen, onClose, studentId }: StudentDetail
               </section>
 
               {/* 수강 정보 */}
-              <section className="bg-blue-50 rounded-lg p-6">
+              <section className="bg-[#6600FF]/5 rounded-lg p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">수강 정보</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -113,7 +113,7 @@ export const StudentDetailModal = ({ isOpen, onClose, studentId }: StudentDetail
                       <div className="flex items-center gap-2">
                         <div className="flex-1 bg-gray-200 rounded-full h-2">
                           <div
-                            className="bg-blue-600 h-2 rounded-full"
+                            className="bg-[#6600FF] h-2 rounded-full"
                             style={{ width: `${student.progressPercentage}%` }}
                           />
                         </div>

@@ -63,7 +63,7 @@ export const CourseCalendar = ({ terms }: CourseCalendarProps) => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'SCHEDULED':
-        return 'bg-blue-500';
+        return 'bg-[#6600FF]';
       case 'ONGOING':
         return 'bg-green-500';
       case 'COMPLETED':
@@ -159,7 +159,7 @@ export const CourseCalendar = ({ terms }: CourseCalendarProps) => {
           <div
             key={day}
             className={`py-3 text-center text-sm font-medium ${
-              i === 0 ? 'text-red-500' : i === 6 ? 'text-blue-500' : 'text-gray-600'
+              i === 0 ? 'text-red-500' : i === 6 ? 'text-[#6600FF]' : 'text-gray-600'
             }`}
           >
             {day}
@@ -183,11 +183,11 @@ export const CourseCalendar = ({ terms }: CourseCalendarProps) => {
                   <div
                     className={`text-sm font-medium mb-1 w-7 h-7 flex items-center justify-center rounded-full ${
                       isToday(item.day)
-                        ? 'bg-blue-600 text-white'
+                        ? 'bg-[#6600FF] text-white'
                         : dayOfWeek === 0
                         ? 'text-red-500'
                         : dayOfWeek === 6
-                        ? 'text-blue-500'
+                        ? 'text-[#6600FF]'
                         : 'text-gray-700'
                     }`}
                   >
@@ -223,7 +223,7 @@ export const CourseCalendar = ({ terms }: CourseCalendarProps) => {
       <div className="px-6 py-3 border-t border-gray-200 flex items-center gap-4 bg-gray-50">
         <span className="text-sm text-gray-600">상태:</span>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded bg-blue-500"></div>
+          <div className="w-3 h-3 rounded bg-[#6600FF]"></div>
           <span className="text-xs text-gray-600">예정</span>
         </div>
         <div className="flex items-center gap-1.5">

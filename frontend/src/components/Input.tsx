@@ -39,7 +39,7 @@ export function Input({
                     id={inputId}
                     className={`
                         block w-full rounded-lg border
-                        ${error ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}
+                        ${error ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-[#6600FF] focus:ring-[#6600FF]'}
                         ${leftIcon ? 'pl-10' : 'pl-3'}
                         ${rightIcon ? 'pr-10' : 'pr-3'}
                         py-2 text-gray-900 placeholder-gray-400

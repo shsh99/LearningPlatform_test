@@ -17,7 +17,7 @@ export function Navbar() {
           {/* 로고 */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center gap-2 group">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center group-hover:shadow-lg transition-shadow">
+              <div className="w-10 h-10 bg-gradient-to-br from-[#6600FF] to-[#8833FF] rounded-lg flex items-center justify-center group-hover:shadow-lg transition-shadow">
                 <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                 </svg>
@@ -32,7 +32,7 @@ export function Navbar() {
               <>
                 <Link
                   to="/courses"
-                  className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+                  className="text-gray-700 hover:text-[#6600FF] font-medium transition-colors"
                 >
                   강의 탐색
                 </Link>
@@ -41,25 +41,25 @@ export function Navbar() {
                   <>
                     <Link
                       to="/my-learning"
-                      className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+                      className="text-gray-700 hover:text-[#6600FF] font-medium transition-colors"
                     >
                       내 강의실
                     </Link>
                     <Link
                       to="/my-applications"
-                      className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+                      className="text-gray-700 hover:text-[#6600FF] font-medium transition-colors"
                     >
                       신청 현황
                     </Link>
                     <Link
                       to="/my-profile"
-                      className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+                      className="text-gray-700 hover:text-[#6600FF] font-medium transition-colors"
                     >
                       마이페이지
                     </Link>
                     <Link
                       to="/apply-course"
-                      className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all font-medium"
+                      className="px-4 py-2 bg-gradient-to-r from-[#6600FF] to-[#8833FF] text-white rounded-lg hover:shadow-lg transition-all font-medium"
                     >
                       강의 개설 신청
                     </Link>
@@ -70,31 +70,31 @@ export function Navbar() {
                   <>
                     <Link
                       to="/operator/dashboard"
-                      className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+                      className="text-gray-700 hover:text-[#6600FF] font-medium transition-colors"
                     >
                       대시보드
                     </Link>
                     <Link
                       to="/operator/terms"
-                      className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+                      className="text-gray-700 hover:text-[#6600FF] font-medium transition-colors"
                     >
                       차수 관리
                     </Link>
                     <Link
                       to="/operator/assignments"
-                      className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+                      className="text-gray-700 hover:text-[#6600FF] font-medium transition-colors"
                     >
                       강사 배정
                     </Link>
                     <Link
                       to="/ts/iis"
-                      className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+                      className="text-gray-700 hover:text-[#6600FF] font-medium transition-colors"
                     >
                       IIS 조회
                     </Link>
                     <Link
                       to="/enrollment/sis"
-                      className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+                      className="text-gray-700 hover:text-[#6600FF] font-medium transition-colors"
                     >
                       SIS 조회
                     </Link>
@@ -122,13 +122,13 @@ export function Navbar() {
               <>
                 <Link
                   to="/login"
-                  className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+                  className="text-gray-700 hover:text-[#6600FF] font-medium transition-colors"
                 >
                   로그인
                 </Link>
                 <Link
                   to="/signup"
-                  className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all font-medium"
+                  className="px-4 py-2 bg-gradient-to-r from-[#6600FF] to-[#8833FF] text-white rounded-lg hover:shadow-lg transition-all font-medium"
                 >
                   회원가입
                 </Link>

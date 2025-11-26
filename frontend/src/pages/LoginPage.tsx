@@ -42,12 +42,12 @@ export function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-gradient-to-br from-[#6600FF]/5 via-white to-[#8833FF]/5 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-md w-full">
                 {/* 로고 */}
                 <div className="text-center mb-8">
                     <Link to="/" className="inline-flex items-center gap-2 group">
-                        <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center group-hover:shadow-lg transition-shadow">
+                        <div className="w-12 h-12 bg-gradient-to-br from-[#6600FF] to-[#8833FF] rounded-xl flex items-center justify-center group-hover:shadow-lg transition-shadow">
                             <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                             </svg>
@@ -81,7 +81,7 @@ export function LoginPage() {
                                     value={formData.email}
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                     required
-                                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6600FF] focus:border-transparent transition-colors"
                                     placeholder="your@email.com"
                                 />
                             </div>
@@ -94,7 +94,7 @@ export function LoginPage() {
                                 </label>
                                 <Link
                                     to="/forgot-password"
-                                    className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                                    className="text-xs text-[#6600FF] hover:text-[#5500DD] font-medium"
                                 >
                                     비밀번호를 잊으셨나요?
                                 </Link>
@@ -111,7 +111,7 @@ export function LoginPage() {
                                     value={formData.password}
                                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                     required
-                                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6600FF] focus:border-transparent transition-colors"
                                     placeholder="••••••••"
                                 />
                             </div>
@@ -129,7 +129,7 @@ export function LoginPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                            className="w-full flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-gradient-to-r from-[#6600FF] to-[#8833FF] hover:from-[#5500DD] hover:to-[#7722EE] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6600FF] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                         >
                             {loading ? (
                                 <>
@@ -164,7 +164,7 @@ export function LoginPage() {
                             <span className="text-sm text-gray-600">아직 계정이 없으신가요? </span>
                             <Link
                                 to="/signup"
-                                className="text-sm font-semibold text-blue-600 hover:text-blue-500 transition-colors"
+                                className="text-sm font-semibold text-[#6600FF] hover:text-[#5500DD] transition-colors"
                             >
                                 회원가입하기
                             </Link>

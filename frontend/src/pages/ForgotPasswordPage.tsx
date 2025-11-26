@@ -44,7 +44,7 @@ export const ForgotPasswordPage = () => {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-[#6600FF]/5 via-white to-[#8833FF]/5 flex items-center justify-center p-4">
         <div className="max-w-md w-full">
           <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
             <div className="text-center">
@@ -69,7 +69,7 @@ export const ForgotPasswordPage = () => {
               </p>
               <Link
                 to="/login"
-                className="inline-flex items-center justify-center w-full px-6 py-3 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center justify-center w-full px-6 py-3 bg-[#6600FF] text-white font-medium rounded-xl hover:bg-[#5500DD] transition-colors"
               >
                 로그인으로 돌아가기
               </Link>
@@ -81,7 +81,7 @@ export const ForgotPasswordPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#6600FF]/5 via-white to-[#8833FF]/5 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">비밀번호 찾기</h1>
@@ -116,7 +116,7 @@ export const ForgotPasswordPage = () => {
             <div className="text-center">
               <Link
                 to="/login"
-                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                className="text-sm text-[#6600FF] hover:text-[#5500DD] font-medium"
               >
                 로그인으로 돌아가기
               </Link>
@@ -127,7 +127,7 @@ export const ForgotPasswordPage = () => {
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
             계정이 없으신가요?{' '}
-            <Link to="/signup" className="text-blue-600 hover:text-blue-700 font-medium">
+            <Link to="/signup" className="text-[#6600FF] hover:text-[#5500DD] font-medium">
               회원가입
             </Link>
           </p>

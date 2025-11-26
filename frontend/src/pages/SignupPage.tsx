@@ -164,7 +164,7 @@ export function SignupPage() {
 
                         <div className="mt-6 text-center text-sm">
                             <span className="text-gray-600">이미 계정이 있으신가요? </span>
-                            <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">
+                            <Link to="/login" className="font-medium text-[#6600FF] hover:text-[#5500DD]">
                                 로그인
                             </Link>
                         </div>

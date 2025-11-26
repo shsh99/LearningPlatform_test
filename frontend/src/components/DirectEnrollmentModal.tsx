@@ -210,7 +210,7 @@ export const DirectEnrollmentModal = ({ isOpen, onClose, onSuccess }: DirectEnro
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
                     s <= step
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-[#6600FF] text-white'
                       : 'bg-gray-200 text-gray-500'
                   }`}
                 >
@@ -219,7 +219,7 @@ export const DirectEnrollmentModal = ({ isOpen, onClose, onSuccess }: DirectEnro
                 {s < 3 && (
                   <div
                     className={`w-24 h-1 ${
-                      s < step ? 'bg-blue-600' : 'bg-gray-200'
+                      s < step ? 'bg-[#6600FF]' : 'bg-gray-200'
                     }`}
                   />
                 )}
@@ -263,7 +263,7 @@ export const DirectEnrollmentModal = ({ isOpen, onClose, onSuccess }: DirectEnro
                           type="checkbox"
                           checked={selectedUsers.some(u => u.id === user.id)}
                           onChange={() => handleToggleUser(user)}
-                          className="mr-3 h-4 w-4 text-blue-600 rounded"
+                          className="mr-3 h-4 w-4 text-[#6600FF] rounded accent-[#6600FF]"
                         />
                         <div className="flex-1">
                           <div className="font-medium text-gray-900">{user.name}</div>
@@ -291,7 +291,7 @@ export const DirectEnrollmentModal = ({ isOpen, onClose, onSuccess }: DirectEnro
                           type="checkbox"
                           checked={selectedUsers.some(u => u.id === user.id)}
                           onChange={() => handleToggleUser(user)}
-                          className="mr-3 h-4 w-4 text-blue-600 rounded"
+                          className="mr-3 h-4 w-4 text-[#6600FF] rounded accent-[#6600FF]"
                         />
                         <div className="flex-1">
                           <div className="font-medium text-gray-900">{user.name}</div>
@@ -321,7 +321,7 @@ export const DirectEnrollmentModal = ({ isOpen, onClose, onSuccess }: DirectEnro
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 2단계: 강의 선택
               </h3>
-              <div className="mb-4 p-4 bg-blue-50 rounded-lg">
+              <div className="mb-4 p-4 bg-[#6600FF]/5 rounded-lg">
                 <p className="text-sm text-gray-600 mb-2">선택된 수강생 ({selectedUsers.length}명)</p>
                 <div className="max-h-32 overflow-y-auto space-y-1">
                   {selectedUsers.map((user) => (
@@ -339,7 +339,7 @@ export const DirectEnrollmentModal = ({ isOpen, onClose, onSuccess }: DirectEnro
                     <button
                       key={course.id}
                       onClick={() => handleSelectCourse(course)}
-                      className="w-full text-left p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all"
+                      className="w-full text-left p-4 border border-gray-200 rounded-lg hover:border-[#6600FF] hover:bg-[#6600FF]/5 transition-all"
                     >
                       <div className="font-semibold text-gray-900">{course.title}</div>
                       <div className="text-sm text-gray-600 mt-1">{course.description}</div>
@@ -361,7 +361,7 @@ export const DirectEnrollmentModal = ({ isOpen, onClose, onSuccess }: DirectEnro
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 3단계: 차수 선택
               </h3>
-              <div className="mb-4 p-4 bg-blue-50 rounded-lg space-y-2">
+              <div className="mb-4 p-4 bg-[#6600FF]/5 rounded-lg space-y-2">
                 <div>
                   <p className="text-sm text-gray-600 mb-2">선택된 수강생 ({selectedUsers.length}명)</p>
                   <div className="max-h-24 overflow-y-auto space-y-1">
@@ -389,8 +389,8 @@ export const DirectEnrollmentModal = ({ isOpen, onClose, onSuccess }: DirectEnro
                       onClick={() => handleSelectTerm(term)}
                       className={`w-full text-left p-4 border-2 rounded-lg transition-all ${
                         selectedTerm?.id === term.id
-                          ? 'border-blue-600 bg-blue-50'
-                          : 'border-gray-200 hover:border-blue-300'
+                          ? 'border-[#6600FF] bg-[#6600FF]/5'
+                          : 'border-gray-200 hover:border-[#6600FF]/50'
                       }`}
                     >
                       <div className="flex items-center justify-between">
@@ -410,7 +410,7 @@ export const DirectEnrollmentModal = ({ isOpen, onClose, onSuccess }: DirectEnro
                           className={`px-3 py-1 rounded-full text-xs font-medium ${
                             term.status === 'ONGOING'
                               ? 'bg-green-100 text-green-800'
-                              : 'bg-blue-100 text-blue-800'
+                              : 'bg-[#6600FF]/10 text-[#6600FF]'
                           }`}
                         >
                           {term.status === 'ONGOING' ? '진행중' : '예정'}

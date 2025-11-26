@@ -19,9 +19,9 @@ export const StatsCards = ({ stats }: StatsCardsProps) => {
           />
         </svg>
       ),
-      color: 'bg-blue-500',
-      bgColor: 'bg-blue-50',
-      textColor: 'text-blue-600',
+      color: 'bg-[#6600FF]',
+      bgColor: 'bg-[#6600FF]/10',
+      textColor: 'text-[#6600FF]',
     },
     {
       title: '전체 강의',

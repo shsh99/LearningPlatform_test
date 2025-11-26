@@ -72,7 +72,7 @@ export const ResetPasswordPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#6600FF]/5 via-white to-[#8833FF]/5 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">비밀번호 재설정</h1>
@@ -123,7 +123,7 @@ export const ResetPasswordPage = () => {
             <div className="text-center">
               <Link
                 to="/login"
-                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                className="text-sm text-[#6600FF] hover:text-[#5500DD] font-medium"
               >
                 로그인으로 돌아가기
               </Link>
@@ -134,7 +134,7 @@ export const ResetPasswordPage = () => {
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
             링크가 만료되었나요?{' '}
-            <Link to="/forgot-password" className="text-blue-600 hover:text-blue-700 font-medium">
+            <Link to="/forgot-password" className="text-[#6600FF] hover:text-[#5500DD] font-medium">
               재설정 다시 요청
             </Link>
           </p>

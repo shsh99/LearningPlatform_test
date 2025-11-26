@@ -53,8 +53,8 @@ export const InstructorStatsTable = ({ instructorStats }: InstructorStatsTablePr
                 <tr key={instructor.instructorId} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-medium text-blue-600">
+                      <div className="w-8 h-8 bg-[#6600FF]/10 rounded-full flex items-center justify-center">
+                        <span className="text-sm font-medium text-[#6600FF]">
                           {instructor.instructorName.charAt(0)}
                         </span>
                       </div>
@@ -80,7 +80,7 @@ export const InstructorStatsTable = ({ instructorStats }: InstructorStatsTablePr
                     <div className="flex items-center gap-2">
                       <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-blue-500 rounded-full transition-all"
+                          className="h-full bg-[#6600FF] rounded-full transition-all"
                           style={{ width: `${progressRate}%` }}
                         />
                       </div>

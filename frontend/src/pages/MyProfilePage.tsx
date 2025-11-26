@@ -267,7 +267,7 @@ export const MyProfilePage = () => {
     return (
       <>
         <Navbar />
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-50 to-blue-50 flex items-center justify-center">
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-50 to-[#6600FF]/5 flex items-center justify-center">
           <div className="text-gray-600">로딩 중...</div>
         </div>
       </>
@@ -278,7 +278,7 @@ export const MyProfilePage = () => {
     return (
       <>
         <Navbar />
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-50 to-blue-50 flex items-center justify-center">
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-50 to-[#6600FF]/5 flex items-center justify-center">
           <div className="text-red-600">{error}</div>
         </div>
       </>
@@ -296,7 +296,7 @@ export const MyProfilePage = () => {
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-50 to-blue-50">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-50 to-[#6600FF]/5">
         <div className="bg-white border-b border-gray-200 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <h1 className="text-2xl font-bold text-gray-900">마이페이지</h1>
@@ -311,10 +311,10 @@ export const MyProfilePage = () => {
             <div className="flex items-start gap-6">
               {/* Avatar */}
               <div className="flex-shrink-0">
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-3xl font-bold">
+                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#6600FF] to-[#8833FF] flex items-center justify-center text-white text-3xl font-bold">
                   {profile.name.charAt(0).toUpperCase()}
                 </div>
-                <button className="mt-2 text-xs text-blue-600 hover:text-blue-700 font-medium">
+                <button className="mt-2 text-xs text-[#6600FF] hover:text-[#5500DD] font-medium">
                   사진 변경
                 </button>
               </div>
@@ -490,9 +490,9 @@ export const MyProfilePage = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-500 mb-1">보유 쿠폰</p>
-                  <p className="text-2xl font-bold text-blue-600">0장</p>
+                  <p className="text-2xl font-bold text-[#6600FF]">0장</p>
                 </div>
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                <div className="w-12 h-12 bg-[#6600FF]/10 rounded-full flex items-center justify-center">
                   <span className="text-2xl">🎟️</span>
                 </div>
               </div>
@@ -553,13 +553,13 @@ export const MyProfilePage = () => {
                           <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
                             record.enrollmentStatus === 'COMPLETED'
                               ? 'bg-green-100 text-green-800'
-                              : 'bg-blue-100 text-blue-800'
+                              : 'bg-[#6600FF]/10 text-[#6600FF]'
                           }`}>
                             {record.enrollmentStatus === 'COMPLETED' ? '수료' : '수강중'}
                           </span>
                         </td>
                         <td className="px-4 py-3">
-                          <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                          <button className="text-sm text-[#6600FF] hover:text-[#5500DD] font-medium">
                             영수증
                           </button>
                         </td>
@@ -581,7 +581,7 @@ export const MyProfilePage = () => {
                 {certificates.map((record) => (
                   <div
                     key={record.id}
-                    className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:shadow-sm transition-all"
+                    className="border border-gray-200 rounded-lg p-4 hover:border-[#6600FF]/30 hover:shadow-sm transition-all"
                   >
                     <div className="flex items-start gap-3">
                       <div className="flex-shrink-0 w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -596,7 +596,7 @@ export const MyProfilePage = () => {
                         </p>
                         <button
                           onClick={() => handleDownloadCertificate(record.courseTitle, record.termNumber)}
-                          className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                          className="text-sm text-[#6600FF] hover:text-[#5500DD] font-medium"
                         >
                           수료증 다운로드 →
                         </button>
@@ -634,7 +634,7 @@ export const MyProfilePage = () => {
                       <div className="ml-4">
                         <span className={`px-3 py-1 text-xs font-medium rounded-full ${
                           assignment.termStatus === 'ONGOING' ? 'bg-green-100 text-green-800' :
-                          assignment.termStatus === 'SCHEDULED' ? 'bg-blue-100 text-blue-800' :
+                          assignment.termStatus === 'SCHEDULED' ? 'bg-[#6600FF]/10 text-[#6600FF]' :
                           'bg-gray-100 text-gray-800'
                         }`}>
                           {assignment.termStatus}
@@ -673,7 +673,7 @@ export const MyProfilePage = () => {
                       <div className="ml-4">
                         <span className={`px-3 py-1 text-xs font-medium rounded-full ${
                           enrollment.termStatus === 'ONGOING' ? 'bg-green-100 text-green-800' :
-                          enrollment.termStatus === 'SCHEDULED' ? 'bg-blue-100 text-blue-800' :
+                          enrollment.termStatus === 'SCHEDULED' ? 'bg-[#6600FF]/10 text-[#6600FF]' :
                           'bg-gray-100 text-gray-800'
                         }`}>
                           {enrollment.termStatus}

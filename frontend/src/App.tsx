@@ -20,6 +20,7 @@ import { InstructorAssignmentManagementPage } from './pages/timeschedule/Instruc
 import { InstructorInformationSystemPage } from './pages/timeschedule/InstructorInformationSystemPage';
 import { StudentInformationSystemPage } from './pages/enrollment/StudentInformationSystemPage';
 import { MyLearningPage } from './pages/learning/MyLearningPage';
+import { MainDashboardPage } from './pages/MainDashboardPage';
 
 function App() {
     return (
@@ -46,6 +47,7 @@ function App() {
                     <Route path="/ts/iis" element={<InstructorInformationSystemPage />} />
                     <Route path="/enrollment/sis" element={<StudentInformationSystemPage />} />
                     <Route path="/my-learning" element={<MyLearningPage />} />
+                    <Route path="/dashboard" element={<MainDashboardPage />} />
                 </Routes>
             </BrowserRouter>
         </AuthProvider>
