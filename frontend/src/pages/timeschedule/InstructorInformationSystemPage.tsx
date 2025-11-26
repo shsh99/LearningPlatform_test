@@ -92,9 +92,12 @@ export const InstructorInformationSystemPage = () => {
       await unassignInstructor(assignmentId);
       alert('배정이 해제되었습니다.');
       loadRecords();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to unassign instructor:', error);
-      alert('배정 해제에 실패했습니다.');
+
+      // 서버에서 반환한 구체적인 에러 메시지 표시
+      const errorMessage = error.response?.data?.message || '배정 해제에 실패했습니다.';
+      alert(errorMessage);
     }
   };
 
