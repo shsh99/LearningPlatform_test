@@ -4,6 +4,10 @@ import com.example.demo.domain.course.entity.Course;
 import com.example.demo.domain.course.repository.CourseRepository;
 import com.example.demo.domain.courseapplication.entity.CourseApplication;
 import com.example.demo.domain.courseapplication.repository.CourseApplicationRepository;
+import com.example.demo.domain.enrollment.entity.Enrollment;
+import com.example.demo.domain.enrollment.entity.StudentInformationSystem;
+import com.example.demo.domain.enrollment.repository.EnrollmentRepository;
+import com.example.demo.domain.enrollment.repository.StudentInformationSystemRepository;
 import com.example.demo.domain.timeschedule.entity.CourseTerm;
 import com.example.demo.domain.timeschedule.entity.DayOfWeek;
 import com.example.demo.domain.timeschedule.entity.InstructorAssignment;
@@ -36,6 +40,8 @@ public class DataInitializer implements CommandLineRunner {
     private final CourseTermRepository courseTermRepository;
     private final InstructorAssignmentRepository instructorAssignmentRepository;
     private final CourseApplicationRepository courseApplicationRepository;
+    private final EnrollmentRepository enrollmentRepository;
+    private final StudentInformationSystemRepository sisRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -159,6 +165,55 @@ public class DataInitializer implements CommandLineRunner {
         courseApplicationRepository.save(app4);
 
         log.info("Created 4 course applications");
+
+        // 6. 수강신청 (Enrollment) 및 SIS 데이터 생성
+        // term1 (Java 기초 - 진행중) 수강생
+        Enrollment e1 = enrollmentRepository.save(Enrollment.create(term1, student1));
+        Enrollment e2 = enrollmentRepository.save(Enrollment.create(term1, student2));
+        Enrollment e3 = enrollmentRepository.save(Enrollment.create(term1, student3));
+
+        // term3 (Spring Boot - 진행중) 수강생
+        Enrollment e4 = enrollmentRepository.save(Enrollment.create(term3, student2));
+        Enrollment e5 = enrollmentRepository.save(Enrollment.create(term3, student4));
+
+        // term4 (Spring Boot - 완료) 수강생 - 수료 처리
+        Enrollment e6 = enrollmentRepository.save(Enrollment.create(term4, student1));
+        e6.complete();
+        enrollmentRepository.save(e6);
+
+        Enrollment e7 = enrollmentRepository.save(Enrollment.create(term4, student3));
+        e7.complete();
+        enrollmentRepository.save(e7);
+
+        // term7 (DB 설계 - 완료) 수강생 - 수료 처리
+        Enrollment e8 = enrollmentRepository.save(Enrollment.create(term7, student2));
+        e8.complete();
+        enrollmentRepository.save(e8);
+
+        Enrollment e9 = enrollmentRepository.save(Enrollment.create(term7, student5));
+        e9.complete();
+        enrollmentRepository.save(e9);
+
+        // 취소된 수강
+        Enrollment e10 = enrollmentRepository.save(Enrollment.create(term1, student4));
+        e10.cancel();
+        enrollmentRepository.save(e10);
+
+        log.info("Created 10 enrollments");
+
+        // SIS 데이터 생성 (수강신청과 연동)
+        sisRepository.save(StudentInformationSystem.create(student1.getId(), term1.getId(), e1));
+        sisRepository.save(StudentInformationSystem.create(student2.getId(), term1.getId(), e2));
+        sisRepository.save(StudentInformationSystem.create(student3.getId(), term1.getId(), e3));
+        sisRepository.save(StudentInformationSystem.create(student2.getId(), term3.getId(), e4));
+        sisRepository.save(StudentInformationSystem.create(student4.getId(), term3.getId(), e5));
+        sisRepository.save(StudentInformationSystem.create(student1.getId(), term4.getId(), e6));
+        sisRepository.save(StudentInformationSystem.create(student3.getId(), term4.getId(), e7));
+        sisRepository.save(StudentInformationSystem.create(student2.getId(), term7.getId(), e8));
+        sisRepository.save(StudentInformationSystem.create(student5.getId(), term7.getId(), e9));
+        sisRepository.save(StudentInformationSystem.create(student4.getId(), term1.getId(), e10));
+
+        log.info("Created 10 SIS records");
 
         log.info("Test data creation completed!");
     }
