@@ -37,7 +37,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/signup", "/api/auth/login", "/api/auth/refresh", "/api/auth/forgot-password", "/api/auth/reset-password").permitAll()
                 .requestMatchers("/api/auth/logout").authenticated()
                 .requestMatchers("/h2-console/**").permitAll()
-                .requestMatchers("/api/course-terms/**", "/api/instructor-assignments/**").authenticated()
+                .requestMatchers("/api/course-terms/**", "/api/instructor-assignments/**", "/api/student-information-system/**").authenticated()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

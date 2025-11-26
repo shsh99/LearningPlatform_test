@@ -1,5 +1,6 @@
 package com.example.demo.domain.enrollment.service;
 
+import com.example.demo.domain.enrollment.dto.StudentInformationSystemDetailResponse;
 import com.example.demo.domain.enrollment.dto.StudentInformationSystemResponse;
 import com.example.demo.domain.enrollment.repository.StudentInformationSystemRepository;
 import lombok.RequiredArgsConstructor;
@@ -42,5 +43,35 @@ public class StudentInformationSystemServiceImpl implements StudentInformationSy
         return sisRepository.findAll().stream()
             .map(StudentInformationSystemResponse::from)
             .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<StudentInformationSystemDetailResponse> findAllWithDetails() {
+        return sisRepository.findAllWithDetails().stream()
+            .map(StudentInformationSystemDetailResponse::from)
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public StudentInformationSystemDetailResponse findDetailById(Long id) {
+        var sis = sisRepository.findByIdWithDetails(id)
+            .orElseThrow(() -> new IllegalArgumentException("SIS not found with id: " + id));
+        return StudentInformationSystemDetailResponse.from(sis);
+    }
+
+    @Override
+    @Transactional
+    public void cancelEnrollment(Long id) {
+        var sis = sisRepository.findByIdWithDetails(id)
+            .orElseThrow(() -> new IllegalArgumentException("SIS not found with id: " + id));
+        sis.getEnrollment().cancel();
+    }
+
+    @Override
+    @Transactional
+    public void completeEnrollment(Long id) {
+        var sis = sisRepository.findByIdWithDetails(id)
+            .orElseThrow(() -> new IllegalArgumentException("SIS not found with id: " + id));
+        sis.getEnrollment().complete();
     }
 }
