@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AxiosError } from 'axios';
 import {
   getEnrollmentsByStudent,
   cancelEnrollment,
@@ -54,9 +55,11 @@ export const MyEnrollmentsPage = () => {
       await cancelEnrollment(enrollmentId);
       alert('수강 신청이 취소되었습니다.');
       await fetchEnrollments();
-    } catch (err: any) {
+    } catch (err) {
       const errorMessage =
-        err.response?.data?.message || '수강 취소에 실패했습니다.';
+        err instanceof AxiosError
+          ? err.response?.data?.message || '수강 취소에 실패했습니다.'
+          : '수강 취소에 실패했습니다.';
       setError(errorMessage);
       console.error('Error canceling enrollment:', err);
     } finally {
@@ -73,9 +76,11 @@ export const MyEnrollmentsPage = () => {
       await completeEnrollment(enrollmentId);
       alert('수강이 완료되었습니다.');
       await fetchEnrollments();
-    } catch (err: any) {
+    } catch (err) {
       const errorMessage =
-        err.response?.data?.message || '수강 완료 처리에 실패했습니다.';
+        err instanceof AxiosError
+          ? err.response?.data?.message || '수강 완료 처리에 실패했습니다.'
+          : '수강 완료 처리에 실패했습니다.';
       setError(errorMessage);
       console.error('Error completing enrollment:', err);
     } finally {
