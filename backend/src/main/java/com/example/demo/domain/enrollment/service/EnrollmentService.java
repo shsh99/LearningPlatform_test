@@ -32,6 +32,11 @@ public interface EnrollmentService {
     List<EnrollmentResponse> findByStudentIdAndStatus(Long studentId, String status);
 
     /**
+     * 차수별 + 상태별 수강 신청 목록 조회
+     */
+    List<EnrollmentResponse> findByTermIdAndStatus(Long termId, String status);
+
+    /**
      * 수강 취소
      */
     void cancelEnrollment(Long id);

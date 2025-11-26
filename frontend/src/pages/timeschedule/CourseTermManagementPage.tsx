@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Navbar } from '../../components/Navbar';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
@@ -18,6 +19,7 @@ const DAY_OF_WEEK_OPTIONS: { value: DayOfWeek; label: string }[] = [
 ];
 
 export const CourseTermManagementPage = () => {
+  const navigate = useNavigate();
   const [terms, setTerms] = useState<CourseTerm[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -321,6 +323,12 @@ export const CourseTermManagementPage = () => {
                         {getStatusBadge(term.status)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
+                        <Button
+                          onClick={() => navigate(`/ts/terms/${term.id}`)}
+                          className="!py-1 !px-3 !text-sm !bg-green-600 hover:!bg-green-700"
+                        >
+                          상세보기
+                        </Button>
                         {term.status === 'SCHEDULED' && (
                           <>
                             <Button

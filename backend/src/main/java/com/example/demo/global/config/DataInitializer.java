@@ -11,9 +11,11 @@ import com.example.demo.domain.enrollment.repository.StudentInformationSystemRep
 import com.example.demo.domain.timeschedule.entity.CourseTerm;
 import com.example.demo.domain.timeschedule.entity.DayOfWeek;
 import com.example.demo.domain.timeschedule.entity.InstructorAssignment;
+import com.example.demo.domain.timeschedule.entity.InstructorInformationSystem;
 import com.example.demo.domain.timeschedule.entity.TermStatus;
 import com.example.demo.domain.timeschedule.repository.CourseTermRepository;
 import com.example.demo.domain.timeschedule.repository.InstructorAssignmentRepository;
+import com.example.demo.domain.timeschedule.repository.InstructorInformationSystemRepository;
 import com.example.demo.domain.user.entity.User;
 import com.example.demo.domain.user.entity.UserRole;
 import com.example.demo.domain.user.repository.UserRepository;
@@ -39,6 +41,7 @@ public class DataInitializer implements CommandLineRunner {
     private final CourseRepository courseRepository;
     private final CourseTermRepository courseTermRepository;
     private final InstructorAssignmentRepository instructorAssignmentRepository;
+    private final InstructorInformationSystemRepository iisRepository;
     private final CourseApplicationRepository courseApplicationRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final StudentInformationSystemRepository sisRepository;
@@ -141,15 +144,26 @@ public class DataInitializer implements CommandLineRunner {
         log.info("Created 8 course terms");
 
         // 4. 강사 배정
-        instructorAssignmentRepository.save(InstructorAssignment.create(term1, instructor1, operator));
-        instructorAssignmentRepository.save(InstructorAssignment.create(term2, instructor1, operator));
-        instructorAssignmentRepository.save(InstructorAssignment.create(term3, instructor2, operator));
-        instructorAssignmentRepository.save(InstructorAssignment.create(term4, instructor2, operator));
-        instructorAssignmentRepository.save(InstructorAssignment.create(term5, instructor3, operator));
-        instructorAssignmentRepository.save(InstructorAssignment.create(term7, instructor1, operator));
-        instructorAssignmentRepository.save(InstructorAssignment.create(term8, instructor3, operator));
+        InstructorAssignment ia1 = instructorAssignmentRepository.save(InstructorAssignment.create(term1, instructor1, operator));
+        InstructorAssignment ia2 = instructorAssignmentRepository.save(InstructorAssignment.create(term2, instructor1, operator));
+        InstructorAssignment ia3 = instructorAssignmentRepository.save(InstructorAssignment.create(term3, instructor2, operator));
+        InstructorAssignment ia4 = instructorAssignmentRepository.save(InstructorAssignment.create(term4, instructor2, operator));
+        InstructorAssignment ia5 = instructorAssignmentRepository.save(InstructorAssignment.create(term5, instructor3, operator));
+        InstructorAssignment ia6 = instructorAssignmentRepository.save(InstructorAssignment.create(term7, instructor1, operator));
+        InstructorAssignment ia7 = instructorAssignmentRepository.save(InstructorAssignment.create(term8, instructor3, operator));
 
         log.info("Created 7 instructor assignments");
+
+        // IIS 데이터 생성 (강사 배정과 연동)
+        iisRepository.save(InstructorInformationSystem.create(instructor1.getId(), term1.getId(), ia1));
+        iisRepository.save(InstructorInformationSystem.create(instructor1.getId(), term2.getId(), ia2));
+        iisRepository.save(InstructorInformationSystem.create(instructor2.getId(), term3.getId(), ia3));
+        iisRepository.save(InstructorInformationSystem.create(instructor2.getId(), term4.getId(), ia4));
+        iisRepository.save(InstructorInformationSystem.create(instructor3.getId(), term5.getId(), ia5));
+        iisRepository.save(InstructorInformationSystem.create(instructor1.getId(), term7.getId(), ia6));
+        iisRepository.save(InstructorInformationSystem.create(instructor3.getId(), term8.getId(), ia7));
+
+        log.info("Created 7 IIS records");
 
         // 5. 강의 신청 (다양한 상태로)
         courseApplicationRepository.save(CourseApplication.create("파이썬 기초 강의", "파이썬 프로그래밍 기초 과정을 개설해주세요.", 25, student1));

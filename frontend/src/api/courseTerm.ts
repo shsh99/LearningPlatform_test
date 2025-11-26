@@ -1,5 +1,6 @@
 import { apiClient } from './client';
 import type { CourseTerm, CreateCourseTermRequest, UpdateCourseTermRequest } from '../types/courseTerm';
+import type { CourseTermDetail } from '../types/courseTermDetail';
 
 export const createCourseTerm = async (request: CreateCourseTermRequest): Promise<CourseTerm> => {
   const response = await apiClient.post<CourseTerm>('/course-terms', request);
@@ -50,4 +51,9 @@ export const completeCourseTerm = async (id: number): Promise<void> => {
 
 export const cancelCourseTerm = async (id: number): Promise<void> => {
   await apiClient.patch(`/course-terms/${id}/cancel`);
+};
+
+export const getCourseTermDetail = async (id: number): Promise<CourseTermDetail> => {
+  const response = await apiClient.get<CourseTermDetail>(`/course-terms/${id}/detail`);
+  return response.data;
 };
