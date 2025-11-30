@@ -12,7 +12,7 @@ export interface CourseTermDetail {
   endTime: string;
   maxStudents: number;
   currentStudents: number;
-  status: 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  status: 'SCHEDULED' | 'ONGOING' | 'COMPLETED' | 'CANCELLED';
   instructor: AssignedInstructor | null;
   enrolledStudents: EnrolledStudent[];
   createdAt: string;

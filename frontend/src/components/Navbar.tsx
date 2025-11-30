@@ -5,7 +5,7 @@ import { isDarkTheme } from '../utils/theme';
 
 export function Navbar() {
     const { user, isAuthenticated, logout } = useAuth();
-    const { branding, labels, buildPath, navigate, tenantCode } = useTenant();
+    const { branding, labels, buildPath, tenantCode } = useTenant();
 
     // 브랜딩 헤더 색상 기반 다크 테마 자동 감지
     const isThemeDark = isDarkTheme(branding.headerBgColor);

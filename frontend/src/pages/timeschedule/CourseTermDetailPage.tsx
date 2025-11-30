@@ -73,7 +73,7 @@ export const CourseTermDetailPage = () => {
         bgColor: 'bg-blue-100',
         textColor: 'text-blue-800',
       },
-      IN_PROGRESS: {
+      ONGOING: {
         label: '진행중',
         bgColor: 'bg-green-100',
         textColor: 'text-green-800',

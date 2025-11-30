@@ -109,12 +109,12 @@ export function TenantManagementPage() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          tenant.isActive
+                          tenant.status === 'ACTIVE'
                             ? 'bg-green-100 text-green-800'
                             : 'bg-red-100 text-red-800'
                         }`}
                       >
-                        {tenant.isActive ? '활성' : '비활성'}
+                        {tenant.status === 'ACTIVE' ? '활성' : '비활성'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

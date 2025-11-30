@@ -15,18 +15,18 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByEmail(String email);
 
-    @Query("SELECT u FROM User u WHERE u.email = :email AND u.status = 'ACTIVE'")
+    @Query("SELECT u FROM User u WHERE u.email = :email AND u.status = com.example.demo.domain.user.entity.UserStatus.ACTIVE")
     Optional<User> findActiveUserByEmail(@Param("email") String email);
 
     /**
      * 이메일 또는 이름으로 사용자 검색 (ACTIVE 상태만)
      */
-    @Query("SELECT u FROM User u WHERE u.status = 'ACTIVE' AND (LOWER(u.email) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(u.name) LIKE LOWER(CONCAT('%', :query, '%')))")
+    @Query("SELECT u FROM User u WHERE u.status = com.example.demo.domain.user.entity.UserStatus.ACTIVE AND (LOWER(u.email) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(u.name) LIKE LOWER(CONCAT('%', :query, '%')))")
     List<User> searchActiveUsers(@Param("query") String query);
 
     /**
      * 테넌트 ID와 역할로 사용자 목록 조회 (ACTIVE 상태만)
      */
-    @Query("SELECT u FROM User u WHERE u.tenantId = :tenantId AND u.role = :role AND u.status = 'ACTIVE'")
+    @Query("SELECT u FROM User u WHERE u.tenantId = :tenantId AND u.role = :role AND u.status = com.example.demo.domain.user.entity.UserStatus.ACTIVE")
     List<User> findByTenantIdAndRole(@Param("tenantId") Long tenantId, @Param("role") UserRole role);
 }

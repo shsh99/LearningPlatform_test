@@ -473,9 +473,9 @@ class CourseTermServiceTest {
             30
         );
 
-        User student1 = User.create("student1@test.com", "password", "홍길동", UserRole.STUDENT);
-        User student2 = User.create("student2@test.com", "password", "김철수", UserRole.STUDENT);
-        User instructor = User.create("instructor@test.com", "password", "강사님", UserRole.INSTRUCTOR);
+        User student1 = User.create("student1@test.com", "password", "홍길동");
+        User student2 = User.create("student2@test.com", "password", "김철수");
+        User instructor = User.createWithRole("instructor@test.com", "password", "강사님", UserRole.INSTRUCTOR, null);
 
         Enrollment enrollment1 = Enrollment.create(term, student1);
         Enrollment enrollment2 = Enrollment.create(term, student2);
@@ -522,7 +522,7 @@ class CourseTermServiceTest {
             30
         );
 
-        User student = User.create("student@test.com", "password", "홍길동", UserRole.STUDENT);
+        User student = User.create("student@test.com", "password", "홍길동");
         Enrollment enrollment = Enrollment.create(term, student);
 
         given(courseTermRepository.findById(1L)).willReturn(Optional.of(term));
@@ -587,9 +587,9 @@ class CourseTermServiceTest {
             30
         );
 
-        User student1 = User.create("enrolled@test.com", "password", "수강중학생", UserRole.STUDENT);
-        User student2 = User.create("cancelled@test.com", "password", "취소학생", UserRole.STUDENT);
-        User student3 = User.create("completed@test.com", "password", "완료학생", UserRole.STUDENT);
+        User student1 = User.create("enrolled@test.com", "password", "수강중학생");
+        User student2 = User.create("cancelled@test.com", "password", "취소학생");
+        User student3 = User.create("completed@test.com", "password", "완료학생");
 
         Enrollment enrollment1 = Enrollment.create(term, student1); // ENROLLED
         Enrollment enrollment2 = Enrollment.create(term, student2);
@@ -634,8 +634,8 @@ class CourseTermServiceTest {
             30
         );
 
-        User student1 = User.create("user@example.com", "password", "학생1", UserRole.STUDENT);
-        User student2 = User.create("ab@test.com", "password", "학생2", UserRole.STUDENT);
+        User student1 = User.create("user@example.com", "password", "학생1");
+        User student2 = User.create("ab@test.com", "password", "학생2");
 
         Enrollment enrollment1 = Enrollment.create(term, student1);
         Enrollment enrollment2 = Enrollment.create(term, student2);
