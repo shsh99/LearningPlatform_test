@@ -11,6 +11,7 @@ import {
   InstructorStatsTable,
   UserRoleChart,
 } from '../../components/dashboard';
+import { useTenant } from '../../contexts/TenantContext';
 import type { CourseApplication, ApplicationStatus } from '../../types/courseApplication';
 import type { User } from '../../api/user';
 import type { DashboardStats } from '../../types/dashboard';
@@ -18,6 +19,7 @@ import type { DashboardStats } from '../../types/dashboard';
 type TabType = 'dashboard' | 'applications' | 'users';
 
 export const OperatorDashboardPage = () => {
+  const { branding, labels } = useTenant();
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
 
   // 대시보드 통계 state
@@ -171,12 +173,12 @@ export const OperatorDashboardPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                  <svg className="w-8 h-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-8 h-8" style={{ color: branding.primaryColor }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                   </svg>
-                  운영자 대시보드
+                  {labels.dashboardLabel}
                 </h1>
-                <p className="mt-1 text-sm text-gray-600">강의 개설 신청을 관리하고 사용자를 조회하세요</p>
+                <p className="mt-1 text-sm text-gray-600">{labels.courseLabel} 개설 {labels.applicationLabel}을 관리하고 사용자를 조회하세요</p>
               </div>
             </div>
           </div>
@@ -252,30 +254,32 @@ export const OperatorDashboardPage = () => {
                 onClick={() => setActiveTab('dashboard')}
                 className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                   activeTab === 'dashboard'
-                    ? 'border-blue-500 text-blue-600'
+                    ? 'border-transparent text-gray-900'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
+                style={activeTab === 'dashboard' ? { borderColor: branding.primaryColor, color: branding.primaryColor } : {}}
               >
                 <div className="flex items-center gap-2">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
                   </svg>
-                  대시보드
+                  {labels.dashboardLabel}
                 </div>
               </button>
               <button
                 onClick={() => setActiveTab('applications')}
                 className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                   activeTab === 'applications'
-                    ? 'border-blue-500 text-blue-600'
+                    ? 'border-transparent text-gray-900'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
+                style={activeTab === 'applications' ? { borderColor: branding.primaryColor, color: branding.primaryColor } : {}}
               >
                 <div className="flex items-center gap-2">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                   </svg>
-                  강의 개설 신청
+                  {labels.courseLabel} 개설 {labels.applicationLabel}
                 </div>
               </button>
               <button
@@ -285,9 +289,10 @@ export const OperatorDashboardPage = () => {
                 }}
                 className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                   activeTab === 'users'
-                    ? 'border-blue-500 text-blue-600'
+                    ? 'border-transparent text-gray-900'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
+                style={activeTab === 'users' ? { borderColor: branding.primaryColor, color: branding.primaryColor } : {}}
               >
                 <div className="flex items-center gap-2">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

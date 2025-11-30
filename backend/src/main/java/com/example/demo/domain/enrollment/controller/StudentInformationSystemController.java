@@ -5,6 +5,7 @@ import com.example.demo.domain.enrollment.service.StudentInformationSystemServic
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/student-information-system")
 @RequiredArgsConstructor
+@Validated
 @Slf4j
 public class StudentInformationSystemController {
 

@@ -153,11 +153,11 @@ export const DirectEnrollmentModal = ({ isOpen, onClose, onSuccess }: DirectEnro
             termId: selectedTerm.id
           });
           results.push({ user, success: true });
-        } catch (err: any) {
+        } catch (err: unknown) {
           results.push({
             user,
             success: false,
-            error: err.response?.data?.message || '수강 신청 실패'
+            error: (err as { response?: { data?: { message?: string } } }).response?.data?.message || '수강 신청 실패'
           });
         }
       }
