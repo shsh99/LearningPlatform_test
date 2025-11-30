@@ -1,6 +1,8 @@
 package com.example.demo.domain.user.controller;
 
 import com.example.demo.domain.user.dto.ChangePasswordRequest;
+import com.example.demo.domain.user.dto.CreateOperatorRequest;
+import com.example.demo.domain.user.dto.CreateTenantAdminRequest;
 import com.example.demo.domain.user.dto.UpdateProfileRequest;
 import com.example.demo.domain.user.dto.UserProfileResponse;
 import com.example.demo.domain.user.dto.UserResponse;
@@ -11,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -64,6 +67,54 @@ public class UserController {
     public ResponseEntity<List<com.example.demo.domain.user.dto.UserSearchResponse>> searchUsers(@RequestParam String q) {
         List<com.example.demo.domain.user.dto.UserSearchResponse> users = userService.searchUsers(q);
         return ResponseEntity.ok(users);
+    }
+
+    /**
+     * 테넌트 어드민 생성 (SUPER_ADMIN 전용)
+     * POST /api/users/tenant-admins
+     * 권한: SUPER_ADMIN만 가능
+     */
+    @PostMapping("/tenant-admins")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ResponseEntity<UserResponse> createTenantAdmin(@Valid @RequestBody CreateTenantAdminRequest request) {
+        UserResponse tenantAdmin = userService.createTenantAdmin(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(tenantAdmin);
+    }
+
+    /**
+     * 오퍼레이터 생성 (TENANT_ADMIN 전용)
+     * POST /api/users/operators
+     * 권한: TENANT_ADMIN만 가능 (자신의 테넌트에만 생성)
+     */
+    @PostMapping("/operators")
+    @PreAuthorize("hasRole('TENANT_ADMIN')")
+    public ResponseEntity<UserResponse> createOperator(
+            HttpServletRequest request,
+            @Valid @RequestBody CreateOperatorRequest operatorRequest) {
+        String token = request.getHeader("Authorization");
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+        Long tenantAdminId = jwtTokenProvider.getUserIdFromToken(token);
+        UserResponse operator = userService.createOperator(operatorRequest, tenantAdminId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(operator);
+    }
+
+    /**
+     * 테넌트의 오퍼레이터 목록 조회 (TENANT_ADMIN 전용)
+     * GET /api/users/operators
+     * 권한: TENANT_ADMIN만 가능 (자신의 테넌트 오퍼레이터만 조회)
+     */
+    @GetMapping("/operators")
+    @PreAuthorize("hasRole('TENANT_ADMIN')")
+    public ResponseEntity<List<UserResponse>> getOperators(HttpServletRequest request) {
+        String token = request.getHeader("Authorization");
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+        Long tenantAdminId = jwtTokenProvider.getUserIdFromToken(token);
+        List<UserResponse> operators = userService.getOperatorsByTenant(tenantAdminId);
+        return ResponseEntity.ok(operators);
     }
 
     /**
