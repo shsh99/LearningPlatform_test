@@ -8,8 +8,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.ParamDef;
 
 import java.time.LocalDateTime;
 
@@ -17,7 +15,6 @@ import java.time.LocalDateTime;
 @Table(name = "users")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@FilterDef(name = "tenantFilter", parameters = @ParamDef(name = "tenantId", type = Long.class))
 @Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
 @EntityListeners(com.example.demo.global.tenant.TenantEntityListener.class)
 public class User extends BaseTimeEntity implements TenantAware {

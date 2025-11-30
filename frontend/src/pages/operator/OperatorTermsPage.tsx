@@ -179,13 +179,13 @@ export function OperatorTermsPage() {
     const getStatusBadge = (status: string) => {
         const styles = {
             SCHEDULED: 'bg-gray-100 text-gray-800',
-            IN_PROGRESS: 'bg-blue-100 text-blue-800',
+            ONGOING: 'bg-blue-100 text-blue-800',
             COMPLETED: 'bg-green-100 text-green-800',
             CANCELLED: 'bg-red-100 text-red-800',
         };
         const labels = {
             SCHEDULED: '예정',
-            IN_PROGRESS: '진행중',
+            ONGOING: '진행중',
             COMPLETED: '완료',
             CANCELLED: '취소됨',
         };
@@ -430,7 +430,7 @@ export function OperatorTermsPage() {
                                                             </button>
                                                         </>
                                                     )}
-                                                    {term.status === 'IN_PROGRESS' && (
+                                                    {term.status === 'ONGOING' && (
                                                         <button
                                                             onClick={() => handleStatusChange(term.id, 'complete')}
                                                             className="text-green-600 hover:text-green-800 font-medium"
@@ -438,7 +438,7 @@ export function OperatorTermsPage() {
                                                             완료
                                                         </button>
                                                     )}
-                                                    {(term.status === 'SCHEDULED' || term.status === 'IN_PROGRESS') && (
+                                                    {(term.status === 'SCHEDULED' || term.status === 'ONGOING') && (
                                                         <button
                                                             onClick={() => handleStatusChange(term.id, 'cancel')}
                                                             className="text-red-600 hover:text-red-800 font-medium"

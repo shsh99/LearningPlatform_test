@@ -6,7 +6,7 @@ import { isDarkTheme, getThemeClass, getGlowOrbClasses } from '../utils/theme';
 
 export function HomePage() {
     const { isAuthenticated, user } = useAuth();
-    const { branding, labels, navigate, buildPath, tenantCode } = useTenant();
+    const { branding, labels, navigate, buildPath } = useTenant();
 
     const isSuperAdmin = user?.role === 'SUPER_ADMIN';
     const isAdmin = user?.role === 'ADMIN' || isSuperAdmin;

@@ -197,14 +197,14 @@ export const CourseTermManagementPage = () => {
   const getStatusBadge = (status: string) => {
     const statusColors: Record<string, string> = {
       SCHEDULED: 'bg-blue-100 text-blue-800',
-      IN_PROGRESS: 'bg-green-100 text-green-800',
+      ONGOING: 'bg-green-100 text-green-800',
       COMPLETED: 'bg-gray-100 text-gray-800',
       CANCELLED: 'bg-red-100 text-red-800',
     };
 
     const statusLabels: Record<string, string> = {
       SCHEDULED: '예정',
-      IN_PROGRESS: '진행중',
+      ONGOING: '진행중',
       COMPLETED: '완료',
       CANCELLED: '취소',
     };
@@ -345,7 +345,7 @@ export const CourseTermManagementPage = () => {
                             </Button>
                           </>
                         )}
-                        {term.status === 'IN_PROGRESS' && (
+                        {term.status === 'ONGOING' && (
                           <Button
                             onClick={() => handleCompleteTerm(term.id)}
                             className="!py-1 !px-3 !text-sm"
@@ -353,7 +353,7 @@ export const CourseTermManagementPage = () => {
                             완료
                           </Button>
                         )}
-                        {(term.status === 'SCHEDULED' || term.status === 'IN_PROGRESS') && (
+                        {(term.status === 'SCHEDULED' || term.status === 'ONGOING') && (
                           <Button
                             onClick={() => handleCancelTerm(term.id)}
                             className="!py-1 !px-3 !text-sm !bg-red-600 hover:!bg-red-700"
