@@ -39,9 +39,18 @@ public enum ErrorCode {
     // Term
     TERM_NOT_FOUND("T001", "학기를 찾을 수 없습니다."),
 
+    // Tenant
+    TENANT_NOT_FOUND("TN001", "테넌트를 찾을 수 없습니다."),
+    TENANT_CODE_ALREADY_EXISTS("TN002", "이미 사용 중인 테넌트 코드입니다."),
+    TENANT_NOT_ACTIVE("TN003", "비활성화된 테넌트입니다."),
+
+    // TenantApplication
+    APPLICATION_NOT_FOUND("TA001", "테넌트 신청을 찾을 수 없습니다."),
+
     // Common
     INVALID_INPUT("C001", "잘못된 입력입니다."),
-    INTERNAL_SERVER_ERROR("C002", "서버 내부 오류가 발생했습니다.");
+    INTERNAL_SERVER_ERROR("C002", "서버 내부 오류가 발생했습니다."),
+    DUPLICATE_RESOURCE("C003", "이미 존재하는 리소스입니다.");
 
     private final String code;
     private final String message;

@@ -1,20 +1,32 @@
 package com.example.demo.domain.course.entity;
 
+import com.example.demo.domain.tenant.entity.Tenant;
 import com.example.demo.global.common.BaseTimeEntity;
+import com.example.demo.global.tenant.TenantAware;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Filter;
 
 @Entity
 @Table(name = "courses")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class Course extends BaseTimeEntity {
+@Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
+@EntityListeners(com.example.demo.global.tenant.TenantEntityListener.class)
+public class Course extends BaseTimeEntity implements TenantAware {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "tenant_id")
+    private Long tenantId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tenant_id", insertable = false, updatable = false)
+    private Tenant tenant;
 
     @Column(nullable = false, length = 200)
     private String title;
@@ -35,7 +47,17 @@ public class Course extends BaseTimeEntity {
         course.title = title;
         course.description = description;
         course.maxStudents = maxStudents;
-        course.status = CourseStatus.APPROVED;  // 승인된 강의
+        course.status = CourseStatus.APPROVED;
+        return course;
+    }
+
+    public static Course create(String title, String description, Integer maxStudents, Long tenantId) {
+        Course course = new Course();
+        course.title = title;
+        course.description = description;
+        course.maxStudents = maxStudents;
+        course.status = CourseStatus.APPROVED;
+        course.tenantId = tenantId;
         return course;
     }
 

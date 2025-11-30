@@ -2,16 +2,22 @@ package com.example.demo.domain.timeschedule.entity;
 
 import com.example.demo.domain.user.entity.User;
 import com.example.demo.global.common.BaseTimeEntity;
+import com.example.demo.global.tenant.TenantAware;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
 
 @Entity
 @Table(name = "instructor_assignments")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class InstructorAssignment extends BaseTimeEntity {
+@FilterDef(name = "tenantFilter", parameters = @ParamDef(name = "tenantId", type = Long.class))
+@Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
+public class InstructorAssignment extends BaseTimeEntity implements TenantAware {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,6 +35,9 @@ public class InstructorAssignment extends BaseTimeEntity {
     @JoinColumn(name = "assigned_by_id", nullable = false)
     private User assignedBy;
 
+    @Column(name = "tenant_id")
+    private Long tenantId;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private AssignmentStatus status;
@@ -43,6 +52,7 @@ public class InstructorAssignment extends BaseTimeEntity {
         assignment.term = term;
         assignment.instructor = instructor;
         assignment.assignedBy = assignedBy;
+        assignment.tenantId = term.getTenantId(); // CourseTerm에서 tenantId 상속
         assignment.status = AssignmentStatus.ASSIGNED;
         return assignment;
     }

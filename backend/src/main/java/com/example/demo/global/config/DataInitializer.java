@@ -8,6 +8,14 @@ import com.example.demo.domain.enrollment.entity.Enrollment;
 import com.example.demo.domain.enrollment.entity.StudentInformationSystem;
 import com.example.demo.domain.enrollment.repository.EnrollmentRepository;
 import com.example.demo.domain.enrollment.repository.StudentInformationSystemRepository;
+import com.example.demo.domain.tenant.entity.Tenant;
+import com.example.demo.domain.tenant.entity.TenantBranding;
+import com.example.demo.domain.tenant.entity.TenantLabels;
+import com.example.demo.domain.tenant.entity.TenantSettings;
+import com.example.demo.domain.tenant.repository.TenantBrandingRepository;
+import com.example.demo.domain.tenant.repository.TenantLabelsRepository;
+import com.example.demo.domain.tenant.repository.TenantRepository;
+import com.example.demo.domain.tenant.repository.TenantSettingsRepository;
 import com.example.demo.domain.timeschedule.entity.CourseTerm;
 import com.example.demo.domain.timeschedule.entity.DayOfWeek;
 import com.example.demo.domain.timeschedule.entity.InstructorAssignment;
@@ -24,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -45,16 +54,32 @@ public class DataInitializer implements CommandLineRunner {
     private final CourseApplicationRepository courseApplicationRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final StudentInformationSystemRepository sisRepository;
+    private final TenantRepository tenantRepository;
+    private final TenantBrandingRepository tenantBrandingRepository;
+    private final TenantSettingsRepository tenantSettingsRepository;
+    private final TenantLabelsRepository tenantLabelsRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
+    @Transactional
     public void run(String... args) {
-        // OPERATOR 계정이 없으면 생성
+        // 1. 기본 테넌트 생성
+        Tenant defaultTenant = createDefaultTenant();
+
+        // 2. SUPER_ADMIN 계정 생성
+        if (!userRepository.existsByEmail("superadmin@admin.com")) {
+            String encodedPassword = passwordEncoder.encode("1q2w3e4r");
+            User superAdmin = User.createWithRole("superadmin@admin.com", encodedPassword, "슈퍼관리자", UserRole.SUPER_ADMIN, null);
+            userRepository.save(superAdmin);
+            log.info("SUPER_ADMIN account created: superadmin@admin.com / 1q2w3e4r");
+        }
+
+        // 3. OPERATOR 계정이 없으면 생성
         User operator;
         if (!userRepository.existsByEmail("admin@admin.com")) {
             String encodedPassword = passwordEncoder.encode("1q2w3e4r");
 
-            operator = User.create("admin@admin.com", encodedPassword, "admin");
+            operator = User.create("admin@admin.com", encodedPassword, "admin", defaultTenant.getId());
             setUserRole(operator, UserRole.OPERATOR);
             userRepository.save(operator);
             log.info("OPERATOR account created: admin@admin.com / 1q2w3e4r");
@@ -65,11 +90,37 @@ public class DataInitializer implements CommandLineRunner {
 
         // 테스트 데이터 생성 (한 번만)
         if (courseRepository.count() == 0) {
-            createTestData(operator);
+            createTestData(operator, defaultTenant);
         }
     }
 
-    private void createTestData(User operator) {
+    private Tenant createDefaultTenant() {
+        if (tenantRepository.existsByCode("default")) {
+            return tenantRepository.findByCode("default").orElseThrow();
+        }
+
+        // 기본 테넌트 생성
+        Tenant tenant = Tenant.create("default", "기본 테넌트", "localhost");
+        tenant = tenantRepository.save(tenant);
+
+        // 브랜딩 설정 (별도 저장)
+        TenantBranding branding = TenantBranding.createDefault(tenant);
+        tenantBrandingRepository.save(branding);
+
+        // 기본 설정 (별도 저장)
+        TenantSettings settings = TenantSettings.createDefault(tenant);
+        tenantSettingsRepository.save(settings);
+
+        // 라벨 설정 (별도 저장)
+        TenantLabels labels = TenantLabels.createDefault(tenant);
+        tenantLabelsRepository.save(labels);
+
+        log.info("Default tenant created: default");
+
+        return tenant;
+    }
+
+    private void createTestData(User operator, Tenant tenant) {
         log.info("Creating test data for dashboard...");
 
         // 1. 추가 사용자 생성 (강사 3명, 학생 5명)

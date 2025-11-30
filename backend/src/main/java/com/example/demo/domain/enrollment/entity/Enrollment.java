@@ -1,12 +1,15 @@
 package com.example.demo.domain.enrollment.entity;
 
+import com.example.demo.domain.tenant.entity.Tenant;
 import com.example.demo.domain.timeschedule.entity.CourseTerm;
 import com.example.demo.domain.user.entity.User;
 import com.example.demo.global.common.BaseTimeEntity;
+import com.example.demo.global.tenant.TenantAware;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Filter;
 
 /**
  * 수강신청 Entity
@@ -15,11 +18,20 @@ import lombok.NoArgsConstructor;
 @Table(name = "enrollments")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class Enrollment extends BaseTimeEntity {
+@Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
+@EntityListeners(com.example.demo.global.tenant.TenantEntityListener.class)
+public class Enrollment extends BaseTimeEntity implements TenantAware {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "tenant_id")
+    private Long tenantId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tenant_id", insertable = false, updatable = false)
+    private Tenant tenant;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "term_id", nullable = false)

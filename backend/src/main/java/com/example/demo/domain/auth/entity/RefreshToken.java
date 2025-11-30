@@ -1,10 +1,14 @@
 package com.example.demo.domain.auth.entity;
 
 import com.example.demo.global.common.BaseTimeEntity;
+import com.example.demo.global.tenant.TenantAware;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
 
 import java.time.LocalDateTime;
 
@@ -12,7 +16,9 @@ import java.time.LocalDateTime;
 @Table(name = "refresh_tokens")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class RefreshToken extends BaseTimeEntity {
+@FilterDef(name = "tenantFilter", parameters = @ParamDef(name = "tenantId", type = Long.class))
+@Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
+public class RefreshToken extends BaseTimeEntity implements TenantAware {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,20 +27,24 @@ public class RefreshToken extends BaseTimeEntity {
     @Column(nullable = false)
     private Long userId;
 
+    @Column(name = "tenant_id")
+    private Long tenantId;
+
     @Column(nullable = false, unique = true, length = 500)
     private String token;
 
     @Column(nullable = false)
     private LocalDateTime expiresAt;
 
-    private RefreshToken(Long userId, String token, LocalDateTime expiresAt) {
+    private RefreshToken(Long userId, Long tenantId, String token, LocalDateTime expiresAt) {
         this.userId = userId;
+        this.tenantId = tenantId;
         this.token = token;
         this.expiresAt = expiresAt;
     }
 
-    public static RefreshToken create(Long userId, String token, LocalDateTime expiresAt) {
-        return new RefreshToken(userId, token, expiresAt);
+    public static RefreshToken create(Long userId, Long tenantId, String token, LocalDateTime expiresAt) {
+        return new RefreshToken(userId, tenantId, token, expiresAt);
     }
 
     public boolean isExpired() {
