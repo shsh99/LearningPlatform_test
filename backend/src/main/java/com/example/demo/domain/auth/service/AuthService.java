@@ -10,6 +10,8 @@ import com.example.demo.domain.auth.entity.PasswordResetToken;
 import com.example.demo.domain.auth.entity.RefreshToken;
 import com.example.demo.domain.auth.repository.PasswordResetTokenRepository;
 import com.example.demo.domain.auth.repository.RefreshTokenRepository;
+import com.example.demo.domain.tenant.entity.Tenant;
+import com.example.demo.domain.tenant.repository.TenantRepository;
 import com.example.demo.domain.user.entity.User;
 import com.example.demo.domain.user.entity.UserStatus;
 import com.example.demo.domain.user.repository.UserRepository;
@@ -20,6 +22,7 @@ import com.example.demo.global.exception.ErrorCode;
 import com.example.demo.global.exception.UnauthorizedException;
 import com.example.demo.global.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,9 +33,11 @@ import java.util.UUID;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
+@Slf4j
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final TenantRepository tenantRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
@@ -46,11 +51,22 @@ public class AuthService {
         }
 
         String encodedPassword = passwordEncoder.encode(request.password());
-        User user = User.create(request.email(), encodedPassword, request.name());
+
+        // tenantCode가 제공된 경우 테넌트 조회 및 연결
+        Long tenantId = null;
+        String tenantCode = null;
+        if (request.tenantCode() != null && !request.tenantCode().isBlank()) {
+            Tenant tenant = tenantRepository.findByCode(request.tenantCode())
+                .orElseThrow(() -> new BusinessException(ErrorCode.TENANT_NOT_FOUND));
+            tenantId = tenant.getId();
+            tenantCode = tenant.getCode();
+        }
+
+        User user = User.create(request.email(), encodedPassword, request.name(), tenantId);
         User savedUser = userRepository.save(user);
 
         TokenResponse tokens = createTokens(savedUser);
-        return AuthResponse.of(savedUser, tokens);
+        return AuthResponse.of(savedUser, tenantCode, tokens);
     }
 
     @Transactional
@@ -73,7 +89,16 @@ public class AuthService {
         refreshTokenRepository.deleteByUserId(user.getId());
 
         TokenResponse tokens = createTokens(user);
-        return AuthResponse.of(user, tokens);
+
+        // 사용자에게 tenantId가 있으면 tenantCode 조회
+        String tenantCode = null;
+        if (user.getTenantId() != null) {
+            tenantCode = tenantRepository.findById(user.getTenantId())
+                .map(Tenant::getCode)
+                .orElse(null);
+        }
+
+        return AuthResponse.of(user, tenantCode, tokens);
     }
 
     @Transactional
@@ -163,6 +188,7 @@ public class AuthService {
 
         RefreshToken refreshTokenEntity = RefreshToken.create(
             user.getId(),
+            user.getTenantId(),  // tenantId 추가
             refreshToken,
             refreshTokenExpiresAt
         );
