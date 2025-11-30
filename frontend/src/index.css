@@ -1,9 +1,115 @@
 @import "tailwindcss";
 
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  /* 기본 폰트 */
+  font-family: var(--font-family, system-ui, Avenir, Helvetica, Arial, sans-serif);
   line-height: 1.5;
   font-weight: 400;
+
+  /* 브랜딩 색상 변수 기본값 */
+  --color-primary: #3B82F6;
+  --color-secondary: #6B7280;
+  --color-accent: #8B5CF6;
+  --header-bg: #FFFFFF;
+  --header-text: #111827;
+  --sidebar-bg: #F9FAFB;
+  --sidebar-text: #374151;
+  --sidebar-active: #EFF6FF;
+  --sidebar-active-text: #3B82F6;
+  --button-primary-bg: #3B82F6;
+  --button-primary-text: #FFFFFF;
+  --button-secondary-bg: #F3F4F6;
+  --button-secondary-text: #374151;
+  --font-family: 'Pretendard', -apple-system, sans-serif;
+}
+
+/* 브랜딩 기반 유틸리티 클래스 */
+.bg-brand-primary {
+  background-color: var(--color-primary);
+}
+
+.bg-brand-secondary {
+  background-color: var(--color-secondary);
+}
+
+.bg-brand-accent {
+  background-color: var(--color-accent);
+}
+
+.text-brand-primary {
+  color: var(--color-primary);
+}
+
+.text-brand-secondary {
+  color: var(--color-secondary);
+}
+
+.text-brand-accent {
+  color: var(--color-accent);
+}
+
+.border-brand-primary {
+  border-color: var(--color-primary);
+}
+
+.border-brand-secondary {
+  border-color: var(--color-secondary);
+}
+
+/* 버튼 브랜딩 */
+.btn-brand-primary {
+  background-color: var(--button-primary-bg);
+  color: var(--button-primary-text);
+}
+
+.btn-brand-primary:hover {
+  filter: brightness(0.9);
+}
+
+.btn-brand-secondary {
+  background-color: var(--button-secondary-bg);
+  color: var(--button-secondary-text);
+}
+
+.btn-brand-secondary:hover {
+  filter: brightness(0.95);
+}
+
+/* 헤더 브랜딩 */
+.header-brand {
+  background-color: var(--header-bg);
+  color: var(--header-text);
+}
+
+/* 사이드바 브랜딩 */
+.sidebar-brand {
+  background-color: var(--sidebar-bg);
+  color: var(--sidebar-text);
+}
+
+.sidebar-item-active {
+  background-color: var(--sidebar-active);
+  color: var(--sidebar-active-text);
+}
+
+/* 링크 브랜딩 */
+a.link-brand {
+  color: var(--color-primary);
+}
+
+a.link-brand:hover {
+  opacity: 0.8;
+}
+
+/* 카드 제목 브랜딩 */
+.card-title-brand {
+  color: var(--color-primary);
+}
+
+/* 포커스 링 브랜딩 */
+.focus-brand:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 body {
@@ -34,4 +140,410 @@ body {
 
 .animation-delay-4000 {
   animation-delay: 4s;
+}
+
+/* ========================================
+   메가존 스타일 프리미엄 효과
+   ======================================== */
+
+/* 그라데이션 텍스트 애니메이션 */
+.text-gradient-megazone {
+  background: linear-gradient(90deg, #fff 0%, #70f2a0 40%, #6778ff 85%, #6bc2f0 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient-shift 4s ease infinite;
+}
+
+.text-gradient-purple {
+  background: linear-gradient(90deg, #dc83ec 4%, #a382ff 45%, #7694ff 88%, #fff 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient-shift 4s ease infinite;
+}
+
+.text-gradient-blue {
+  background: linear-gradient(90deg, #fff 0%, #79a5ff 40%, #67f0ff 70%, #6e6cff 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient-shift 4s ease infinite;
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% center; }
+  50% { background-position: 100% center; }
+  100% { background-position: 0% center; }
+}
+
+/* 글래스모피즘 카드 */
+.glass-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+}
+
+.glass-card-light {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
+}
+
+/* 네온 글로우 버튼 */
+.btn-neon {
+  position: relative;
+  background: #000;
+  color: #fff;
+  border: 1px solid rgba(112, 242, 160, 0.3);
+  border-radius: 100px;
+  padding: 16px 32px;
+  font-weight: 700;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.btn-neon::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, #70f2a0, #6778ff, #6bc2f0);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 100px;
+  z-index: -1;
+}
+
+.btn-neon:hover {
+  border-color: transparent;
+  box-shadow: 0 0 30px rgba(112, 242, 160, 0.4), 0 0 60px rgba(103, 120, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.btn-neon:hover::before {
+  opacity: 1;
+}
+
+/* 그라데이션 테두리 버튼 */
+.btn-gradient-border {
+  position: relative;
+  background: transparent;
+  color: #fff;
+  border: none;
+  border-radius: 100px;
+  padding: 16px 32px;
+  font-weight: 700;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.btn-gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 100px;
+  padding: 1.5px;
+  background: linear-gradient(90deg, #70f2a0, #6778ff, #6bc2f0);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.btn-gradient-border:hover {
+  background: rgba(112, 242, 160, 0.1);
+  transform: translateY(-2px);
+}
+
+/* 다크 히어로 배경 */
+.hero-dark {
+  background: #000;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-dark::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 30% 50%, rgba(112, 242, 160, 0.08) 0%, transparent 50%),
+              radial-gradient(circle at 70% 30%, rgba(103, 120, 255, 0.08) 0%, transparent 50%),
+              radial-gradient(circle at 50% 80%, rgba(107, 194, 240, 0.05) 0%, transparent 40%);
+  animation: ambient-glow 10s ease-in-out infinite;
+}
+
+@keyframes ambient-glow {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  33% { transform: translate(2%, 2%) rotate(1deg); }
+  66% { transform: translate(-2%, 1%) rotate(-1deg); }
+}
+
+/* 빛나는 오브 */
+.glow-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.5;
+  animation: float 8s ease-in-out infinite;
+}
+
+.glow-orb-green {
+  background: #70f2a0;
+}
+
+.glow-orb-purple {
+  background: #6778ff;
+}
+
+.glow-orb-blue {
+  background: #6bc2f0;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-20px) scale(1.05); }
+}
+
+/* 페이드 인 애니메이션 */
+.fade-in-up {
+  opacity: 0;
+  transform: translateY(30px);
+  animation: fadeInUp 0.8s ease forwards;
+}
+
+.fade-in-up-delay-1 { animation-delay: 0.1s; }
+.fade-in-up-delay-2 { animation-delay: 0.2s; }
+.fade-in-up-delay-3 { animation-delay: 0.3s; }
+.fade-in-up-delay-4 { animation-delay: 0.4s; }
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 호버시 밝아지는 카드 */
+.card-hover-glow {
+  transition: all 0.4s ease;
+}
+
+.card-hover-glow:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(112, 242, 160, 0.3);
+  box-shadow: 0 8px 32px rgba(112, 242, 160, 0.15);
+  transform: translateY(-4px);
+}
+
+/* 스타 글리터 효과 */
+.star-field {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-image:
+    radial-gradient(2px 2px at 20px 30px, rgba(255,255,255,0.3), transparent),
+    radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.2), transparent),
+    radial-gradient(1px 1px at 90px 40px, rgba(255,255,255,0.4), transparent),
+    radial-gradient(2px 2px at 130px 80px, rgba(255,255,255,0.2), transparent),
+    radial-gradient(1px 1px at 160px 120px, rgba(255,255,255,0.3), transparent);
+  background-repeat: repeat;
+  background-size: 200px 150px;
+  animation: twinkle 5s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* ========================================
+   테마별 배경 스타일
+   ======================================== */
+
+/* Ocean Breeze - 시원한 바다 느낌 */
+.hero-ocean {
+  background: linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 50%, #7DD3FC 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-ocean::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 30% 40%, rgba(14, 165, 233, 0.15) 0%, transparent 60%),
+              radial-gradient(circle at 70% 60%, rgba(6, 182, 212, 0.12) 0%, transparent 55%);
+  animation: wave 8s ease-in-out infinite;
+}
+
+@keyframes wave {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-10px) scale(1.02); }
+}
+
+.glow-orb-ocean {
+  background: linear-gradient(135deg, #0EA5E9, #06B6D4);
+}
+
+/* Forest - 자연의 녹색 느낌 */
+.hero-forest {
+  background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 50%, #A7F3D0 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-forest::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 40% 30%, rgba(5, 150, 105, 0.12) 0%, transparent 50%),
+              radial-gradient(circle at 60% 70%, rgba(16, 185, 129, 0.1) 0%, transparent 55%);
+  animation: forest-breeze 10s ease-in-out infinite;
+}
+
+@keyframes forest-breeze {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(5px, -5px); }
+}
+
+.glow-orb-forest {
+  background: linear-gradient(135deg, #059669, #10B981);
+}
+
+/* Sunset Glow - 따뜻한 노을 느낌 */
+.hero-sunset {
+  background: linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 30%, #FED7AA 70%, #FDBA74 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-sunset::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 20%, rgba(249, 115, 22, 0.15) 0%, transparent 50%),
+              radial-gradient(circle at 30% 80%, rgba(251, 146, 60, 0.12) 0%, transparent 55%);
+  animation: sunset-glow 12s ease-in-out infinite;
+}
+
+@keyframes sunset-glow {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+.glow-orb-sunset {
+  background: linear-gradient(135deg, #F97316, #FB923C);
+}
+
+/* Lavender Dream - 몽환적 보라색 느낌 */
+.hero-lavender {
+  background: linear-gradient(135deg, #FAF5FF 0%, #F3E8FF 50%, #E9D5FF 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-lavender::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 35% 45%, rgba(168, 85, 247, 0.12) 0%, transparent 50%),
+              radial-gradient(circle at 65% 55%, rgba(192, 132, 252, 0.1) 0%, transparent 55%);
+  animation: lavender-float 10s ease-in-out infinite;
+}
+
+@keyframes lavender-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(0.5deg); }
+}
+
+.glow-orb-lavender {
+  background: linear-gradient(135deg, #A855F7, #C084FC);
+}
+
+/* Rose Garden - 로맨틱 핑크 느낌 */
+.hero-rose {
+  background: linear-gradient(135deg, #FFF1F2 0%, #FFE4E6 50%, #FECDD3 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-rose::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 40% 40%, rgba(244, 63, 94, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 60% 60%, rgba(251, 113, 133, 0.08) 0%, transparent 55%);
+  animation: rose-petals 9s ease-in-out infinite;
+}
+
+@keyframes rose-petals {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.02) rotate(0.3deg); }
+}
+
+.glow-orb-rose {
+  background: linear-gradient(135deg, #F43F5E, #FB7185);
+}
+
+/* Midnight Blue - 깊은 밤하늘 느낌 */
+.hero-midnight {
+  background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #334155 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-midnight::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 30% 30%, rgba(30, 58, 138, 0.3) 0%, transparent 50%),
+              radial-gradient(circle at 70% 70%, rgba(37, 99, 235, 0.2) 0%, transparent 55%);
+  animation: midnight-stars 11s ease-in-out infinite;
+}
+
+@keyframes midnight-stars {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+.glow-orb-midnight {
+  background: linear-gradient(135deg, #1E3A8A, #2563EB);
+}
+
+/* Minimal Gray - 깔끔한 회색 느낌 */
+.hero-minimal {
+  background: linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 50%, #E5E5E5 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-minimal::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(163, 163, 163, 0.05) 0%, transparent 50%);
+  animation: minimal-pulse 8s ease-in-out infinite;
+}
+
+@keyframes minimal-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.8; }
+}
+
+.glow-orb-minimal {
+  background: linear-gradient(135deg, #525252, #737373);
 }

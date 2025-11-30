@@ -15,6 +15,7 @@ import com.example.demo.domain.user.repository.UserRepository;
 import com.example.demo.global.exception.BusinessException;
 import com.example.demo.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
+@Slf4j
 public class CourseApplicationServiceImpl implements CourseApplicationService {
 
     private final CourseApplicationRepository courseApplicationRepository;
