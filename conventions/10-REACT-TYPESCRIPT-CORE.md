@@ -28,8 +28,10 @@ const MAX_RETRY_COUNT = 3;
 
 ```typescript
 // 1. Import
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import type { User } from '@/types';
+import { userService } from '@/services/userService';
 
 // 2. Types
 interface UserProfileProps {
@@ -38,22 +40,27 @@ interface UserProfileProps {
 
 // 3. Component
 export const UserProfile = ({ userId }: UserProfileProps) => {
-  // State
-  const [user, setUser] = useState<User | null>(null);
+  // ✅ 서버 상태: React Query 사용 (useState 금지)
+  const { data: user, isLoading } = useQuery({
+    queryKey: ['user', userId],
+    queryFn: () => userService.getUser(userId),
+  });
 
-  // Effects
-  useEffect(() => { loadUser(); }, [userId]);
-
-  // Handlers
-  const loadUser = async () => { /* ... */ };
+  // ✅ UI 상태: useState 허용 (토글, 모달 열림 등)
+  const [isEditing, setIsEditing] = useState(false);
 
   // Early return
-  if (!user) return <div>Loading...</div>;
+  if (isLoading) return <div>Loading...</div>;
+  if (!user) return <div>User not found</div>;
 
   // JSX
   return <div>{user.name}</div>;
 };
 ```
+
+> **서버 상태 vs UI 상태**
+> - 서버 상태 (API 데이터): React Query 사용
+> - UI 상태 (토글, 모달, 폼 입력): useState 허용
 
 ---
 
@@ -104,17 +111,20 @@ interface CardProps {
 
 ```typescript
 // ✅ 최상위에서만 호출 (조건문 안 금지)
-const [count, setCount] = useState(0);
+const [isOpen, setIsOpen] = useState(false);  // UI 상태
 
-// ✅ 커스텀 훅: use로 시작
+// ✅ 커스텀 훅: use로 시작 (서버 상태는 React Query 래핑)
 const useUser = (userId: number) => {
-  const [user, setUser] = useState<User | null>(null);
-  return { user };
+  return useQuery({
+    queryKey: ['user', userId],
+    queryFn: () => userService.getUser(userId),
+  });
 };
 
 // ✅ 의존성 배열 정확히
 useEffect(() => {
-  fetchData(userId);
+  // 서버 데이터 fetch가 아닌 side effect만
+  document.title = `User ${userId}`;
 }, [userId]);
 ```
 

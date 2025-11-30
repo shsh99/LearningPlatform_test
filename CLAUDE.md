@@ -1,6 +1,7 @@
 # LearningPlatform - AI 작업 가이드
 
-> **핵심 원칙**: 필요한 컨벤션만 선택적으로 읽고, TodoWrite로 작업 추적
+> **핵심 원칙**: 이 문서(200줄 이하)만으로 대부분의 작업 시작 가능. 부족하면 부록 참조.
+> **🚨 필수 작업 규칙**: 모든 작업은 **반드시 계획 먼저 제시** → 승인 → 순차 진행 → 완료 보고 ([상세](./templates/task-workflow.md))
 
 ---
 
@@ -8,17 +9,25 @@
 
 | 항목 | 내용 |
 |------|------|
-| **이름** | LearningPlatform (교육 플랫폼) |
-| **구조** | Monorepo - `backend/` + `frontend/` |
-| **Backend** | Spring Boot 3.2, Java 17-21, H2 (dev) |
-| **Frontend** | React 19, TypeScript 5, Vite, TailwindCSS |
+| **Backend** | Spring Boot 3.2.11, Java 21 |
+| **Frontend** | React 19.2.0, TypeScript 5.9.3, Vite 7.2.4, TailwindCSS |
+| **Database** | MySQL 8.0 (prod), H2 (dev) |
+| **Infra** | AWS (ECS, RDS, S3, CloudFront), Docker |
 | **인증** | JWT (Access + Refresh Token) |
+
+> 상세 버전은 [PROJECT_CONTEXT.md](./PROJECT_CONTEXT.md) 참조
+
+### 저장소 구조
+| 구조 | 가이드 |
+|------|--------|
+| Monorepo | [MONOREPO.md](./MONOREPO.md) |
+| 분리형 | [SEPARATED-REPOS.md](./SEPARATED-REPOS.md) |
 
 ---
 
 ## 핵심 규칙 (Must-Know)
 
-### Backend 필수 규칙
+### Backend
 ```
 ✅ Entity: Setter 금지 → 비즈니스 메서드 사용
 ✅ Service: @Transactional(readOnly=true) 클래스 레벨
@@ -27,191 +36,135 @@
 ✅ Enum: @Enumerated(EnumType.STRING)
 ```
 
-### Frontend 필수 규칙
+### Frontend
 ```
 ✅ any 타입 금지 → 명시적 타입 정의
-✅ 서버 상태: React Query (useState 금지)
+✅ 서버 상태: React Query (useState는 UI 상태만)
 ✅ API: Axios Instance + handleApiError
 ✅ 컴포넌트: Props Destructuring + Early Return
 ```
 
 ---
 
-## 컨벤션 로딩 가이드
+## 컨벤션 로딩 (작업별 선택)
 
-### 작업별 필수 컨벤션
+| 작업 | 필수 컨벤션 | 부족하면 |
+|------|------------|---------|
+| 프로젝트 구조 | `01-PROJECT-STRUCTURE` | 00 참조 |
+| Git | `02-GIT-CONVENTIONS` | - |
+| Controller | `03-CONTROLLER-CONVENTIONS` | 07 참조 |
+| Service | `04-SERVICE` | 07, 08 참조 |
+| Repository | `05-REPOSITORY` | 06 참조 |
+| Entity | `06-ENTITY` | 00 참조 |
+| DTO | `07-DTO` | 03 참조 |
+| Exception | `08-EXCEPTION` | - |
+| Git Submodule | `09-GIT-SUBMODULE` | SEPARATED-REPOS.md |
+| React Core | `10-REACT-TYPESCRIPT-CORE` | - |
+| React 구조 | `11-REACT-PROJECT-STRUCTURE` | - |
+| Component | `12-REACT-COMPONENT-CONVENTIONS` | 10 참조 |
+| State 관리 | `13-STATE-MANAGEMENT` | - |
+| API Service | `14-API-INTEGRATION` | 13 참조 |
+| Backend Test | `15-BACKEND-TEST` | - |
+| Frontend Test | `16-FRONTEND-TEST` | - |
+| Design/UI | `17-DESIGN` | design.md 참조 |
+| Docker | `18-DOCKER` | infrastructure.md |
+| Database | `19-DATABASE` | database.md |
+| AWS 배포 | `20-AWS` | infrastructure.md |
+| 보안 | `21-SECURITY` | - |
+| 성능 | `22-PERFORMANCE` | - |
+| 외부 API | `23-EXTERNAL-API` | - |
 
-| 작업 유형 | 필수 읽기 | 참고 |
-|----------|----------|------|
-| **Entity** | `06-ENTITY-CONVENTIONS.md` | 00 |
-| **Repository** | `05-REPOSITORY-CONVENTIONS.md` | 06 |
-| **Service** | `04-SERVICE-CONVENTIONS.md` | 07, 08 |
-| **Controller** | `03-CONTROLLER-CONVENTIONS.md` | 07 |
-| **DTO** | `07-DTO-CONVENTIONS.md` | 03 |
-| **Exception** | `08-EXCEPTION-CONVENTIONS.md` | - |
-| **Component** | `12-REACT-COMPONENT-CONVENTIONS.md` | 10 |
-| **API Service** | `14-REACT-API-INTEGRATION.md` | 13 |
-| **State** | `13-REACT-STATE-MANAGEMENT.md` | 10 |
-| **Backend Test** | `15-BACKEND-TEST-CONVENTIONS.md` | - |
-| **Frontend Test** | `16-FRONTEND-TEST-CONVENTIONS.md` | - |
-
-> 💡 `00-CONVENTIONS-CORE.md` (Backend), `10-REACT-TYPESCRIPT-CORE.md` (Frontend) 는 공통 규칙
+> 컨벤션 전체 목록이 필요하면 → [conventions/README.md](./conventions/README.md)
 
 ---
 
 ## 작업 순서
 
-### Backend CRUD
-```
-Entity → Repository → DTO → Exception → Service → Controller → Test
-```
+**Backend CRUD**: Entity → Repository → DTO → Exception → Service → Controller → Test
 
-### Frontend 페이지
-```
-Types → API Service → React Query Hook → Component → Test
-```
+**Frontend 페이지**: Types → API Service → React Query Hook → Component → Test
+
+**디자인 (MCP)**: Figma 조회 → 토큰 확인 → 구현 → 비교 검증
 
 ---
 
 ## 프로젝트 구조
 
 ```
-backend/src/main/java/com/example/demo/
-├── domain/           # 도메인별 패키지
-│   ├── user/         # User 도메인
-│   │   ├── controller/
-│   │   ├── service/
-│   │   ├── repository/
-│   │   ├── entity/
-│   │   ├── dto/
-│   │   └── exception/
-│   ├── course/       # Course 도메인
-│   └── enrollment/   # Enrollment 도메인
-└── global/           # 공통 설정
-    ├── config/       # Security, CORS 등
-    ├── exception/    # GlobalExceptionHandler
-    └── common/       # BaseEntity, 유틸리티
+backend/.../domain/
+├── user/           # controller, service, repository, entity, dto, exception
+├── course/
+└── enrollment/
+global/             # config, exception, common
 
 frontend/src/
-├── components/       # 공통 컴포넌트
-├── pages/            # 페이지 컴포넌트
-├── services/         # API 서비스
-├── hooks/            # Custom Hooks
-├── types/            # TypeScript 타입
-└── utils/            # 유틸리티
+├── pages/          # 페이지 컴포넌트
+├── components/     # 재사용 컴포넌트 (common, layout)
+├── services/       # API 호출
+├── hooks/          # Custom Hooks (React Query 래핑)
+├── stores/         # 전역 상태 (필요시)
+├── types/          # TypeScript 타입
+└── utils/          # 유틸리티 함수
 ```
 
----
-
-## 주요 API Endpoints
-
-| 기능 | Method | Endpoint |
-|------|--------|----------|
-| 로그인 | POST | `/api/auth/login` |
-| 회원가입 | POST | `/api/auth/register` |
-| 토큰 갱신 | POST | `/api/auth/refresh` |
-| 사용자 목록 | GET | `/api/users` |
-| 강의 목록 | GET | `/api/courses` |
-| 강의 차수 | GET | `/api/courses/{id}/terms` |
-| 수강 신청 | POST | `/api/enrollments` |
+> 상세 구조가 필요하면 → [PROJECT_CONTEXT.md](./PROJECT_CONTEXT.md)
 
 ---
 
 ## 자주 하는 실수
 
-| 실수 | 해결책 |
-|------|--------|
-| Entity에 Setter 사용 | `updateXxx()` 비즈니스 메서드로 대체 |
-| Controller에서 try-catch | GlobalExceptionHandler에 위임 |
-| DTO에 toEntity() | Entity.create() 정적 팩토리 사용 |
-| EnumType.ORDINAL | EnumType.STRING 사용 |
-| Frontend any 타입 | 명시적 인터페이스/타입 정의 |
-| useState로 서버 상태 | React Query useQuery/useMutation |
-| N+1 쿼리 | Fetch Join 또는 @EntityGraph |
+| 실수 | 해결 |
+|------|------|
+| Entity Setter | `updateXxx()` 메서드 |
+| Controller try-catch | GlobalExceptionHandler |
+| DTO toEntity() | Entity.create() |
+| useState 서버상태 | React Query |
+| N+1 쿼리 | Fetch Join |
 
 ---
 
-## Git 컨벤션
+## Git
 
-### Commit 형식
-```
-feat(backend): Add User CRUD API
-fix(frontend): Resolve login state bug
-refactor(backend): Improve UserService logic
-test: Add UserController unit tests
-```
+**Commit**: `feat(backend): Add User API` / `fix(frontend): Login bug`
 
-### Branch 전략
-- `main`: 프로덕션
-- `dev`: 개발 통합
-- `feat/*`: 기능 개발
-- `fix/*`: 버그 수정
+**Branch**: main → dev → feat/* / fix/*
 
 ---
 
-## 참조 문서
+## 참조 문서 (부족하면 여기서)
 
-### 프로젝트 문서
-- [MONOREPO.md](./MONOREPO.md) - 환경 설정, 실행 방법, 배포
-- [conventions/README.md](./conventions/README.md) - 컨벤션 전체 목록
-
-### 도메인 컨텍스트 (상세 정보)
-- [docs/context/database.md](./docs/context/database.md) - DB 스키마, ERD
-- [docs/context/api.md](./docs/context/api.md) - API 상세 명세
-- [docs/context/pages.md](./docs/context/pages.md) - 페이지별 기능 명세
-
-### 핵심 컨벤션 (자주 참조)
-| Backend | Frontend |
-|---------|----------|
-| [00-CONVENTIONS-CORE](./conventions/00-CONVENTIONS-CORE.md) | [10-REACT-TYPESCRIPT-CORE](./conventions/10-REACT-TYPESCRIPT-CORE.md) |
-| [04-SERVICE](./conventions/04-SERVICE-CONVENTIONS.md) | [12-COMPONENT](./conventions/12-REACT-COMPONENT-CONVENTIONS.md) |
-| [06-ENTITY](./conventions/06-ENTITY-CONVENTIONS.md) | [14-API-INTEGRATION](./conventions/14-REACT-API-INTEGRATION.md) |
+| 분류 | 문서 |
+|------|------|
+| **환경** | [MONOREPO](./MONOREPO.md), [SEPARATED-REPOS](./SEPARATED-REPOS.md), [PROJECT_CONTEXT](./PROJECT_CONTEXT.md) |
+| **컨텍스트** | [architecture](./docs/context/architecture.md), [database](./docs/context/database.md), [api](./docs/context/api.md), [pages](./docs/context/pages.md), [design](./docs/context/design.md), [infrastructure](./docs/context/infrastructure.md) |
+| **템플릿** | [task-workflow](./templates/task-workflow.md), [PRD](./templates/prd.md), [MoSCoW](./templates/moscow-priority.md), [ADR](./docs/adr/000-template.md) |
+| **기타** | [troubleshooting](./docs/context/troubleshooting.md), [glossary](./docs/context/glossary.md), [code-review](./templates/code-review-checklist.md) |
 
 ---
 
-## 작업 시작 전 체크리스트
-
-1. [ ] 작업 유형 파악 → 필요한 컨벤션 확인
-2. [ ] TodoWrite로 작업 계획 수립
-3. [ ] 의존성 순서대로 진행 (하위 레이어부터)
-4. [ ] 완료 시 TodoWrite 상태 업데이트
-
----
-
-## 맥도날드화 원칙 (McDonald's-ization)
-
-> **"전문 셰프가 아니어도, 전국 어디서나 훌륭한 햄버거가 나온다"**
-> AI가 일관된 결과물을 만들기 위한 표준화된 프로세스
-
-### 4가지 원칙
-
-| 원칙 | 적용 방법 | 관련 문서 |
-|------|-----------|-----------|
-| **효율성** | 필요한 컨벤션만 선택적 로딩 (토큰 최소화) | 이 문서의 컨벤션 로딩 가이드 |
-| **계산 가능성** | PRD 템플릿으로 예측 가능한 결과 도출 | [PRD 템플릿](.claude/templates/prd.md) |
-| **예측 가능성** | 7단계 워크플로우 체크리스트 | [워크플로우](.claude/templates/workflow-checklist.md) |
-| **통제** | MoSCoW 우선순위로 AI 자의적 판단 제한 | [MoSCoW 가이드](.claude/templates/moscow-priority.md) |
-
-### 기능 구현 7단계 워크플로우
+## 🚨 AI 작업 규칙 (필수)
 
 ```
-1. 요구사항 분석 → 2. UX 설계 → 3. 의존성 분석 → 4. 구현 계획
-→ 5. 리스크 분석 → 6. 구현 → 7. 테스트 & 검증
+⚠️ 코드 작성 전 반드시 계획부터 제시할 것!
 ```
 
-### MoSCoW 우선순위
+1. **계획 제시** → 작업 목록 테이블로 보여주기
+2. **승인 대기** → 사용자 확인 후 진행
+3. **순차 작업** → TodoWrite로 추적하며 진행
+4. **완료 보고** → 결과 요약 제시
 
-- 🔴 **Must-have**: 필수. 이것 없이는 릴리스 불가
-- 🟡 **Should-have**: 권장. 중요하지만 필수는 아님
-- 🟢 **Could-have**: 선택. 시간이 허락하면 구현
-- ⚪ **Won't-have**: 제외. 이번 버전에서는 구현 안 함
-
-### 결정 기록 (ADR)
-
-중요한 아키텍처 결정은 [docs/adr/](docs/adr/) 폴더에 기록합니다.
-- "왜 이렇게 만들었는가?"에 대한 답을 문서화
-- 템플릿: [ADR 템플릿](docs/adr/000-template.md)
+> 단순 질문/조회는 예외. 코드 생성/수정 작업은 무조건 계획 먼저.
 
 ---
 
-**상세 컨텍스트가 필요하면 `docs/context/` 폴더의 도메인별 문서를 참조하세요.**
+## 워크플로우
+
+**7단계**: 요구사항 → UX → 의존성 → 계획 → 리스크 → 구현 → 테스트
+
+**MoSCoW**: 🔴Must → 🟡Should → 🟢Could (⚪Won't 제외)
+
+> 상세 → [맥도날드화](./templates/mcdonaldization.md) | [워크플로우](./templates/workflow-checklist.md) | [MoSCoW](./templates/moscow-priority.md)
+
+---
+
+**웬만한 작업은 이 문서만으로 시작 가능. 부족하면 위 참조 문서에서 찾으세요.**
