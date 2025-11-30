@@ -17,6 +17,9 @@ public record SignupRequest(
 
     @NotBlank(message = "이름은 필수입니다.")
     @Size(min = 2, max = 20, message = "이름은 2~20자여야 합니다.")
-    String name
+    String name,
+
+    // 선택적: 회사 코드 (테넌트 연결용)
+    String tenantCode
 ) {
 }

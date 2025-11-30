@@ -1,27 +1,41 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate as useRouterNavigate, Link } from 'react-router-dom';
 import { AxiosError } from 'axios';
 import { authApi } from '../api/auth';
 import { useAuth } from '../contexts/AuthContext';
+import { useTenant } from '../contexts/TenantContext';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/Card';
 import { validatePassword, validatePasswordConfirm, getPasswordHelperText } from '../utils/validation';
+import { isDarkTheme, getThemeClass, getGlowOrbClasses } from '../utils/theme';
 
 export function SignupPage() {
-    const navigate = useNavigate();
+    const routerNavigate = useRouterNavigate();
     const { login } = useAuth();
+    const { branding, labels, navigate } = useTenant();
     const [formData, setFormData] = useState({
         email: '',
         password: '',
         passwordConfirm: '',
         name: '',
+        tenantCode: '',
     });
     const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
     const [passwordConfirmErrors, setPasswordConfirmErrors] = useState<string[]>([]);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+
+    // 브랜딩 헤더 색상 기반 다크 테마 자동 감지
+    const isThemeDark = isDarkTheme(branding.headerBgColor);
+
+    // 테마별 배경 클래스 가져오기
+    const themeClass = getThemeClass(branding.primaryColor, branding.headerBgColor, branding.backgroundColor);
+    const glowOrbs = getGlowOrbClasses(branding.primaryColor, branding.headerBgColor, branding.backgroundColor);
+
+    // 커스텀 배경색이 있는 경우
+    const hasCustomBackground = branding.backgroundColor && branding.backgroundColor.trim() !== '';
 
     const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newPassword = e.target.value;
@@ -64,9 +78,20 @@ export function SignupPage() {
 
         try {
             const { passwordConfirm, ...signupData } = formData;
-            const response = await authApi.signup(signupData);
+            // tenantCode가 빈 문자열이면 undefined로 변환
+            const requestData = {
+                ...signupData,
+                tenantCode: signupData.tenantCode?.trim() || undefined,
+            };
+            const response = await authApi.signup(requestData);
             login(response);
-            navigate('/');
+
+            // tenantCode가 있으면 해당 테넌트 홈으로, 없으면 기본 홈으로
+            if (response.tenantCode) {
+                routerNavigate(`/${response.tenantCode}/`);
+            } else {
+                navigate('/');
+            }
         } catch (err) {
             if (err instanceof AxiosError) {
                 setError(err.response?.data?.message || '회원가입에 실패했습니다.');
@@ -79,8 +104,38 @@ export function SignupPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full space-y-8">
+        <div
+            className={`min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden ${hasCustomBackground ? '' : themeClass}`}
+            style={hasCustomBackground ? { backgroundColor: branding.backgroundColor } : undefined}
+        >
+            {/* 테마별 배경 효과 */}
+            {(hasCustomBackground || themeClass !== 'bg-gray-50') && (
+                <>
+                    {isThemeDark && <div className="star-field"></div>}
+                    {glowOrbs.primary && <div className={`glow-orb ${glowOrbs.primary} w-96 h-96 top-20 -left-48`}></div>}
+                    {glowOrbs.secondary && <div className={`glow-orb ${glowOrbs.secondary} w-80 h-80 bottom-20 -right-40 animation-delay-2000`}></div>}
+                </>
+            )}
+
+            <div className={`max-w-md w-full space-y-8 ${isThemeDark ? 'relative z-10 fade-in-up' : ''}`}>
+                {/* 로고 및 타이틀 */}
+                <div className="text-center">
+                    <Link to="/" className="inline-flex items-center gap-2 group">
+                        {branding.logoUrl ? (
+                            <img src={branding.logoUrl} alt="Logo" className="h-12 w-auto" />
+                        ) : (
+                            <div
+                                className={`w-12 h-12 rounded-xl flex items-center justify-center group-hover:shadow-lg transition-shadow ${isThemeDark ? 'shadow-lg shadow-emerald-500/20' : ''}`}
+                                style={{ backgroundColor: branding.primaryColor }}
+                            >
+                                <svg className={`w-7 h-7 ${isThemeDark ? 'text-black' : 'text-white'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                </svg>
+                            </div>
+                        )}
+                        <span className={`text-2xl font-bold ${isThemeDark ? 'text-white' : 'text-gray-900'}`}>{labels.platformName}</span>
+                    </Link>
+                </div>
                 <Card variant="elevated">
                     <CardHeader>
                         <CardTitle className="text-center">회원가입</CardTitle>
@@ -151,6 +206,15 @@ export function SignupPage() {
                                 helperText="2-20자 사이로 입력해주세요"
                             />
 
+                            <Input
+                                label="회사코드 (선택)"
+                                type="text"
+                                value={formData.tenantCode}
+                                onChange={(e) => setFormData({ ...formData, tenantCode: e.target.value })}
+                                placeholder="samsung"
+                                helperText="소속 회사가 있는 경우 회사코드를 입력하세요"
+                            />
+
                             {error && (
                                 <div className="rounded-lg bg-red-50 border border-red-200 p-3">
                                     <p className="text-sm text-red-600">{error}</p>
@@ -164,7 +228,11 @@ export function SignupPage() {
 
                         <div className="mt-6 text-center text-sm">
                             <span className="text-gray-600">이미 계정이 있으신가요? </span>
-                            <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">
+                            <Link
+                                to="/login"
+                                className="font-medium hover:opacity-80"
+                                style={{ color: branding.primaryColor }}
+                            >
                                 로그인
                             </Link>
                         </div>
