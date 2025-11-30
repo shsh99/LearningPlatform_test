@@ -4,7 +4,7 @@
 
 ---
 
-## Java 17-21 & Spring Boot 3.2 공통 규칙
+## Java 21 & Spring Boot 3.2.x 공통 규칙
 
 ### 1. 코딩 스타일 (Google Java Style Guide 기반)
 

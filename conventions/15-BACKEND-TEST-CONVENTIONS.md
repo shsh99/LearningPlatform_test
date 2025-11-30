@@ -1,4 +1,4 @@
-# 15-1. Backend Test Conventions
+# 15. Backend Test Conventions
 
 **베이스**: Spring Boot Testing (JUnit5, MockMvc, AssertJ)
 

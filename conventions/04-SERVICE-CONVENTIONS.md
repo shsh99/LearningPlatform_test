@@ -17,8 +17,7 @@ public class {Domain}ServiceImpl implements {Domain}Service {
 
     private final {Domain}Repository {domain}Repository;
 
-    // ===== 조회 (readOnly = true) =====
-    @Transactional(readOnly = true)
+    // ===== 조회 (클래스 레벨 readOnly=true 적용됨) =====
     public {Domain}Response findById(Long id) {
         log.debug("Finding {domain}: id={}", id);
 
@@ -113,8 +112,7 @@ public class {Domain}Service {
 ## 5. 예외 처리
 
 ```java
-// ✅ GOOD: 예외는 던지기만
-@Transactional(readOnly = true)
+// ✅ GOOD: 예외는 던지기만 (클래스 레벨 readOnly=true 적용됨)
 public {Domain}Response findById(Long id) {
     {Domain} entity = {domain}Repository.findById(id)
         .orElseThrow(() -> new {Domain}NotFoundException(id));
@@ -124,7 +122,6 @@ public {Domain}Response findById(Long id) {
 }
 
 // ❌ BAD: Service에서 try-catch
-@Transactional(readOnly = true)
 public {Domain}Response findById(Long id) {
     try {  // ❌ 불필요
         {Domain} entity = {domain}Repository.findById(id)

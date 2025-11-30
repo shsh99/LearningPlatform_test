@@ -38,7 +38,7 @@ User (1) ──── (N) Enrollment (N) ──── (1) CourseTerm
 | description | TEXT | | 강의 설명 |
 | category | VARCHAR(50) | | 카테고리 |
 | instructor_id | BIGINT | FK (users) | 강사 ID |
-| status | VARCHAR(20) | NOT NULL | DRAFT/ACTIVE/INACTIVE |
+| status | VARCHAR(20) | NOT NULL | DRAFT/PUBLISHED/CLOSED/ARCHIVED |
 | created_at | TIMESTAMP | NOT NULL | 생성일시 |
 | updated_at | TIMESTAMP | NOT NULL | 수정일시 |
 
@@ -90,9 +90,10 @@ SUSPENDED   // 정지
 
 ### CourseStatus
 ```java
-DRAFT       // 임시저장
-ACTIVE      // 활성
-INACTIVE    // 비활성
+DRAFT       // 초안 (작성 중)
+PUBLISHED   // 공개 (수강 신청 가능)
+CLOSED      // 마감 (신청 마감)
+ARCHIVED    // 보관 (종료/비공개)
 ```
 
 ### TermStatus

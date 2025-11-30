@@ -125,7 +125,7 @@
 ### GET /api/courses
 **Query Parameters:**
 - `page`, `size`
-- `status`: DRAFT/ACTIVE/INACTIVE
+- `status`: DRAFT/PUBLISHED/CLOSED/ARCHIVED
 - `category`: 카테고리 필터
 
 **Response (200):**
@@ -138,7 +138,7 @@
       "description": "Spring Boot 입문 강의",
       "category": "백엔드",
       "instructorName": "김강사",
-      "status": "ACTIVE",
+      "status": "PUBLISHED",
       "termCount": 3
     }
   ],

@@ -11,7 +11,8 @@
 import axios from 'axios';
 
 export const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
+  // ⚠️ 개발 환경 기본값. 운영에서는 반드시 VITE_API_BASE_URL 환경변수 설정 필요
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api',
   timeout: 10000,
 });
 

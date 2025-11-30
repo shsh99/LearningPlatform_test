@@ -187,7 +187,7 @@ const UserList = () => {
 };
 ```
 
-> **useMutation**은 [14-REACT-QUERY-PATTERNS.md](./14-REACT-QUERY-PATTERNS.md) 참조
+> **useMutation**은 [14-REACT-API-INTEGRATION.md](./14-REACT-API-INTEGRATION.md) 참조
 
 ---
 
