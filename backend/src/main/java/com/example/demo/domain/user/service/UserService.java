@@ -1,6 +1,8 @@
 package com.example.demo.domain.user.service;
 
 import com.example.demo.domain.user.dto.ChangePasswordRequest;
+import com.example.demo.domain.user.dto.CreateOperatorRequest;
+import com.example.demo.domain.user.dto.CreateTenantAdminRequest;
 import com.example.demo.domain.user.dto.UpdateProfileRequest;
 import com.example.demo.domain.user.dto.UserResponse;
 import com.example.demo.domain.user.dto.UserProfileResponse;
@@ -47,4 +49,21 @@ public interface UserService {
      * 회원탈퇴
      */
     void withdrawAccount(Long userId, WithdrawRequest request);
+
+    /**
+     * 테넌트 어드민 생성 (SUPER_ADMIN 전용)
+     */
+    UserResponse createTenantAdmin(CreateTenantAdminRequest request);
+
+    /**
+     * 오퍼레이터 생성 (TENANT_ADMIN 전용)
+     * @param request 오퍼레이터 생성 요청
+     * @param tenantAdminId 요청자(TENANT_ADMIN)의 사용자 ID
+     */
+    UserResponse createOperator(CreateOperatorRequest request, Long tenantAdminId);
+
+    /**
+     * 테넌트의 오퍼레이터 목록 조회 (TENANT_ADMIN 전용)
+     */
+    List<UserResponse> getOperatorsByTenant(Long tenantAdminId);
 }
