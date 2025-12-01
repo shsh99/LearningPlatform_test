@@ -3,6 +3,7 @@ package com.example.demo.domain.timeschedule.service;
 import com.example.demo.domain.timeschedule.dto.InstructorInformationSystemDetailResponse;
 import com.example.demo.domain.timeschedule.dto.InstructorInformationSystemResponse;
 import com.example.demo.domain.timeschedule.repository.InstructorInformationSystemRepository;
+import com.example.demo.global.tenant.TenantContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +41,12 @@ public class InstructorInformationSystemServiceImpl implements InstructorInforma
 
     @Override
     public List<InstructorInformationSystemResponse> findAll() {
+        Long tenantId = TenantContext.getTenantId();
+        if (tenantId != null) {
+            return iisRepository.findAllByTenantId(tenantId).stream()
+                .map(InstructorInformationSystemResponse::from)
+                .collect(Collectors.toList());
+        }
         return iisRepository.findAll().stream()
             .map(InstructorInformationSystemResponse::from)
             .collect(Collectors.toList());
@@ -48,6 +55,12 @@ public class InstructorInformationSystemServiceImpl implements InstructorInforma
     // Enhanced methods with detailed information
     @Override
     public List<InstructorInformationSystemDetailResponse> findAllDetailed() {
+        Long tenantId = TenantContext.getTenantId();
+        if (tenantId != null) {
+            return iisRepository.findAllByTenantId(tenantId).stream()
+                .map(InstructorInformationSystemDetailResponse::from)
+                .collect(Collectors.toList());
+        }
         return iisRepository.findAllWithDetails().stream()
             .map(InstructorInformationSystemDetailResponse::from)
             .collect(Collectors.toList());

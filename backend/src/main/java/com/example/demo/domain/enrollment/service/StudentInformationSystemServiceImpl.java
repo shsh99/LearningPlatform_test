@@ -3,6 +3,7 @@ package com.example.demo.domain.enrollment.service;
 import com.example.demo.domain.enrollment.dto.StudentInformationSystemDetailResponse;
 import com.example.demo.domain.enrollment.dto.StudentInformationSystemResponse;
 import com.example.demo.domain.enrollment.repository.StudentInformationSystemRepository;
+import com.example.demo.global.tenant.TenantContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +41,12 @@ public class StudentInformationSystemServiceImpl implements StudentInformationSy
 
     @Override
     public List<StudentInformationSystemResponse> findAll() {
+        Long tenantId = TenantContext.getTenantId();
+        if (tenantId != null) {
+            return sisRepository.findAllByTenantId(tenantId).stream()
+                .map(StudentInformationSystemResponse::from)
+                .collect(Collectors.toList());
+        }
         return sisRepository.findAll().stream()
             .map(StudentInformationSystemResponse::from)
             .collect(Collectors.toList());
@@ -47,6 +54,12 @@ public class StudentInformationSystemServiceImpl implements StudentInformationSy
 
     @Override
     public List<StudentInformationSystemDetailResponse> findAllWithDetails() {
+        Long tenantId = TenantContext.getTenantId();
+        if (tenantId != null) {
+            return sisRepository.findAllByTenantId(tenantId).stream()
+                .map(StudentInformationSystemDetailResponse::from)
+                .collect(Collectors.toList());
+        }
         return sisRepository.findAllWithDetails().stream()
             .map(StudentInformationSystemDetailResponse::from)
             .collect(Collectors.toList());

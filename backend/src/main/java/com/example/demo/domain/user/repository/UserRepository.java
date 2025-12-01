@@ -29,4 +29,22 @@ public interface UserRepository extends JpaRepository<User, Long> {
      */
     @Query("SELECT u FROM User u WHERE u.tenantId = :tenantId AND u.role = :role AND u.status = com.example.demo.domain.user.entity.UserStatus.ACTIVE")
     List<User> findByTenantIdAndRole(@Param("tenantId") Long tenantId, @Param("role") UserRole role);
+
+    /**
+     * 테넌트 ID로 전체 사용자 목록 조회 (ACTIVE 상태만)
+     */
+    @Query("SELECT u FROM User u WHERE u.tenantId = :tenantId AND u.status = com.example.demo.domain.user.entity.UserStatus.ACTIVE")
+    List<User> findByTenantId(@Param("tenantId") Long tenantId);
+
+    /**
+     * 테넌트 ID로 사용자 검색 (이메일 또는 이름, ACTIVE 상태만)
+     */
+    @Query("SELECT u FROM User u WHERE u.tenantId = :tenantId AND u.status = com.example.demo.domain.user.entity.UserStatus.ACTIVE AND (LOWER(u.email) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(u.name) LIKE LOWER(CONCAT('%', :query, '%')))")
+    List<User> searchActiveUsersByTenant(@Param("tenantId") Long tenantId, @Param("query") String query);
+
+    /**
+     * 테넌트 ID로 사용자 수 카운트 (필터 무시, 직접 쿼리)
+     */
+    @Query("SELECT COUNT(u) FROM User u WHERE u.tenantId = :tenantId")
+    long countByTenantId(@Param("tenantId") Long tenantId);
 }

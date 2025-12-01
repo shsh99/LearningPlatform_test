@@ -32,4 +32,15 @@ public interface StudentInformationSystemRepository extends JpaRepository<Studen
            "JOIN FETCH t.course c " +
            "WHERE sis.id = :id")
     Optional<StudentInformationSystem> findByIdWithDetails(@Param("id") Long id);
+
+    /**
+     * 테넌트 ID로 SIS 조회 (enrollment를 통해 tenantId 필터링)
+     */
+    @Query("SELECT sis FROM StudentInformationSystem sis " +
+           "JOIN FETCH sis.enrollment e " +
+           "JOIN FETCH e.student s " +
+           "JOIN FETCH e.term t " +
+           "JOIN FETCH t.course c " +
+           "WHERE e.tenantId = :tenantId")
+    List<StudentInformationSystem> findAllByTenantId(@Param("tenantId") Long tenantId);
 }

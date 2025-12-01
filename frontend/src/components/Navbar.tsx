@@ -119,6 +119,13 @@ export function Navbar() {
                                 {user?.role === 'TENANT_ADMIN' && (
                                     <>
                                         <Link
+                                            to={buildPath('/tenant-admin/dashboard')}
+                                            className="font-medium transition-colors hover:opacity-80"
+                                            style={{ color: branding.headerTextColor }}
+                                        >
+                                            대시보드
+                                        </Link>
+                                        <Link
                                             to={buildPath('/tenant-admin/branding')}
                                             className="font-medium transition-colors hover:opacity-80"
                                             style={{ color: branding.headerTextColor }}
@@ -138,6 +145,13 @@ export function Navbar() {
                                 {/* SUPER_ADMIN 메뉴 - 절대 경로 사용 */}
                                 {isSuperAdmin && (
                                     <>
+                                        <Link
+                                            to="/super-admin/dashboard"
+                                            className="font-medium transition-colors hover:opacity-80"
+                                            style={{ color: branding.headerTextColor }}
+                                        >
+                                            대시보드
+                                        </Link>
                                         <Link
                                             to="/super-admin/applications"
                                             className="font-medium transition-colors hover:opacity-80"

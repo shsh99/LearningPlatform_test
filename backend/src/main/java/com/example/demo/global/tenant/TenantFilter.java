@@ -1,6 +1,10 @@
 package com.example.demo.global.tenant;
 
 import com.example.demo.domain.tenant.repository.TenantRepository;
+import com.example.demo.domain.user.entity.User;
+import com.example.demo.domain.user.entity.UserRole;
+import com.example.demo.domain.user.repository.UserRepository;
+import com.example.demo.global.security.JwtTokenProvider;
 import jakarta.persistence.EntityManager;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -10,12 +14,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Session;
 import org.springframework.core.annotation.Order;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Optional;
 
 /**
  * 요청에서 테넌트 정보를 추출하여 TenantContext에 설정하고 Hibernate 필터를 활성화하는 필터
@@ -36,6 +40,8 @@ public class TenantFilter extends OncePerRequestFilter {
 
     private final TenantRepository tenantRepository;
     private final EntityManager entityManager;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(
@@ -44,17 +50,37 @@ public class TenantFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
         try {
-            Long tenantId = resolveTenantId(request);
-            TenantContext.setTenantId(tenantId);
+            // JWT에서 사용자 정보 추출
+            Optional<User> userOpt = extractUserFromJwt(request);
 
-            // SUPER_ADMIN 확인: SUPER_ADMIN은 필터를 활성화하지 않음 (모든 테넌트 접근 가능)
-            if (!isSuperAdmin()) {
-                // 일반 사용자: Hibernate Session에서 tenantFilter 활성화
-                Session session = entityManager.unwrap(Session.class);
-                session.enableFilter("tenantFilter").setParameter("tenantId", tenantId);
-                log.debug("Tenant resolved and filter enabled: {}", tenantId);
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
+
+                // SUPER_ADMIN은 모든 테넌트 접근 가능 (tenantId = null)
+                if (user.getRole() == UserRole.SUPER_ADMIN) {
+                    TenantContext.setTenantId(null);
+                    log.debug("SUPER_ADMIN detected. Tenant filter NOT enabled. Full access granted.");
+                } else {
+                    // 로그인한 사용자의 tenantId 사용
+                    Long tenantId = user.getTenantId();
+                    TenantContext.setTenantId(tenantId);
+
+                    if (tenantId != null) {
+                        Session session = entityManager.unwrap(Session.class);
+                        session.enableFilter("tenantFilter").setParameter("tenantId", tenantId);
+                        log.debug("User tenant resolved and filter enabled: userId={}, tenantId={}", user.getId(), tenantId);
+                    }
+                }
             } else {
-                log.debug("SUPER_ADMIN detected. Tenant filter NOT enabled. Full access granted.");
+                // 비로그인 요청: 기존 로직 (헤더/서브도메인에서 테넌트 추출)
+                Long tenantId = resolveTenantIdFromRequest(request);
+                TenantContext.setTenantId(tenantId);
+
+                if (tenantId != null) {
+                    Session session = entityManager.unwrap(Session.class);
+                    session.enableFilter("tenantFilter").setParameter("tenantId", tenantId);
+                    log.debug("Request tenant resolved and filter enabled: {}", tenantId);
+                }
             }
 
             filterChain.doFilter(request, response);
@@ -64,20 +90,33 @@ public class TenantFilter extends OncePerRequestFilter {
     }
 
     /**
-     * 현재 사용자가 SUPER_ADMIN인지 확인
+     * JWT에서 사용자 정보 추출
      */
-    private boolean isSuperAdmin() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return false;
+    private Optional<User> extractUserFromJwt(HttpServletRequest request) {
+        String token = extractToken(request);
+        if (token != null && jwtTokenProvider.validateToken(token)) {
+            try {
+                String email = jwtTokenProvider.getEmailFromToken(token);
+                return userRepository.findActiveUserByEmail(email);
+            } catch (Exception e) {
+                log.debug("Failed to extract user from JWT: {}", e.getMessage());
+            }
         }
-
-        return authentication.getAuthorities().stream()
-                .anyMatch(grantedAuthority ->
-                        grantedAuthority.getAuthority().equals("ROLE_SUPER_ADMIN"));
+        return Optional.empty();
     }
 
-    private Long resolveTenantId(HttpServletRequest request) {
+    /**
+     * Authorization 헤더에서 토큰 추출
+     */
+    private String extractToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
+    }
+
+    private Long resolveTenantIdFromRequest(HttpServletRequest request) {
         // 1. X-Tenant-ID 헤더 확인
         String tenantHeader = request.getHeader(TENANT_HEADER);
         if (tenantHeader != null && !tenantHeader.isBlank()) {

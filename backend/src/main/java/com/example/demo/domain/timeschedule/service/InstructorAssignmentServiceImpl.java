@@ -16,6 +16,7 @@ import com.example.demo.domain.user.repository.UserRepository;
 import com.example.demo.global.exception.BusinessException;
 import com.example.demo.global.exception.ErrorCode;
 import com.example.demo.global.exception.NotFoundException;
+import com.example.demo.global.tenant.TenantContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -110,6 +111,12 @@ public class InstructorAssignmentServiceImpl implements InstructorAssignmentServ
     public List<InstructorAssignmentResponse> findAll() {
         log.debug("Finding all instructor assignments");
 
+        Long tenantId = TenantContext.getTenantId();
+        if (tenantId != null) {
+            return assignmentRepository.findByTenantId(tenantId).stream()
+                .map(InstructorAssignmentResponse::from)
+                .collect(Collectors.toList());
+        }
         return assignmentRepository.findAll().stream()
             .map(InstructorAssignmentResponse::from)
             .collect(Collectors.toList());

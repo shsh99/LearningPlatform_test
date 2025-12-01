@@ -48,3 +48,51 @@ export interface DashboardStats {
   // 강사별 배정 현황
   instructorStats: InstructorStats[];
 }
+
+// ===== SuperAdmin Dashboard =====
+export interface SuperAdminTotalStats {
+  totalTenants: number;
+  totalUsers: number;
+  totalCourses: number;
+  averageRating: number;
+  totalUsageMinutes: number;
+}
+
+export interface SuperAdminTenantStats {
+  tenantId: number;
+  tenantCode: string;
+  tenantName: string;
+  status: string;
+  userCount: number;
+  courseCount: number;
+  termCount: number;
+  averageRating: number;
+  usageMinutes: number;
+}
+
+export interface SuperAdminDashboardStats {
+  totalStats: SuperAdminTotalStats;
+  tenantStatsList: SuperAdminTenantStats[];
+}
+
+// ===== TenantAdmin Dashboard =====
+export interface TenantAdminTenantInfo {
+  tenantId: number;
+  tenantCode: string;
+  tenantName: string;
+  status: string;
+}
+
+export interface TenantAdminStats {
+  userCount: number;
+  courseCount: number;
+  termCount: number;
+  operatorCount: number;
+  averageRating: number;
+  usageMinutes: number;
+}
+
+export interface TenantAdminDashboardStats {
+  tenantInfo: TenantAdminTenantInfo;
+  stats: TenantAdminStats;
+}

@@ -7,9 +7,7 @@ import com.example.demo.domain.course.entity.Course;
 import com.example.demo.domain.course.entity.CourseStatus;
 import com.example.demo.domain.course.exception.CourseNotFoundException;
 import com.example.demo.domain.course.repository.CourseRepository;
-import com.example.demo.domain.user.entity.User;
-import com.example.demo.domain.user.exception.UserNotFoundException;
-import com.example.demo.domain.user.repository.UserRepository;
+import com.example.demo.global.tenant.TenantContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,7 +26,6 @@ import java.util.stream.Collectors;
 public class CourseServiceImpl implements CourseService {
 
     private final CourseRepository courseRepository;
-    private final UserRepository userRepository;
 
     // ===== 생성 (@Transactional) =====
     @Override
@@ -64,6 +61,12 @@ public class CourseServiceImpl implements CourseService {
     public List<CourseResponse> findAll() {
         log.debug("Finding all courses");
 
+        Long tenantId = TenantContext.getTenantId();
+        if (tenantId != null) {
+            return courseRepository.findByTenantId(tenantId).stream()
+                .map(CourseResponse::from)
+                .collect(Collectors.toList());
+        }
         return courseRepository.findAll().stream()
             .map(CourseResponse::from)
             .collect(Collectors.toList());
@@ -73,6 +76,12 @@ public class CourseServiceImpl implements CourseService {
     public List<CourseResponse> findByStatus(CourseStatus status) {
         log.debug("Finding courses by status: status={}", status);
 
+        Long tenantId = TenantContext.getTenantId();
+        if (tenantId != null) {
+            return courseRepository.findByTenantIdAndStatus(tenantId, status).stream()
+                .map(CourseResponse::from)
+                .collect(Collectors.toList());
+        }
         return courseRepository.findByStatus(status).stream()
             .map(CourseResponse::from)
             .collect(Collectors.toList());
@@ -82,6 +91,12 @@ public class CourseServiceImpl implements CourseService {
     public List<CourseResponse> searchByTitle(String keyword) {
         log.debug("Searching courses by title: keyword={}", keyword);
 
+        Long tenantId = TenantContext.getTenantId();
+        if (tenantId != null) {
+            return courseRepository.findByTenantIdAndTitleContaining(tenantId, keyword).stream()
+                .map(CourseResponse::from)
+                .collect(Collectors.toList());
+        }
         return courseRepository.findByTitleContaining(keyword).stream()
             .map(CourseResponse::from)
             .collect(Collectors.toList());

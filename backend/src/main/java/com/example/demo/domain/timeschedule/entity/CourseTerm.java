@@ -82,6 +82,7 @@ public class CourseTerm extends BaseTimeEntity implements TenantAware {
     ) {
         CourseTerm term = new CourseTerm();
         term.course = course;
+        term.tenantId = course.getTenantId(); // 과정의 tenantId 상속
         term.termNumber = termNumber;
         term.startDate = startDate;
         term.endDate = endDate;

@@ -1,15 +1,33 @@
+import { useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Navbar } from '../components/Navbar';
 import { useTenant } from '../contexts/TenantContext';
 import { isDarkTheme, getThemeClass, getGlowOrbClasses } from '../utils/theme';
 
 export function HomePage() {
     const { isAuthenticated, user } = useAuth();
-    const { branding, labels, navigate, buildPath } = useTenant();
+    const { branding, labels, navigate, buildPath, tenantCode } = useTenant();
+    const routerNavigate = useNavigate();
 
     const isSuperAdmin = user?.role === 'SUPER_ADMIN';
+    const isTenantAdmin = user?.role === 'TENANT_ADMIN';
+    const isOperator = user?.role === 'OPERATOR' || user?.role === 'ADMIN';
     const isAdmin = user?.role === 'ADMIN' || isSuperAdmin;
+
+    // 역할별 대시보드로 리다이렉트
+    useEffect(() => {
+        if (isAuthenticated && user) {
+            if (isSuperAdmin) {
+                routerNavigate('/super-admin/dashboard', { replace: true });
+            } else if (isTenantAdmin && tenantCode) {
+                routerNavigate(`/${tenantCode}/tenant-admin/dashboard`, { replace: true });
+            } else if (isOperator && tenantCode) {
+                routerNavigate(`/${tenantCode}/operator/dashboard`, { replace: true });
+            }
+            // USER는 현재 페이지에 남음
+        }
+    }, [isAuthenticated, user, isSuperAdmin, isTenantAdmin, isOperator, tenantCode, routerNavigate]);
 
     // 브랜딩 헤더 색상 기반 다크 테마 자동 감지
     const isThemeDark = isDarkTheme(branding.headerBgColor);

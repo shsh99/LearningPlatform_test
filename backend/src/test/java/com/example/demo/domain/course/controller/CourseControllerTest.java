@@ -4,6 +4,7 @@ import com.example.demo.domain.course.dto.CourseResponse;
 import com.example.demo.domain.course.entity.CourseStatus;
 import com.example.demo.domain.course.service.CourseService;
 import com.example.demo.global.security.JwtAuthenticationFilter;
+import com.example.demo.global.tenant.TenantFilter;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import com.example.demo.config.TestSecurityConfig;
@@ -29,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = CourseController.class,
     excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
-        classes = JwtAuthenticationFilter.class))
+        classes = {JwtAuthenticationFilter.class, TenantFilter.class}))
 @Import(TestSecurityConfig.class)
 class CourseControllerTest {
 

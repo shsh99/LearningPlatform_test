@@ -25,6 +25,7 @@ import com.example.demo.domain.user.repository.UserRepository;
 import com.example.demo.global.exception.DuplicateException;
 import com.example.demo.global.exception.ErrorCode;
 import com.example.demo.global.exception.UnauthorizedException;
+import com.example.demo.global.tenant.TenantContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -53,6 +54,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserResponse> findAll() {
+        Long tenantId = TenantContext.getTenantId();
+        if (tenantId != null) {
+            // 테넌트가 설정된 경우 해당 테넌트의 사용자만 조회 (TENANT_ADMIN, SUPER_ADMIN 제외)
+            return userRepository.findByTenantId(tenantId).stream()
+                .filter(u -> u.getRole() != UserRole.TENANT_ADMIN && u.getRole() != UserRole.SUPER_ADMIN)
+                .map(UserResponse::from)
+                .collect(Collectors.toList());
+        }
+        // 테넌트가 없는 경우 (SUPER_ADMIN) 전체 조회
         return userRepository.findAll().stream()
             .map(UserResponse::from)
             .collect(Collectors.toList());
@@ -67,7 +77,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<com.example.demo.domain.user.dto.UserSearchResponse> searchUsers(String query) {
-        List<User> users = userRepository.searchActiveUsers(query);
+        Long tenantId = TenantContext.getTenantId();
+        List<User> users;
+        if (tenantId != null) {
+            // 테넌트가 설정된 경우 해당 테넌트의 사용자만 검색
+            users = userRepository.searchActiveUsersByTenant(tenantId, query);
+        } else {
+            // 테넌트가 없는 경우 (SUPER_ADMIN) 전체 검색
+            users = userRepository.searchActiveUsers(query);
+        }
         return users.stream()
             .map(com.example.demo.domain.user.dto.UserSearchResponse::from)
             .collect(Collectors.toList());
