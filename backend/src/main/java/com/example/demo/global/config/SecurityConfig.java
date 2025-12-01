@@ -38,6 +38,11 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/signup", "/api/auth/login", "/api/auth/refresh", "/api/auth/forgot-password", "/api/auth/reset-password").permitAll()
                 .requestMatchers("/api/auth/logout").authenticated()
                 .requestMatchers("/h2-console/**").permitAll()
+                // 파일 조회는 공개 (로고, 파비콘 등)
+                .requestMatchers(HttpMethod.GET, "/api/files/**").permitAll()
+                // 파일 업로드/삭제는 인증 필요
+                .requestMatchers(HttpMethod.POST, "/api/files/**").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/api/files/**").authenticated()
                 // 테넌트 브랜딩/라벨 정보는 공개 (로그인 페이지에서도 테마 적용 필요)
                 .requestMatchers("/api/tenant/branding", "/api/tenant/labels").permitAll()
                 // 테넌트 코드 기반 공개 API (URL 기반 멀티테넌시)

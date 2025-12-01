@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTenant } from '../contexts/TenantContext';
 import { isDarkTheme } from '../utils/theme';
+import { getFullFileUrl } from '../api/file';
 
 export function Navbar() {
     const { user, isAuthenticated, logout } = useAuth();
@@ -16,8 +17,10 @@ export function Navbar() {
         window.location.href = '/login';
     };
 
-    // SUPER_ADMIN 전용 메뉴는 항상 절대 경로 사용
+    // 역할별 변수
     const isSuperAdmin = user?.role === 'SUPER_ADMIN';
+    const isTenantAdmin = user?.role === 'TENANT_ADMIN';
+    const isOperator = user?.role === 'OPERATOR' || user?.role === 'ADMIN';
 
     return (
         <nav
@@ -33,14 +36,22 @@ export function Navbar() {
                     {/* 로고 */}
                     <div className="flex items-center">
                         <Link to={buildPath('/')} className="flex items-center gap-2 group">
-                            <div
-                                className={`w-10 h-10 rounded-lg flex items-center justify-center group-hover:shadow-lg transition-shadow ${isThemeDark ? 'shadow-lg shadow-emerald-500/20' : ''}`}
-                                style={{ backgroundColor: branding.primaryColor }}
-                            >
-                                <svg className={`w-6 h-6 ${isThemeDark ? 'text-black' : 'text-white'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                                </svg>
-                            </div>
+                            {branding.logoUrl ? (
+                                <img
+                                    src={getFullFileUrl(branding.logoUrl) || ''}
+                                    alt={labels.platformName}
+                                    className="w-10 h-10 rounded-lg object-contain group-hover:shadow-lg transition-shadow"
+                                />
+                            ) : (
+                                <div
+                                    className={`w-10 h-10 rounded-lg flex items-center justify-center group-hover:shadow-lg transition-shadow ${isThemeDark ? 'shadow-lg shadow-emerald-500/20' : ''}`}
+                                    style={{ backgroundColor: branding.primaryColor }}
+                                >
+                                    <svg className={`w-6 h-6 ${isThemeDark ? 'text-black' : 'text-white'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                    </svg>
+                                </div>
+                            )}
                             <span className="text-xl font-bold" style={{ color: branding.headerTextColor }}>
                                 {labels.platformName}
                             </span>
@@ -58,13 +69,16 @@ export function Navbar() {
                     <div className="flex items-center gap-6">
                         {isAuthenticated ? (
                             <>
-                                <Link
-                                    to={buildPath('/courses')}
-                                    className="font-medium transition-colors hover:opacity-80"
-                                    style={{ color: branding.headerTextColor }}
-                                >
-                                    {labels.courseLabel} 탐색
-                                </Link>
+                                {/* 강의 탐색 - SUPER_ADMIN, TENANT_ADMIN 제외 */}
+                                {!isSuperAdmin && !isTenantAdmin && (
+                                    <Link
+                                        to={buildPath('/courses')}
+                                        className="font-medium transition-colors hover:opacity-80"
+                                        style={{ color: branding.headerTextColor }}
+                                    >
+                                        {labels.courseLabel} 탐색
+                                    </Link>
+                                )}
 
                                 {user?.role === 'USER' && (
                                     <>
@@ -148,7 +162,8 @@ export function Navbar() {
                                     </>
                                 )}
 
-                                {(user?.role === 'OPERATOR' || user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') && (
+                                {/* OPERATOR/ADMIN 전용 메뉴 - SUPER_ADMIN 제외 */}
+                                {isOperator && (
                                     <>
                                         <Link
                                             to={buildPath('/operator/dashboard')}

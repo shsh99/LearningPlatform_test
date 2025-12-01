@@ -78,6 +78,9 @@ public class TenantBranding extends BaseTimeEntity {
     @Column(length = 100)
     private String fontFamily = "Pretendard, -apple-system, sans-serif";
 
+    @Column(length = 500)
+    private String fontUrl;
+
     // 기타 커스텀 CSS (선택적)
     @Column(columnDefinition = "TEXT")
     private String customCss;
@@ -135,6 +138,10 @@ public class TenantBranding extends BaseTimeEntity {
 
     public void updateFontFamily(String fontFamily) {
         this.fontFamily = fontFamily;
+    }
+
+    public void updateFontUrl(String fontUrl) {
+        this.fontUrl = fontUrl;
     }
 
     public void updateCustomCss(String customCss) {

@@ -21,6 +21,7 @@ public record TenantBrandingResponse(
         String buttonSecondaryTextColor,
         String backgroundColor,
         String fontFamily,
+        String fontUrl,
         String customCss
 ) {
     public static TenantBrandingResponse from(TenantBranding branding) {
@@ -46,6 +47,7 @@ public record TenantBrandingResponse(
                 branding.getButtonSecondaryTextColor(),
                 branding.getBackgroundColor(),
                 branding.getFontFamily(),
+                branding.getFontUrl(),
                 branding.getCustomCss()
         );
     }

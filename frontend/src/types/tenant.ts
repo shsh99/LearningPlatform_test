@@ -1,6 +1,12 @@
 // 테넌트 상태
 export type TenantStatus = 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'DELETED';
 
+// 공개 테넌트 정보 (회원가입용)
+export interface PublicTenant {
+  code: string;
+  name: string;
+}
+
 // 기본 테넌트 정보
 export interface Tenant {
   id: number;
@@ -32,6 +38,7 @@ export interface TenantBranding {
   buttonSecondaryTextColor: string;
   backgroundColor: string;
   fontFamily: string;
+  fontUrl: string | null;
   customCss: string | null;
 }
 
@@ -105,6 +112,7 @@ export interface UpdateTenantBrandingRequest {
   buttonSecondaryTextColor?: string;
   backgroundColor?: string;
   fontFamily?: string;
+  fontUrl?: string;
   customCss?: string;
 }
 
@@ -158,6 +166,7 @@ export const DEFAULT_BRANDING: TenantBranding = {
   buttonSecondaryTextColor: '#374151',
   backgroundColor: '',
   fontFamily: 'Pretendard, -apple-system, sans-serif',
+  fontUrl: null,
   customCss: null,
 };
 
