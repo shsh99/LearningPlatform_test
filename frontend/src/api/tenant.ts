@@ -5,6 +5,7 @@ import type {
   TenantBranding,
   TenantSettings,
   TenantLabels,
+  PublicTenant,
   CreateTenantRequest,
   UpdateTenantRequest,
   UpdateTenantBrandingRequest,
@@ -13,6 +14,14 @@ import type {
 } from '../types/tenant';
 
 // ===== 공개 API (인증 불필요, URL 기반 테넌트) =====
+
+/**
+ * 활성화된 테넌트 목록 조회 (공개, 회원가입용)
+ */
+export const getPublicTenantList = async (): Promise<PublicTenant[]> => {
+  const response = await apiClient.get<PublicTenant[]>('/public/tenant/list');
+  return response.data;
+};
 
 /**
  * 테넌트 코드로 브랜딩 정보 조회 (공개)

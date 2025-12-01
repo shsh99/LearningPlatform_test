@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate as useRouterNavigate, Link } from 'react-router-dom';
 import { AxiosError } from 'axios';
 import { authApi } from '../api/auth';
+import { getPublicTenantList } from '../api/tenant';
 import { useAuth } from '../contexts/AuthContext';
 import { useTenant } from '../contexts/TenantContext';
 import { Button } from '../components/Button';
@@ -10,6 +11,7 @@ import { Input } from '../components/Input';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/Card';
 import { validatePassword, validatePasswordConfirm, getPasswordHelperText } from '../utils/validation';
 import { isDarkTheme, getThemeClass, getGlowOrbClasses } from '../utils/theme';
+import type { PublicTenant } from '../types/tenant';
 
 export function SignupPage() {
     const routerNavigate = useRouterNavigate();
@@ -26,6 +28,23 @@ export function SignupPage() {
     const [passwordConfirmErrors, setPasswordConfirmErrors] = useState<string[]>([]);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [tenants, setTenants] = useState<PublicTenant[]>([]);
+    const [tenantsLoading, setTenantsLoading] = useState(true);
+
+    // 테넌트 목록 로드
+    useEffect(() => {
+        const loadTenants = async () => {
+            try {
+                const data = await getPublicTenantList();
+                setTenants(data);
+            } catch (err) {
+                console.error('Failed to load tenants:', err);
+            } finally {
+                setTenantsLoading(false);
+            }
+        };
+        loadTenants();
+    }, []);
 
     // 브랜딩 헤더 색상 기반 다크 테마 자동 감지
     const isThemeDark = isDarkTheme(branding.headerBgColor);
@@ -206,14 +225,27 @@ export function SignupPage() {
                                 helperText="2-20자 사이로 입력해주세요"
                             />
 
-                            <Input
-                                label="회사코드 (선택)"
-                                type="text"
-                                value={formData.tenantCode}
-                                onChange={(e) => setFormData({ ...formData, tenantCode: e.target.value })}
-                                placeholder="samsung"
-                                helperText="소속 회사가 있는 경우 회사코드를 입력하세요"
-                            />
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    소속 회사 (선택)
+                                </label>
+                                <select
+                                    value={formData.tenantCode}
+                                    onChange={(e) => setFormData({ ...formData, tenantCode: e.target.value })}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    disabled={tenantsLoading}
+                                >
+                                    <option value="">선택 안 함 (기본)</option>
+                                    {tenants.map((tenant) => (
+                                        <option key={tenant.code} value={tenant.code}>
+                                            {tenant.name} ({tenant.code})
+                                        </option>
+                                    ))}
+                                </select>
+                                <p className="mt-1 text-xs text-gray-500">
+                                    {tenantsLoading ? '회사 목록 로딩 중...' : '소속 회사가 있는 경우 선택하세요'}
+                                </p>
+                            </div>
 
                             {error && (
                                 <div className="rounded-lg bg-red-50 border border-red-200 p-3">

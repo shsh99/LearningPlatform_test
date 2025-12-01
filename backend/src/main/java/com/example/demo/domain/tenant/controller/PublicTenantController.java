@@ -1,11 +1,14 @@
 package com.example.demo.domain.tenant.controller;
 
+import com.example.demo.domain.tenant.dto.PublicTenantResponse;
 import com.example.demo.domain.tenant.dto.TenantBrandingResponse;
 import com.example.demo.domain.tenant.dto.TenantLabelsResponse;
 import com.example.demo.domain.tenant.service.TenantService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 테넌트 공개 API (인증 불필요)
@@ -17,6 +20,15 @@ import org.springframework.web.bind.annotation.*;
 public class PublicTenantController {
 
     private final TenantService tenantService;
+
+    /**
+     * 활성화된 테넌트 목록 조회 (회원가입용)
+     * code와 name만 반환
+     */
+    @GetMapping("/list")
+    public ResponseEntity<List<PublicTenantResponse>> getActiveTenants() {
+        return ResponseEntity.ok(tenantService.getPublicActiveTenants());
+    }
 
     /**
      * 테넌트 코드로 브랜딩 정보 조회
