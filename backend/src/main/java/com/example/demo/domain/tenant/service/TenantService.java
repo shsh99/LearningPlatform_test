@@ -62,4 +62,7 @@ public interface TenantService {
     TenantLabelsResponse getLabelsByCode(String code);
 
     boolean existsByCode(String code);
+
+    // 공개 테넌트 목록 조회 (회원가입용)
+    List<PublicTenantResponse> getPublicActiveTenants();
 }

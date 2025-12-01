@@ -5,6 +5,7 @@ import com.example.demo.domain.tenant.entity.Tenant;
 import com.example.demo.domain.tenant.entity.TenantBranding;
 import com.example.demo.domain.tenant.entity.TenantLabels;
 import com.example.demo.domain.tenant.entity.TenantSettings;
+import com.example.demo.domain.tenant.entity.TenantStatus;
 import com.example.demo.domain.tenant.exception.TenantCodeAlreadyExistsException;
 import com.example.demo.domain.tenant.exception.TenantNotFoundException;
 import com.example.demo.domain.tenant.repository.TenantBrandingRepository;
@@ -142,6 +143,9 @@ public class TenantServiceImpl implements TenantService {
         }
         if (request.fontFamily() != null) {
             branding.updateFontFamily(request.fontFamily());
+        }
+        if (request.fontUrl() != null) {
+            branding.updateFontUrl(request.fontUrl());
         }
         if (request.customCss() != null) {
             branding.updateCustomCss(request.customCss());
@@ -339,5 +343,12 @@ public class TenantServiceImpl implements TenantService {
         return tenantRepository.findByCode(code)
                 .map(Tenant::isActive)
                 .orElse(false);
+    }
+
+    @Override
+    public List<PublicTenantResponse> getPublicActiveTenants() {
+        return tenantRepository.findByStatus(TenantStatus.ACTIVE).stream()
+                .map(PublicTenantResponse::from)
+                .toList();
     }
 }

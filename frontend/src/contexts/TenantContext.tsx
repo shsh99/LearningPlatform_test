@@ -8,6 +8,7 @@ import {
     getPublicTenantLabels,
     checkTenantExists
 } from '../api/tenant';
+import { getFullFileUrl } from '../api/file';
 import type { TenantBranding, TenantSettings, TenantLabels } from '../types/tenant';
 import { DEFAULT_BRANDING, DEFAULT_LABELS } from '../types/tenant';
 import { extractTenantCode, buildTenantPath, isValidTenantCode } from '../utils/tenantUrl';
@@ -54,8 +55,34 @@ const applyCssVariables = (branding: TenantBranding) => {
     root.style.setProperty('--button-secondary-bg', branding.buttonSecondaryBgColor);
     root.style.setProperty('--button-secondary-text', branding.buttonSecondaryTextColor);
 
-    // 폰트
-    root.style.setProperty('--font-family', branding.fontFamily);
+    // 커스텀 폰트 @font-face 등록
+    let fontStyleElement = document.getElementById('tenant-custom-font');
+    if (branding.fontUrl) {
+        const fullFontUrl = getFullFileUrl(branding.fontUrl);
+        if (fullFontUrl) {
+            if (!fontStyleElement) {
+                fontStyleElement = document.createElement('style');
+                fontStyleElement.id = 'tenant-custom-font';
+                document.head.appendChild(fontStyleElement);
+            }
+            fontStyleElement.textContent = `
+                @font-face {
+                    font-family: 'TenantCustomFont';
+                    src: url('${fullFontUrl}') format('truetype');
+                    font-weight: normal;
+                    font-style: normal;
+                    font-display: swap;
+                }
+            `;
+            // 커스텀 폰트가 있으면 fontFamily를 TenantCustomFont로 설정
+            root.style.setProperty('--font-family', "'TenantCustomFont', " + branding.fontFamily);
+        }
+    } else {
+        if (fontStyleElement) {
+            fontStyleElement.remove();
+        }
+        root.style.setProperty('--font-family', branding.fontFamily);
+    }
 
     // 커스텀 CSS 적용
     let customStyleElement = document.getElementById('tenant-custom-css');
@@ -72,13 +99,14 @@ const applyCssVariables = (branding: TenantBranding) => {
 
     // 파비콘 적용
     if (branding.faviconUrl) {
+        const fullFaviconUrl = getFullFileUrl(branding.faviconUrl);
         let faviconLink = document.querySelector("link[rel*='icon']") as HTMLLinkElement;
         if (!faviconLink) {
             faviconLink = document.createElement('link');
             faviconLink.rel = 'icon';
             document.head.appendChild(faviconLink);
         }
-        faviconLink.href = branding.faviconUrl;
+        faviconLink.href = fullFaviconUrl || branding.faviconUrl;
     }
 };
 

@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTenant } from '../../contexts/TenantContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { updateTenantBranding, updateTenantLabels } from '../../api/tenant';
+import { uploadLogo, uploadFavicon, uploadFont, getFullFileUrl } from '../../api/file';
 import type { UpdateTenantBrandingRequest, UpdateTenantLabelsRequest } from '../../types/tenant';
 import { DEFAULT_BRANDING, DEFAULT_LABELS } from '../../types/tenant';
 import { Navbar } from '../../components/Navbar';
@@ -234,6 +235,233 @@ const LabelInput = ({ label, value, onChange, placeholder }: LabelInputProps) =>
   </div>
 );
 
+// 폰트 옵션 정의
+interface FontOption {
+  value: string;
+  label: string;
+  fontFamily: string;
+}
+
+const FONT_OPTIONS: FontOption[] = [
+  { value: 'Pretendard, -apple-system, sans-serif', label: 'Pretendard (기본)', fontFamily: 'Pretendard, -apple-system, sans-serif' },
+  { value: "'Noto Sans KR', sans-serif", label: 'Noto Sans KR', fontFamily: "'Noto Sans KR', sans-serif" },
+  { value: "'Spoqa Han Sans Neo', sans-serif", label: 'Spoqa Han Sans Neo', fontFamily: "'Spoqa Han Sans Neo', sans-serif" },
+  { value: "'IBM Plex Sans KR', sans-serif", label: 'IBM Plex Sans KR', fontFamily: "'IBM Plex Sans KR', sans-serif" },
+  { value: 'system-ui, sans-serif', label: '시스템 기본', fontFamily: 'system-ui, sans-serif' },
+];
+
+// 커스텀 폰트 드롭다운 컴포넌트
+interface FontSelectProps {
+  value: string;
+  customFontUrl: string | undefined;
+  onChange: (fontFamily: string) => void;
+}
+
+const FontSelect = ({ value, customFontUrl, onChange }: FontSelectProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // 클릭 외부 감지하여 드롭다운 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // 현재 선택된 폰트 라벨 찾기
+  const getSelectedLabel = () => {
+    if (customFontUrl) return '커스텀 폰트';
+    const found = FONT_OPTIONS.find(opt => opt.value === value);
+    return found?.label || 'Pretendard (기본)';
+  };
+
+  // 현재 선택된 폰트 패밀리 가져오기
+  const getSelectedFontFamily = () => {
+    if (customFontUrl) return "'PreviewCustomFont', Pretendard, sans-serif";
+    return value || 'Pretendard, -apple-system, sans-serif';
+  };
+
+  return (
+    <div className="relative flex-1" ref={dropdownRef}>
+      {/* 선택된 값 표시 버튼 */}
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-left bg-white flex items-center justify-between hover:border-gray-400 transition-colors"
+        style={{ fontFamily: getSelectedFontFamily() }}
+      >
+        <span>{getSelectedLabel()}</span>
+        <svg
+          className={`w-4 h-4 text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {/* 드롭다운 메뉴 */}
+      {isOpen && (
+        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
+          {FONT_OPTIONS.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => {
+                onChange(option.value);
+                setIsOpen(false);
+              }}
+              className={`w-full px-3 py-2.5 text-sm text-left hover:bg-blue-50 transition-colors ${
+                value === option.value && !customFontUrl ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
+              }`}
+              style={{ fontFamily: option.fontFamily }}
+            >
+              <span className="block text-sm">{option.label}</span>
+              <span className="block text-xs text-gray-400 mt-0.5" style={{ fontFamily: option.fontFamily }}>
+                가나다라마바사 ABCDEFG 12345
+              </span>
+            </button>
+          ))}
+          {/* 커스텀 폰트 옵션 */}
+          {customFontUrl && (
+            <div
+              className="w-full px-3 py-2.5 text-sm text-left bg-green-50 text-green-700 border-t"
+              style={{ fontFamily: "'PreviewCustomFont', sans-serif" }}
+            >
+              <span className="block text-sm">커스텀 폰트 (업로드됨)</span>
+              <span className="block text-xs text-green-600 mt-0.5">
+                가나다라마바사 ABCDEFG 12345
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// 파일 업로드 컴포넌트
+interface FileUploadInputProps {
+  label: string;
+  value: string | null | undefined;
+  onUpload: (file: File) => Promise<void>;
+  onClear: () => void;
+  accept: string;
+  hint?: string;
+  isUploading?: boolean;
+  previewType?: 'image' | 'font';
+}
+
+const FileUploadInput = ({
+  label,
+  value,
+  onUpload,
+  onClear,
+  accept,
+  hint,
+  isUploading,
+  previewType = 'image'
+}: FileUploadInputProps) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      await onUpload(file);
+    }
+    // 같은 파일 재선택 가능하도록 초기화
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const displayUrl = getFullFileUrl(value);
+
+  return (
+    <div className="space-y-2">
+      <label className="block text-sm font-medium text-gray-700">{label}</label>
+      <div className="flex items-center gap-3">
+        {/* 미리보기 */}
+        {displayUrl && previewType === 'image' && (
+          <div className="w-16 h-16 rounded-lg border border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center">
+            <img
+              src={displayUrl}
+              alt={label}
+              className="max-w-full max-h-full object-contain"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
+          </div>
+        )}
+        {displayUrl && previewType === 'font' && (
+          <div className="w-16 h-16 rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center">
+            <span className="text-2xl font-bold text-gray-600">Aa</span>
+          </div>
+        )}
+        {!displayUrl && (
+          <div className="w-16 h-16 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50">
+            <svg className="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+        )}
+
+        <div className="flex-1 space-y-2">
+          <div className="flex gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept={accept}
+              onChange={handleFileChange}
+              className="hidden"
+              id={`file-${label}`}
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading}
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isUploading ? (
+                <span className="flex items-center gap-2">
+                  <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                  </svg>
+                  업로드 중...
+                </span>
+              ) : (
+                '파일 선택'
+              )}
+            </button>
+            {value && (
+              <button
+                type="button"
+                onClick={onClear}
+                className="px-4 py-2 text-sm font-medium text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition-colors"
+              >
+                삭제
+              </button>
+            )}
+          </div>
+          {value && (
+            <p className="text-xs text-gray-500 truncate max-w-xs" title={value}>
+              {value}
+            </p>
+          )}
+          {hint && <p className="text-xs text-gray-400">{hint}</p>}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // 미리보기 컴포넌트
 interface PreviewProps {
   branding: UpdateTenantBrandingRequest;
@@ -244,6 +472,43 @@ type PreviewTab = 'dashboard' | 'courses' | 'login' | 'form';
 
 const Preview = ({ branding, labels }: PreviewProps) => {
   const [activeTab, setActiveTab] = useState<PreviewTab>('dashboard');
+  const [previewFontLoaded, setPreviewFontLoaded] = useState(false);
+
+  // 커스텀 폰트가 있을 경우 미리보기용 @font-face 등록
+  useEffect(() => {
+    if (branding.fontUrl) {
+      const fullFontUrl = getFullFileUrl(branding.fontUrl);
+      if (fullFontUrl) {
+        let previewFontStyle = document.getElementById('preview-custom-font');
+        if (!previewFontStyle) {
+          previewFontStyle = document.createElement('style');
+          previewFontStyle.id = 'preview-custom-font';
+          document.head.appendChild(previewFontStyle);
+        }
+        previewFontStyle.textContent = `
+          @font-face {
+            font-family: 'PreviewCustomFont';
+            src: url('${fullFontUrl}') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+          }
+        `;
+        setPreviewFontLoaded(true);
+      }
+    } else {
+      const previewFontStyle = document.getElementById('preview-custom-font');
+      if (previewFontStyle) {
+        previewFontStyle.remove();
+      }
+      setPreviewFontLoaded(false);
+    }
+  }, [branding.fontUrl]);
+
+  // 미리보기에 적용할 폰트 스타일 계산
+  const previewFontFamily = branding.fontUrl && previewFontLoaded
+    ? `'PreviewCustomFont', ${branding.fontFamily || 'Pretendard, -apple-system, sans-serif'}`
+    : branding.fontFamily || 'Pretendard, -apple-system, sans-serif';
 
   const tabs: { id: PreviewTab; label: string }[] = [
     { id: 'dashboard', label: '대시보드' },
@@ -584,7 +849,8 @@ const Preview = ({ branding, labels }: PreviewProps) => {
         </div>
       </div>
 
-      <div className="h-80 flex flex-col">
+      {/* 폰트 스타일을 미리보기 영역에 적용 */}
+      <div className="h-80 flex flex-col" style={{ fontFamily: previewFontFamily }}>
         {activeTab !== 'login' && <PreviewHeader />}
         {activeTab === 'dashboard' && <DashboardPreview />}
         {activeTab === 'courses' && <CoursesPreview />}
@@ -622,6 +888,14 @@ export const BrandingSettingsPage = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
+  // 파일 업로드 상태
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [isUploadingFavicon, setIsUploadingFavicon] = useState(false);
+  const [isUploadingFont, setIsUploadingFont] = useState(false);
+
+  // 테넌트 ID (branding에서 가져오기)
+  const tenantId = branding.tenantId || 1;
+
   useEffect(() => {
     setBrandingForm({
       logoUrl: branding.logoUrl || '',
@@ -641,6 +915,7 @@ export const BrandingSettingsPage = () => {
       buttonSecondaryTextColor: branding.buttonSecondaryTextColor,
       backgroundColor: branding.backgroundColor || '',
       fontFamily: branding.fontFamily,
+      fontUrl: branding.fontUrl || '',
     });
   }, [branding]);
 
@@ -665,6 +940,50 @@ export const BrandingSettingsPage = () => {
     setLabelsForm((prev) => ({ ...prev, [key]: value }));
   };
 
+  // 파일 업로드 핸들러
+  const handleLogoUpload = async (file: File) => {
+    setIsUploadingLogo(true);
+    try {
+      const response = await uploadLogo(file, tenantId);
+      handleBrandingChange('logoUrl', response.url);
+      setMessage({ type: 'success', text: '로고가 업로드되었습니다.' });
+    } catch (error) {
+      console.error('로고 업로드 실패:', error);
+      setMessage({ type: 'error', text: '로고 업로드에 실패했습니다.' });
+    } finally {
+      setIsUploadingLogo(false);
+    }
+  };
+
+  const handleFaviconUpload = async (file: File) => {
+    setIsUploadingFavicon(true);
+    try {
+      const response = await uploadFavicon(file, tenantId);
+      handleBrandingChange('faviconUrl', response.url);
+      setMessage({ type: 'success', text: '파비콘이 업로드되었습니다.' });
+    } catch (error) {
+      console.error('파비콘 업로드 실패:', error);
+      setMessage({ type: 'error', text: '파비콘 업로드에 실패했습니다.' });
+    } finally {
+      setIsUploadingFavicon(false);
+    }
+  };
+
+  const handleFontUpload = async (file: File) => {
+    setIsUploadingFont(true);
+    try {
+      const response = await uploadFont(file, tenantId);
+      // 폰트 URL을 fontUrl 필드에 저장
+      handleBrandingChange('fontUrl', response.url);
+      setMessage({ type: 'success', text: '폰트가 업로드되었습니다.' });
+    } catch (error) {
+      console.error('폰트 업로드 실패:', error);
+      setMessage({ type: 'error', text: '폰트 업로드에 실패했습니다.' });
+    } finally {
+      setIsUploadingFont(false);
+    }
+  };
+
   // 브랜딩 기본값으로 초기화
   const handleResetBranding = () => {
     if (!confirm('브랜딩 설정을 기본값으로 초기화하시겠습니까?')) return;
@@ -686,6 +1005,7 @@ export const BrandingSettingsPage = () => {
       buttonSecondaryTextColor: DEFAULT_BRANDING.buttonSecondaryTextColor,
       backgroundColor: DEFAULT_BRANDING.backgroundColor,
       fontFamily: DEFAULT_BRANDING.fontFamily,
+      fontUrl: '',
     });
   };
 
@@ -823,36 +1143,59 @@ export const BrandingSettingsPage = () => {
               {/* 로고 및 기본 설정 */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">로고 및 기본 설정</h2>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <label className="w-40 text-sm text-gray-600">로고 URL</label>
-                    <input
-                      type="text"
-                      value={brandingForm.logoUrl || ''}
-                      onChange={(e) => handleBrandingChange('logoUrl', e.target.value)}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                      placeholder="https://example.com/logo.png"
-                    />
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <label className="w-40 text-sm text-gray-600">파비콘 URL</label>
-                    <input
-                      type="text"
-                      value={brandingForm.faviconUrl || ''}
-                      onChange={(e) => handleBrandingChange('faviconUrl', e.target.value)}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                      placeholder="https://example.com/favicon.ico"
-                    />
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <label className="w-40 text-sm text-gray-600">폰트</label>
-                    <input
-                      type="text"
-                      value={brandingForm.fontFamily || ''}
-                      onChange={(e) => handleBrandingChange('fontFamily', e.target.value)}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                      placeholder="Pretendard, -apple-system, sans-serif"
-                    />
+                <div className="space-y-6">
+                  {/* 로고 업로드 */}
+                  <FileUploadInput
+                    label="로고 이미지"
+                    value={brandingForm.logoUrl}
+                    onUpload={handleLogoUpload}
+                    onClear={() => handleBrandingChange('logoUrl', '')}
+                    accept="image/png,image/jpeg,image/gif,image/svg+xml,image/webp"
+                    hint="PNG, JPG, GIF, SVG, WebP (최대 5MB)"
+                    isUploading={isUploadingLogo}
+                    previewType="image"
+                  />
+
+                  {/* 파비콘 업로드 */}
+                  <FileUploadInput
+                    label="파비콘"
+                    value={brandingForm.faviconUrl}
+                    onUpload={handleFaviconUpload}
+                    onClear={() => handleBrandingChange('faviconUrl', '')}
+                    accept="image/png,image/x-icon,image/svg+xml"
+                    hint="ICO, PNG, SVG (최대 5MB, 권장: 32x32 또는 64x64)"
+                    isUploading={isUploadingFavicon}
+                    previewType="image"
+                  />
+
+                  {/* 폰트 설정 */}
+                  <div className="space-y-3">
+                    <label className="block text-sm font-medium text-gray-700">폰트</label>
+                    <div className="flex gap-3">
+                      <FontSelect
+                        value={brandingForm.fontFamily || 'Pretendard, -apple-system, sans-serif'}
+                        customFontUrl={brandingForm.fontUrl}
+                        onChange={(fontFamily) => {
+                          handleBrandingChange('fontFamily', fontFamily);
+                          handleBrandingChange('fontUrl', '');
+                        }}
+                      />
+                    </div>
+
+                    {/* 커스텀 폰트 업로드 */}
+                    <div className="mt-3 p-4 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                      <p className="text-sm text-gray-600 mb-3">또는 커스텀 폰트 파일 업로드:</p>
+                      <FileUploadInput
+                        label="폰트 파일"
+                        value={brandingForm.fontUrl}
+                        onUpload={handleFontUpload}
+                        onClear={() => handleBrandingChange('fontUrl', '')}
+                        accept=".ttf,.otf,.woff,.woff2"
+                        hint="TTF, OTF, WOFF, WOFF2 (최대 10MB)"
+                        isUploading={isUploadingFont}
+                        previewType="font"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
