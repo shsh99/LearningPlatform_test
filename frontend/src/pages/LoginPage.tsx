@@ -9,7 +9,7 @@ import { isDarkTheme, getThemeClass, getGlowOrbClasses } from '../utils/theme';
 
 export function LoginPage() {
     const { login } = useAuth();
-    const { branding, labels, navigate, buildPath } = useTenant();
+    const { branding, labels, buildPath } = useTenant();
     const routerNavigate = useRouterNavigate();
     const [formData, setFormData] = useState({
         email: '',
@@ -46,9 +46,13 @@ export function LoginPage() {
             else if (response.role === 'SUPER_ADMIN') {
                 routerNavigate('/super-admin/tenants');
             }
-            // 운영자/관리자면 대시보드로
-            else if (response.role === 'OPERATOR' || response.role === 'ADMIN') {
-                navigate('/operator/dashboard');
+            // 운영자/관리자면 대시보드로 (tenantCode 포함)
+            else if ((response.role === 'OPERATOR' || response.role === 'ADMIN') && response.tenantCode) {
+                routerNavigate(`/${response.tenantCode}/operator/dashboard`);
+            }
+            // 강사면 테넌트 홈으로
+            else if (response.role === 'INSTRUCTOR' && response.tenantCode) {
+                routerNavigate(`/${response.tenantCode}/`);
             }
             // 일반 유저 (tenantCode가 있으면 해당 테넌트 홈으로)
             else if (response.tenantCode) {
@@ -56,7 +60,7 @@ export function LoginPage() {
             }
             // tenantCode가 없으면 기본 홈으로
             else {
-                navigate('/');
+                routerNavigate('/');
             }
         } catch (err) {
             if (err instanceof AxiosError) {

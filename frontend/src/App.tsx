@@ -25,9 +25,11 @@ import { StudentInformationSystemPage } from './pages/enrollment/StudentInformat
 import { MyLearningPage } from './pages/learning/MyLearningPage';
 import { BrandingSettingsPage } from './pages/tenant-admin/BrandingSettingsPage';
 import { OperatorManagementPage } from './pages/tenant-admin/OperatorManagementPage';
+import { TenantAdminDashboardPage } from './pages/tenant-admin/TenantAdminDashboardPage';
 import { TenantManagementPage } from './pages/super-admin/TenantManagementPage';
 import { CreateTenantAdminPage } from './pages/super-admin/CreateTenantAdminPage';
 import { TenantApplicationManagementPage } from './pages/super-admin/TenantApplicationManagementPage';
+import { SuperAdminDashboardPage } from './pages/super-admin/SuperAdminDashboardPage';
 import { ApplyTenantPage } from './pages/ApplyTenantPage';
 
 /**
@@ -57,6 +59,7 @@ function TenantRoutes() {
             <Route path="ts/iis" element={<InstructorInformationSystemPage />} />
             <Route path="enrollment/sis" element={<StudentInformationSystemPage />} />
             <Route path="my-learning" element={<MyLearningPage />} />
+            <Route path="tenant-admin/dashboard" element={<TenantAdminDashboardPage />} />
             <Route path="tenant-admin/branding" element={<BrandingSettingsPage />} />
             <Route path="tenant-admin/operators" element={<OperatorManagementPage />} />
         </Routes>
@@ -96,6 +99,7 @@ function AppRoutes() {
             <Route path="/apply-tenant" element={<ApplyTenantPage />} />
 
             {/* SUPER_ADMIN 전용 페이지 */}
+            <Route path="/super-admin/dashboard" element={<SuperAdminDashboardPage />} />
             <Route path="/super-admin/tenants" element={<TenantManagementPage />} />
             <Route path="/super-admin/create-tenant-admin" element={<CreateTenantAdminPage />} />
             <Route path="/super-admin/applications" element={<TenantApplicationManagementPage />} />
