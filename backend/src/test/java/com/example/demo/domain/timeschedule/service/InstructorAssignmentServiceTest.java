@@ -13,6 +13,8 @@ import com.example.demo.domain.timeschedule.repository.InstructorAssignmentRepos
 import com.example.demo.domain.timeschedule.repository.InstructorInformationSystemRepository;
 import com.example.demo.domain.user.entity.User;
 import com.example.demo.domain.user.repository.UserRepository;
+import com.example.demo.domain.enrollment.entity.EnrollmentStatus;
+import com.example.demo.domain.enrollment.repository.EnrollmentRepository;
 import com.example.demo.global.exception.NotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -51,6 +53,9 @@ class InstructorAssignmentServiceTest {
 
     @Mock
     private InstructorInformationSystemRepository iisRepository;
+
+    @Mock
+    private EnrollmentRepository enrollmentRepository;
 
     @Test
     @DisplayName("강사 배정")
@@ -396,11 +401,13 @@ class InstructorAssignmentServiceTest {
         InstructorAssignment assignment = InstructorAssignment.create(term, instructor, assignedBy);
 
         given(assignmentRepository.findById(1L)).willReturn(Optional.of(assignment));
+        given(enrollmentRepository.countByTermAndStatus(term, EnrollmentStatus.ENROLLED)).willReturn(0L);
 
         // when
         instructorAssignmentService.cancelAssignment(1L);
 
         // then
         verify(assignmentRepository).findById(1L);
+        verify(enrollmentRepository).countByTermAndStatus(term, EnrollmentStatus.ENROLLED);
     }
 }

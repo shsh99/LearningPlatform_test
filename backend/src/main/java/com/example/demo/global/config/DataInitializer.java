@@ -2,6 +2,10 @@ package com.example.demo.global.config;
 
 import com.example.demo.domain.course.entity.Course;
 import com.example.demo.domain.course.repository.CourseRepository;
+import com.example.demo.domain.enrollment.entity.Enrollment;
+import com.example.demo.domain.enrollment.entity.StudentInformationSystem;
+import com.example.demo.domain.enrollment.repository.EnrollmentRepository;
+import com.example.demo.domain.enrollment.repository.StudentInformationSystemRepository;
 import com.example.demo.domain.tenant.entity.Tenant;
 import com.example.demo.domain.tenant.entity.TenantBranding;
 import com.example.demo.domain.tenant.entity.TenantLabels;
@@ -12,7 +16,11 @@ import com.example.demo.domain.tenant.repository.TenantRepository;
 import com.example.demo.domain.tenant.repository.TenantSettingsRepository;
 import com.example.demo.domain.timeschedule.entity.CourseTerm;
 import com.example.demo.domain.timeschedule.entity.DayOfWeek;
+import com.example.demo.domain.timeschedule.entity.InstructorAssignment;
+import com.example.demo.domain.timeschedule.entity.InstructorInformationSystem;
 import com.example.demo.domain.timeschedule.repository.CourseTermRepository;
+import com.example.demo.domain.timeschedule.repository.InstructorAssignmentRepository;
+import com.example.demo.domain.timeschedule.repository.InstructorInformationSystemRepository;
 import com.example.demo.domain.user.entity.User;
 import com.example.demo.domain.user.entity.UserRole;
 import com.example.demo.domain.user.repository.UserRepository;
@@ -25,6 +33,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -46,6 +56,10 @@ public class DataInitializer implements CommandLineRunner {
     private final TenantLabelsRepository tenantLabelsRepository;
     private final CourseRepository courseRepository;
     private final CourseTermRepository courseTermRepository;
+    private final InstructorAssignmentRepository instructorAssignmentRepository;
+    private final InstructorInformationSystemRepository iisRepository;
+    private final EnrollmentRepository enrollmentRepository;
+    private final StudentInformationSystemRepository sisRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -140,6 +154,7 @@ public class DataInitializer implements CommandLineRunner {
         log.info("OPERATOR created: {}@test.com", code + "_operator");
 
         // USER 10명 생성
+        List<User> users = new ArrayList<>();
         for (int i = 1; i <= 10; i++) {
             User user = User.create(
                     code + "_user" + i + "@test.com",
@@ -147,9 +162,23 @@ public class DataInitializer implements CommandLineRunner {
                     name + " 사용자" + i,
                     tenantId
             );
-            userRepository.save(user);
+            users.add(userRepository.save(user));
         }
         log.info("10 users created for tenant: {}", code);
+
+        // 강사 역할 가능 사용자 3명 생성 (role은 USER, InstructorAssignment로 강사 권한 부여)
+        List<User> instructors = new ArrayList<>();
+        String[] instructorNames = {"김강사", "이강사", "박강사"};
+        for (int i = 1; i <= 3; i++) {
+            User instructor = User.create(
+                    code + "_instructor" + i + "@test.com",
+                    encodedPassword,
+                    name + " " + instructorNames[i - 1],
+                    tenantId
+            );
+            instructors.add(userRepository.save(instructor));
+        }
+        log.info("3 instructor-eligible users created for tenant: {}", code);
 
         // 강의 3개 생성
         String[] courseTitles = {
@@ -163,6 +192,7 @@ public class DataInitializer implements CommandLineRunner {
                 "React와 TypeScript를 활용한 모던 프론트엔드 개발을 학습합니다."
         };
 
+        List<CourseTerm> allTerms = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
             Course course = Course.create(
                     courseTitles[i],
@@ -172,16 +202,66 @@ public class DataInitializer implements CommandLineRunner {
             );
             course = courseRepository.save(course);
 
-            // 각 강의당 차수 2개 생성
-            createCourseTerms(course);
+            // 각 강의당 차수 2개 생성 및 반환
+            List<CourseTerm> terms = createCourseTerms(course);
+            allTerms.addAll(terms);
         }
         log.info("3 courses with terms created for tenant: {}", code);
+
+        // InstructorAssignment 및 IIS 생성 - 각 차수에 강사 배정
+        for (int i = 0; i < allTerms.size(); i++) {
+            CourseTerm term = allTerms.get(i);
+            User instructor = instructors.get(i % instructors.size()); // 순환 배정
+
+            InstructorAssignment assignment = InstructorAssignment.create(
+                    term,
+                    instructor,
+                    operator // 배정자는 오퍼레이터
+            );
+            InstructorAssignment savedAssignment = instructorAssignmentRepository.save(assignment);
+
+            // IIS 레코드 생성
+            InstructorInformationSystem iis = InstructorInformationSystem.create(
+                    instructor.getId(),
+                    term.getId(),
+                    savedAssignment
+            );
+            iisRepository.save(iis);
+        }
+        log.info("InstructorAssignments and IIS records created for tenant: {}", code);
+
+        // Enrollment 및 SIS 생성 - 각 차수에 사용자 수강 등록
+        for (int i = 0; i < allTerms.size(); i++) {
+            CourseTerm term = allTerms.get(i);
+            // 각 차수에 3명씩 수강 등록
+            for (int j = 0; j < 3; j++) {
+                int userIndex = (i * 3 + j) % users.size();
+                User student = users.get(userIndex);
+
+                Enrollment enrollment = Enrollment.create(term, student);
+                Enrollment savedEnrollment = enrollmentRepository.save(enrollment);
+
+                // SIS 레코드 생성
+                StudentInformationSystem sis = StudentInformationSystem.create(
+                        student.getId(),
+                        term.getId(),
+                        savedEnrollment
+                );
+                sisRepository.save(sis);
+
+                // 차수의 현재 학생 수 증가
+                term.increaseStudentCount();
+            }
+            courseTermRepository.save(term);
+        }
+        log.info("Enrollments and SIS records created for tenant: {}", code);
 
         log.info("Test tenant created: {} ({})", name, code);
     }
 
-    private void createCourseTerms(Course course) {
+    private List<CourseTerm> createCourseTerms(Course course) {
         LocalDate today = LocalDate.now();
+        List<CourseTerm> terms = new ArrayList<>();
 
         // 1차수: 이번 달
         CourseTerm term1 = CourseTerm.create(
@@ -194,7 +274,7 @@ public class DataInitializer implements CommandLineRunner {
                 LocalTime.of(12, 0),
                 20
         );
-        courseTermRepository.save(term1);
+        terms.add(courseTermRepository.save(term1));
 
         // 2차수: 다음 달
         CourseTerm term2 = CourseTerm.create(
@@ -207,6 +287,8 @@ public class DataInitializer implements CommandLineRunner {
                 LocalTime.of(17, 0),
                 25
         );
-        courseTermRepository.save(term2);
+        terms.add(courseTermRepository.save(term2));
+
+        return terms;
     }
 }
