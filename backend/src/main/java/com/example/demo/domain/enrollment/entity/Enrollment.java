@@ -50,6 +50,7 @@ public class Enrollment extends BaseTimeEntity implements TenantAware {
         Enrollment enrollment = new Enrollment();
         enrollment.term = term;
         enrollment.student = student;
+        enrollment.tenantId = term.getTenantId(); // 차수의 tenantId 상속
         enrollment.status = EnrollmentStatus.ENROLLED;
         return enrollment;
     }
@@ -61,6 +62,7 @@ public class Enrollment extends BaseTimeEntity implements TenantAware {
         Enrollment enrollment = new Enrollment();
         enrollment.student = student;
         enrollment.term = term;
+        enrollment.tenantId = term.getTenantId(); // 차수의 tenantId 상속
         enrollment.status = EnrollmentStatus.ENROLLED;
         return enrollment;
     }
