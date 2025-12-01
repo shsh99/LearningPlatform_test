@@ -16,6 +16,7 @@ import com.example.demo.domain.timeschedule.repository.CourseTermRepository;
 import com.example.demo.domain.timeschedule.repository.InstructorAssignmentRepository;
 import com.example.demo.global.exception.ErrorCode;
 import com.example.demo.global.exception.NotFoundException;
+import com.example.demo.global.tenant.TenantContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -120,6 +121,12 @@ public class CourseTermServiceImpl implements CourseTermService {
     public List<CourseTermResponse> findAll() {
         log.debug("Finding all course terms");
 
+        Long tenantId = TenantContext.getTenantId();
+        if (tenantId != null) {
+            return courseTermRepository.findByTenantId(tenantId).stream()
+                .map(CourseTermResponse::from)
+                .collect(Collectors.toList());
+        }
         return courseTermRepository.findAll().stream()
             .map(CourseTermResponse::from)
             .collect(Collectors.toList());

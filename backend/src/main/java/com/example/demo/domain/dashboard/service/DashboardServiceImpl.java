@@ -15,6 +15,7 @@ import com.example.demo.domain.timeschedule.repository.InstructorAssignmentRepos
 import com.example.demo.domain.user.entity.User;
 import com.example.demo.domain.user.entity.UserRole;
 import com.example.demo.domain.user.repository.UserRepository;
+import com.example.demo.global.tenant.TenantContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -38,44 +39,85 @@ public class DashboardServiceImpl implements DashboardService {
 
     @Override
     public DashboardStatsResponse getDashboardStats() {
-        // 전체 통계
-        long totalUsers = userRepository.count();
-        long totalCourses = courseRepository.count();
-        long totalTerms = courseTermRepository.count();
+        Long tenantId = TenantContext.getTenantId();
 
-        // 강사 수 (USER 역할 중 강사 배정이 있는 사람들)
-        List<InstructorAssignment> allAssignments = instructorAssignmentRepository.findAll();
+        // 전체 통계 (테넌트별 필터링)
+        long totalUsers;
+        long totalCourses;
+        long totalTerms;
+        List<InstructorAssignment> allAssignments;
+        long scheduledTerms;
+        long inProgressTerms;
+        long completedTerms;
+        long cancelledTerms;
+        long pendingApplications;
+        long approvedApplications;
+        long rejectedApplications;
+        List<User> allUsers;
+        List<CourseTerm> allTerms;
+
+        if (tenantId != null) {
+            totalUsers = userRepository.countByTenantId(tenantId);
+            totalCourses = courseRepository.countByTenantId(tenantId);
+            totalTerms = courseTermRepository.countByTenantId(tenantId);
+            allAssignments = instructorAssignmentRepository.findByTenantId(tenantId);
+            scheduledTerms = courseTermRepository.findByTenantIdAndStatus(tenantId, TermStatus.SCHEDULED).size();
+            inProgressTerms = courseTermRepository.findByTenantIdAndStatus(tenantId, TermStatus.ONGOING).size();
+            completedTerms = courseTermRepository.findByTenantIdAndStatus(tenantId, TermStatus.COMPLETED).size();
+            cancelledTerms = courseTermRepository.findByTenantIdAndStatus(tenantId, TermStatus.CANCELLED).size();
+            pendingApplications = courseApplicationRepository.findByTenantIdAndStatus(tenantId, ApplicationStatus.PENDING).size();
+            approvedApplications = courseApplicationRepository.findByTenantIdAndStatus(tenantId, ApplicationStatus.APPROVED).size();
+            rejectedApplications = courseApplicationRepository.findByTenantIdAndStatus(tenantId, ApplicationStatus.REJECTED).size();
+            allUsers = userRepository.findByTenantId(tenantId);
+            allTerms = courseTermRepository.findByTenantId(tenantId);
+        } else {
+            totalUsers = userRepository.count();
+            totalCourses = courseRepository.count();
+            totalTerms = courseTermRepository.count();
+            allAssignments = instructorAssignmentRepository.findAll();
+            scheduledTerms = courseTermRepository.findByStatus(TermStatus.SCHEDULED).size();
+            inProgressTerms = courseTermRepository.findByStatus(TermStatus.ONGOING).size();
+            completedTerms = courseTermRepository.findByStatus(TermStatus.COMPLETED).size();
+            cancelledTerms = courseTermRepository.findByStatus(TermStatus.CANCELLED).size();
+            pendingApplications = courseApplicationRepository.findByStatus(ApplicationStatus.PENDING).size();
+            approvedApplications = courseApplicationRepository.findByStatus(ApplicationStatus.APPROVED).size();
+            rejectedApplications = courseApplicationRepository.findByStatus(ApplicationStatus.REJECTED).size();
+            allUsers = userRepository.findAll();
+            allTerms = courseTermRepository.findAll();
+        }
+
+        // 강사 수 (배정된 강사들)
         long totalInstructors = allAssignments.stream()
             .map(InstructorAssignment::getInstructor)
             .map(User::getId)
             .distinct()
             .count();
 
-        // 차수 상태별 통계
-        long scheduledTerms = courseTermRepository.findByStatus(TermStatus.SCHEDULED).size();
-        long inProgressTerms = courseTermRepository.findByStatus(TermStatus.ONGOING).size();
-        long completedTerms = courseTermRepository.findByStatus(TermStatus.COMPLETED).size();
-        long cancelledTerms = courseTermRepository.findByStatus(TermStatus.CANCELLED).size();
+        // Operator 대시보드용: TENANT_ADMIN, SUPER_ADMIN 제외
+        List<User> filteredUsers = allUsers.stream()
+            .filter(u -> u.getRole() != UserRole.TENANT_ADMIN && u.getRole() != UserRole.SUPER_ADMIN)
+            .toList();
 
-        // 강의 신청 통계
-        long pendingApplications = courseApplicationRepository.findByStatus(ApplicationStatus.PENDING).size();
-        long approvedApplications = courseApplicationRepository.findByStatus(ApplicationStatus.APPROVED).size();
-        long rejectedApplications = courseApplicationRepository.findByStatus(ApplicationStatus.REJECTED).size();
+        // totalUsers도 관리자 제외한 수로 재계산
+        totalUsers = filteredUsers.size();
 
-        // 사용자 역할별 통계
+        // 사용자 역할별 통계 (TENANT_ADMIN, SUPER_ADMIN 제외)
         Map<String, Long> usersByRole = new HashMap<>();
         for (UserRole role : UserRole.values()) {
-            long count = userRepository.findAll().stream()
+            // TENANT_ADMIN, SUPER_ADMIN은 통계에서 제외
+            if (role == UserRole.TENANT_ADMIN || role == UserRole.SUPER_ADMIN) {
+                continue;
+            }
+            long count = filteredUsers.stream()
                 .filter(u -> u.getRole() == role)
                 .count();
             usersByRole.put(role.name(), count);
         }
 
-        // 캘린더용 차수 목록 (예정 + 진행중, 최근 3개월)
+        // 캘린더용 차수 목록 (예정 + 진행중)
         LocalDate today = LocalDate.now();
-        LocalDate threeMonthsLater = today.plusMonths(3);
 
-        List<CourseTerm> upcomingTermsList = courseTermRepository.findAll().stream()
+        List<CourseTerm> upcomingTermsList = allTerms.stream()
             .filter(term -> term.getStatus() == TermStatus.SCHEDULED || term.getStatus() == TermStatus.ONGOING)
             .filter(term -> !term.getEndDate().isBefore(today))
             .sorted(Comparator.comparing(CourseTerm::getStartDate))
