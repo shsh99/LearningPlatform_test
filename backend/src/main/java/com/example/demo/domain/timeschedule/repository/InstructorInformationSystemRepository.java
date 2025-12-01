@@ -49,4 +49,17 @@ public interface InstructorInformationSystemRepository extends JpaRepository<Ins
            "JOIN FETCH t.course c " +
            "ORDER BY iis.timestamp DESC")
     List<InstructorInformationSystem> findAllWithDetails();
+
+    /**
+     * 테넌트 ID로 IIS 조회 (assignment를 통해 tenantId 필터링)
+     */
+    @Query("SELECT DISTINCT iis FROM InstructorInformationSystem iis " +
+           "JOIN FETCH iis.assignment a " +
+           "JOIN FETCH a.instructor i " +
+           "JOIN FETCH a.assignedBy ab " +
+           "JOIN FETCH a.term t " +
+           "JOIN FETCH t.course c " +
+           "WHERE a.tenantId = :tenantId " +
+           "ORDER BY iis.timestamp DESC")
+    List<InstructorInformationSystem> findAllByTenantId(@Param("tenantId") Long tenantId);
 }
