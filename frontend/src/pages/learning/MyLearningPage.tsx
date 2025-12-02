@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Navbar } from '../../components/Navbar';
+import { PageLayout } from '../../components/layout';
 import { useAuth } from '../../contexts/AuthContext';
 import { getStudentInformationSystems } from '../../api/studentInformationSystem';
 import type { StudentInformationSystem } from '../../types/studentInformationSystem';
@@ -29,7 +29,7 @@ export const MyLearningPage = () => {
 
       // 현재 로그인한 유저의 강의만 필터링
       const myCourses = user
-        ? data.filter(course => course.userKey === user.id)
+        ? data.content.filter((course: StudentInformationSystem) => course.userKey === user.id)
         : [];
 
       setCourses(myCourses);
@@ -85,12 +85,11 @@ export const MyLearningPage = () => {
 
   if (isLoading && courses.length === 0) {
     return (
-      <>
-        <Navbar />
+      <PageLayout>
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
           <div className="text-lg text-gray-600">로딩 중...</div>
         </div>
-      </>
+      </PageLayout>
     );
   }
 
@@ -102,8 +101,7 @@ export const MyLearningPage = () => {
   };
 
   return (
-    <>
-      <Navbar />
+    <PageLayout>
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 py-8">
         <div className="max-w-7xl mx-auto px-4">
           {/* Header */}
@@ -293,6 +291,6 @@ export const MyLearningPage = () => {
           )}
         </div>
       </div>
-    </>
+    </PageLayout>
   );
 };

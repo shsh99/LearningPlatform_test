@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Navbar } from '../../components/Navbar';
 import { getAllCourseApplications, getCourseApplicationsByStatus, approveCourseApplication, rejectCourseApplication } from '../../api/courseApplication';
 import { getAllUsers } from '../../api/user';
@@ -12,6 +12,7 @@ import {
   UserRoleChart,
 } from '../../components/dashboard';
 import { useTenant } from '../../contexts/TenantContext';
+import { useLayoutConfigForRole } from '../../hooks/useLayoutConfig';
 import type { CourseApplication, ApplicationStatus } from '../../types/courseApplication';
 import type { User } from '../../api/user';
 import type { DashboardStats } from '../../types/dashboard';
@@ -20,11 +21,36 @@ type TabType = 'dashboard' | 'applications' | 'users';
 
 export const OperatorDashboardPage = () => {
   const { branding, labels } = useTenant();
+  const { dashboardWidgets, isWidgetEnabled } = useLayoutConfigForRole('operator');
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
 
   // 대시보드 통계 state
   const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
   const [loadingDashboard, setLoadingDashboard] = useState(true);
+
+  // 위젯 컴포넌트 매핑
+  const widgetComponents: Record<string, React.ReactNode> = useMemo(() => {
+    if (!dashboardStats) return {};
+
+    return {
+      stats: <StatsCards key="stats" stats={dashboardStats} />,
+      termCalendar: (
+        <div key="termCalendar" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <TermStatusChart stats={dashboardStats} />
+            <ApplicationStatusChart stats={dashboardStats} />
+          </div>
+          <CourseCalendar terms={dashboardStats.upcomingTerms} />
+        </div>
+      ),
+      instructorStats: (
+        <div key="instructorStats" className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <UserRoleChart usersByRole={dashboardStats.usersByRole} />
+          <InstructorStatsTable instructorStats={dashboardStats.instructorStats} />
+        </div>
+      ),
+    };
+  }, [dashboardStats]);
 
   // 신청 관련 state
   const [applications, setApplications] = useState<CourseApplication[]>([]);
@@ -325,22 +351,18 @@ export const OperatorDashboardPage = () => {
                   </div>
                 ) : dashboardStats ? (
                   <div className="space-y-6">
-                    {/* 통계 카드 */}
-                    <StatsCards stats={dashboardStats} />
-
-                    {/* 차트 영역 */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      <TermStatusChart stats={dashboardStats} />
-                      <ApplicationStatusChart stats={dashboardStats} />
-                    </div>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      <UserRoleChart usersByRole={dashboardStats.usersByRole} />
-                      <InstructorStatsTable instructorStats={dashboardStats.instructorStats} />
-                    </div>
-
-                    {/* 캘린더 */}
-                    <CourseCalendar terms={dashboardStats.upcomingTerms} />
+                    {/* 위젯 순서대로 렌더링 */}
+                    {dashboardWidgets.map((widget) => (
+                      <div key={widget.id}>
+                        {widgetComponents[widget.id]}
+                      </div>
+                    ))}
+                    {/* 위젯이 하나도 없을 경우 기본 메시지 */}
+                    {dashboardWidgets.length === 0 && (
+                      <div className="text-center py-8 text-gray-500">
+                        표시할 위젯이 없습니다. 레이아웃 설정에서 위젯을 활성화해주세요.
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="text-center py-16">

@@ -58,6 +58,16 @@ public record UpdateTenantBrandingRequest(
         @Size(max = 500, message = "폰트 URL은 500자 이하여야 합니다")
         String fontUrl,
 
-        String customCss
+        String customCss,
+
+        String layoutConfig,
+
+        String layoutConfigTenantAdmin,
+
+        String layoutConfigOperator,
+
+        String layoutConfigUser,
+
+        String bannerConfig
 ) {
 }

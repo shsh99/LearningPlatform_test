@@ -6,7 +6,10 @@ import { updateTenantBranding, updateTenantLabels } from '../../api/tenant';
 import { uploadLogo, uploadFavicon, uploadFont, getFullFileUrl } from '../../api/file';
 import type { UpdateTenantBrandingRequest, UpdateTenantLabelsRequest } from '../../types/tenant';
 import { DEFAULT_BRANDING, DEFAULT_LABELS } from '../../types/tenant';
+import type { TenantBannerConfig } from '../../types/layout';
+import { DEFAULT_TENANT_BANNER } from '../../types/layout';
 import { Navbar } from '../../components/Navbar';
+import { BannerEditor } from '../../components/layout/BannerEditor';
 import { getErrorMessage } from '../../lib/errorHandler';
 
 // 프리셋 테마 정의
@@ -883,6 +886,8 @@ export const BrandingSettingsPage = () => {
   const [brandingForm, setBrandingForm] = useState<UpdateTenantBrandingRequest>({});
   // 라벨 상태
   const [labelsForm, setLabelsForm] = useState<UpdateTenantLabelsRequest>({});
+  // 배너 상태
+  const [bannerConfig, setBannerConfig] = useState<TenantBannerConfig>(DEFAULT_TENANT_BANNER);
   // 선택된 테마 ID
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
 
@@ -932,6 +937,24 @@ export const BrandingSettingsPage = () => {
       dashboardLabel: labels.dashboardLabel,
     });
   }, [labels]);
+
+  // 배너 설정 로드
+  useEffect(() => {
+    if (branding.bannerConfig) {
+      try {
+        const parsed = JSON.parse(branding.bannerConfig);
+        setBannerConfig({
+          top: parsed.top ? { ...DEFAULT_TENANT_BANNER.top, ...parsed.top } : DEFAULT_TENANT_BANNER.top,
+          bottom: parsed.bottom ? { ...DEFAULT_TENANT_BANNER.bottom, ...parsed.bottom } : DEFAULT_TENANT_BANNER.bottom,
+        });
+      } catch (e) {
+        console.error('Failed to parse banner config:', e);
+        setBannerConfig(DEFAULT_TENANT_BANNER);
+      }
+    } else {
+      setBannerConfig(DEFAULT_TENANT_BANNER);
+    }
+  }, [branding.bannerConfig]);
 
   const handleBrandingChange = (key: keyof UpdateTenantBrandingRequest, value: string) => {
     setBrandingForm((prev) => ({ ...prev, [key]: value }));
@@ -1104,6 +1127,29 @@ export const BrandingSettingsPage = () => {
       console.error('Failed to save labels:', error);
       const errorMessage = getErrorMessage(error);
       setMessage({ type: 'error', text: `라벨 설정 저장 실패: ${errorMessage}` });
+    } finally {
+      setIsSaving(false);
+      setTimeout(() => setMessage(null), 3000);
+    }
+  };
+
+  // 배너 설정 저장
+  const handleSaveBanner = async () => {
+    const tid = branding.tenantId || 1;
+    if (!tid) {
+      setMessage({ type: 'error', text: '테넌트 정보를 찾을 수 없습니다. 다시 로그인해주세요.' });
+      return;
+    }
+    try {
+      setIsSaving(true);
+      const bannerConfigJson = JSON.stringify(bannerConfig);
+      await updateTenantBranding(tid, { bannerConfig: bannerConfigJson });
+      await refreshTenant();
+      setMessage({ type: 'success', text: '배너 설정이 저장되었습니다.' });
+    } catch (error) {
+      console.error('Failed to save banner:', error);
+      const errorMessage = getErrorMessage(error);
+      setMessage({ type: 'error', text: `배너 설정 저장 실패: ${errorMessage}` });
     } finally {
       setIsSaving(false);
       setTimeout(() => setMessage(null), 3000);
@@ -1411,6 +1457,33 @@ export const BrandingSettingsPage = () => {
                   className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
                 >
                   {isSaving ? '저장 중...' : '라벨 저장'}
+                </button>
+              </div>
+
+              {/* 배너 설정 */}
+              <h2 className="text-2xl font-bold text-gray-900 mt-8">배너 설정</h2>
+              <p className="text-sm text-gray-500 mb-4">
+                모든 사용자에게 표시되는 공통 배너를 설정합니다. 상단/하단에 이미지 슬라이더 형태로 배너를 표시할 수 있습니다.
+              </p>
+
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <BannerEditor config={bannerConfig} onChange={setBannerConfig} />
+              </div>
+
+              <div className="flex justify-end gap-3 mt-4">
+                <button
+                  onClick={() => setBannerConfig(DEFAULT_TENANT_BANNER)}
+                  disabled={isSaving}
+                  className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                >
+                  기본값으로 초기화
+                </button>
+                <button
+                  onClick={handleSaveBanner}
+                  disabled={isSaving}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {isSaving ? '저장 중...' : '배너 저장'}
                 </button>
               </div>
             </div>

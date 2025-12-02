@@ -70,6 +70,22 @@ export const uploadFont = async (file: File, tenantId: number): Promise<FileUplo
 };
 
 /**
+ * 배너 이미지 업로드
+ */
+export const uploadBannerImage = async (file: File, tenantId: number): Promise<FileUploadResponse> => {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('tenantId', tenantId.toString());
+
+  const response = await fileApi.post<FileUploadResponse>('/files/banner', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+};
+
+/**
  * 파일 삭제
  */
 export const deleteFile = async (fileUrl: string): Promise<{ message: string }> => {
