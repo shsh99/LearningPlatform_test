@@ -1,7 +1,7 @@
 # LearningPlatform - AI 작업 가이드
 
 > **핵심 원칙**: 이 문서(200줄 이하)만으로 대부분의 작업 시작 가능. 부족하면 부록 참조.
-> **🚨 필수 작업 규칙**: 모든 작업은 **반드시 계획 먼저 제시** → 승인 → 순차 진행 → 완료 보고 ([상세](./templates/task-workflow.md))
+> **🚨 필수 작업 규칙**: 모든 작업은 **반드시 계획 먼저 제시** → 승인 → 순차 진행 → 완료 보고 ([상세](./docs/templates/task-workflow.md))
 
 ---
 
@@ -137,8 +137,8 @@ frontend/src/
 |------|------|
 | **환경** | [MONOREPO](./MONOREPO.md), [SEPARATED-REPOS](./SEPARATED-REPOS.md), [PROJECT_CONTEXT](./PROJECT_CONTEXT.md) |
 | **컨텍스트** | [architecture](./docs/context/architecture.md), [database](./docs/context/database.md), [api](./docs/context/api.md), [pages](./docs/context/pages.md), [design](./docs/context/design.md), [infrastructure](./docs/context/infrastructure.md) |
-| **템플릿** | [task-workflow](./templates/task-workflow.md), [PRD](./templates/prd.md), [MoSCoW](./templates/moscow-priority.md), [ADR](./docs/adr/000-template.md) |
-| **기타** | [troubleshooting](./docs/context/troubleshooting.md), [glossary](./docs/context/glossary.md), [code-review](./templates/code-review-checklist.md) |
+| **템플릿** | [task-workflow](./docs/templates/task-workflow.md), [mcdonaldization](./docs/templates/mcdonaldization.md), [code-review](./docs/templates/code-review-checklist.md), [ADR](./docs/adr/000-template.md) |
+| **기타** | [troubleshooting](./docs/context/troubleshooting.md), [glossary](./docs/context/glossary.md), [feature-roadmap](./docs/context/feature-roadmap.md) |
 
 ---
 
@@ -163,7 +163,7 @@ frontend/src/
 
 **MoSCoW**: 🔴Must → 🟡Should → 🟢Could (⚪Won't 제외)
 
-> 상세 → [맥도날드화](./templates/mcdonaldization.md) | [워크플로우](./templates/workflow-checklist.md) | [MoSCoW](./templates/moscow-priority.md)
+> 상세 → [맥도날드화](./docs/templates/mcdonaldization.md) | [워크플로우](./.claude/templates/workflow-checklist.md) | [MoSCoW](./.claude/templates/moscow-priority.md)
 
 ---
 
