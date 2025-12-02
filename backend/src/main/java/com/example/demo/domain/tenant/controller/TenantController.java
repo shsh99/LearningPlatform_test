@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +19,7 @@ import java.util.List;
 @RequestMapping("/api/tenants")
 @RequiredArgsConstructor
 @Validated
+@PreAuthorize("hasRole('SUPER_ADMIN')")
 public class TenantController {
 
     private final TenantService tenantService;
@@ -75,11 +77,13 @@ public class TenantController {
 
     // 브랜딩 관리
     @GetMapping("/{tenantId}/branding")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'TENANT_ADMIN', 'ADMIN')")
     public ResponseEntity<TenantBrandingResponse> getBranding(@PathVariable Long tenantId) {
         return ResponseEntity.ok(tenantService.getBranding(tenantId));
     }
 
     @PutMapping("/{tenantId}/branding")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'TENANT_ADMIN', 'ADMIN')")
     public ResponseEntity<TenantBrandingResponse> updateBranding(
             @PathVariable Long tenantId,
             @Valid @RequestBody UpdateTenantBrandingRequest request
@@ -89,11 +93,13 @@ public class TenantController {
 
     // 설정 관리
     @GetMapping("/{tenantId}/settings")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'TENANT_ADMIN', 'ADMIN')")
     public ResponseEntity<TenantSettingsResponse> getSettings(@PathVariable Long tenantId) {
         return ResponseEntity.ok(tenantService.getSettings(tenantId));
     }
 
     @PutMapping("/{tenantId}/settings")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'TENANT_ADMIN', 'ADMIN')")
     public ResponseEntity<TenantSettingsResponse> updateSettings(
             @PathVariable Long tenantId,
             @Valid @RequestBody UpdateTenantSettingsRequest request
@@ -103,11 +109,13 @@ public class TenantController {
 
     // 라벨 관리
     @GetMapping("/{tenantId}/labels")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'TENANT_ADMIN', 'ADMIN')")
     public ResponseEntity<TenantLabelsResponse> getLabels(@PathVariable Long tenantId) {
         return ResponseEntity.ok(tenantService.getLabels(tenantId));
     }
 
     @PutMapping("/{tenantId}/labels")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'TENANT_ADMIN', 'ADMIN')")
     public ResponseEntity<TenantLabelsResponse> updateLabels(
             @PathVariable Long tenantId,
             @Valid @RequestBody UpdateTenantLabelsRequest request

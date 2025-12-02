@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
+@EntityListeners(com.example.demo.global.tenant.TenantEntityListener.class)
 public class RefreshToken extends BaseTimeEntity implements TenantAware {
 
     @Id

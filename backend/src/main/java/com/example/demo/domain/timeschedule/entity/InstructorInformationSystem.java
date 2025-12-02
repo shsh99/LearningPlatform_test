@@ -1,10 +1,13 @@
 package com.example.demo.domain.timeschedule.entity;
 
+import com.example.demo.domain.tenant.entity.Tenant;
 import com.example.demo.global.common.BaseTimeEntity;
+import com.example.demo.global.tenant.TenantAware;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Filter;
 
 import java.time.LocalDateTime;
 
@@ -16,11 +19,20 @@ import java.time.LocalDateTime;
 @Table(name = "instructor_information_system")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class InstructorInformationSystem extends BaseTimeEntity {
+@Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
+@EntityListeners(com.example.demo.global.tenant.TenantEntityListener.class)
+public class InstructorInformationSystem extends BaseTimeEntity implements TenantAware {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "tenant_id")
+    private Long tenantId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tenant_id", insertable = false, updatable = false)
+    private Tenant tenant;
 
     @Column(name = "user_key", nullable = false)
     private Long userKey;
@@ -41,6 +53,12 @@ public class InstructorInformationSystem extends BaseTimeEntity {
         iis.timeKey = timeKey;
         iis.timestamp = LocalDateTime.now();
         iis.assignment = assignment;
+        iis.tenantId = assignment.getTenantId(); // InstructorAssignment에서 tenantId 상속
         return iis;
+    }
+
+    @Override
+    public Long getTenantId() {
+        return tenantId;
     }
 }

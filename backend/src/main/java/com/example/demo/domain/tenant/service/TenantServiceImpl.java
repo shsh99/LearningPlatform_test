@@ -13,6 +13,7 @@ import com.example.demo.domain.tenant.repository.TenantLabelsRepository;
 import com.example.demo.domain.tenant.repository.TenantRepository;
 import com.example.demo.domain.tenant.repository.TenantSettingsRepository;
 import com.example.demo.global.tenant.TenantContext;
+import com.example.demo.global.tenant.TenantSecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -132,6 +133,9 @@ public class TenantServiceImpl implements TenantService {
     @Override
     @Transactional
     public TenantBrandingResponse updateBranding(Long tenantId, UpdateTenantBrandingRequest request) {
+        // 크로스 테넌트 접근 검증
+        TenantSecurityUtils.validateTenantAccess(tenantId);
+
         TenantBranding branding = brandingRepository.findById(tenantId)
                 .orElseThrow(() -> new TenantNotFoundException(tenantId));
 
@@ -182,6 +186,9 @@ public class TenantServiceImpl implements TenantService {
     @Override
     @Transactional
     public TenantSettingsResponse updateSettings(Long tenantId, UpdateTenantSettingsRequest request) {
+        // 크로스 테넌트 접근 검증
+        TenantSecurityUtils.validateTenantAccess(tenantId);
+
         TenantSettings settings = settingsRepository.findById(tenantId)
                 .orElseThrow(() -> new TenantNotFoundException(tenantId));
 
@@ -223,6 +230,9 @@ public class TenantServiceImpl implements TenantService {
     @Override
     @Transactional
     public TenantLabelsResponse updateLabels(Long tenantId, UpdateTenantLabelsRequest request) {
+        // 크로스 테넌트 접근 검증
+        TenantSecurityUtils.validateTenantAccess(tenantId);
+
         TenantLabels labels = labelsRepository.findById(tenantId)
                 .orElseThrow(() -> new TenantNotFoundException(tenantId));
 
