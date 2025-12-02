@@ -172,6 +172,13 @@ export function Navbar() {
                                             브랜딩 설정
                                         </Link>
                                         <Link
+                                            to={buildPath('/tenant-admin/layout')}
+                                            className="font-medium transition-colors hover:opacity-80"
+                                            style={{ color: branding.headerTextColor }}
+                                        >
+                                            레이아웃 설정
+                                        </Link>
+                                        <Link
                                             to={buildPath('/tenant-admin/operators')}
                                             className="font-medium transition-colors hover:opacity-80"
                                             style={{ color: branding.headerTextColor }}

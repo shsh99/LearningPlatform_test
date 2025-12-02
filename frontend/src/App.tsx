@@ -26,6 +26,7 @@ import { MyLearningPage } from './pages/learning/MyLearningPage';
 import { BrandingSettingsPage } from './pages/tenant-admin/BrandingSettingsPage';
 import { OperatorManagementPage } from './pages/tenant-admin/OperatorManagementPage';
 import { TenantAdminDashboardPage } from './pages/tenant-admin/TenantAdminDashboardPage';
+import LayoutSettingsPage from './pages/tenant-admin/LayoutSettingsPage';
 import { TenantManagementPage } from './pages/super-admin/TenantManagementPage';
 import { CreateTenantAdminPage } from './pages/super-admin/CreateTenantAdminPage';
 import { TenantApplicationManagementPage } from './pages/super-admin/TenantApplicationManagementPage';
@@ -61,6 +62,7 @@ function TenantRoutes() {
             <Route path="my-learning" element={<MyLearningPage />} />
             <Route path="tenant-admin/dashboard" element={<TenantAdminDashboardPage />} />
             <Route path="tenant-admin/branding" element={<BrandingSettingsPage />} />
+            <Route path="tenant-admin/layout" element={<LayoutSettingsPage />} />
             <Route path="tenant-admin/operators" element={<OperatorManagementPage />} />
         </Routes>
     );

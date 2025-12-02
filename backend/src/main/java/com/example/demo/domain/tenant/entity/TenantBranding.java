@@ -85,6 +85,10 @@ public class TenantBranding extends BaseTimeEntity {
     @Column(columnDefinition = "TEXT")
     private String customCss;
 
+    // 레이아웃 설정 (JSON 형태로 저장)
+    @Column(columnDefinition = "TEXT")
+    private String layoutConfig;
+
     private TenantBranding(Tenant tenant) {
         this.tenant = tenant;
     }
@@ -146,6 +150,10 @@ public class TenantBranding extends BaseTimeEntity {
 
     public void updateCustomCss(String customCss) {
         this.customCss = customCss;
+    }
+
+    public void updateLayoutConfig(String layoutConfig) {
+        this.layoutConfig = layoutConfig;
     }
 
     public void updateAllColors(

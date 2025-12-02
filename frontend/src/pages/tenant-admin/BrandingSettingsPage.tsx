@@ -8,6 +8,7 @@ import type { UpdateTenantBrandingRequest, UpdateTenantLabelsRequest } from '../
 import { DEFAULT_BRANDING, DEFAULT_LABELS } from '../../types/tenant';
 import { Navbar } from '../../components/Navbar';
 import { getErrorMessage } from '../../lib/errorHandler';
+import { LayoutConfigEditor } from '../../components/branding/LayoutConfigEditor';
 
 // 프리셋 테마 정의
 interface ThemePreset {

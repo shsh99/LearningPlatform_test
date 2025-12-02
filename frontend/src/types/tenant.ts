@@ -40,6 +40,7 @@ export interface TenantBranding {
   fontFamily: string;
   fontUrl: string | null;
   customCss: string | null;
+  layoutConfig: string | null;
 }
 
 // 테넌트 설정 (기능 ON/OFF)
@@ -114,6 +115,7 @@ export interface UpdateTenantBrandingRequest {
   fontFamily?: string;
   fontUrl?: string;
   customCss?: string;
+  layoutConfig?: string;
 }
 
 export interface UpdateTenantSettingsRequest {
@@ -168,6 +170,7 @@ export const DEFAULT_BRANDING: TenantBranding = {
   fontFamily: 'Pretendard, -apple-system, sans-serif',
   fontUrl: null,
   customCss: null,
+  layoutConfig: null,
 };
 
 // 기본 라벨 값

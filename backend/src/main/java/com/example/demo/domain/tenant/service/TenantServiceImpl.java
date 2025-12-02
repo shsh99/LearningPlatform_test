@@ -154,6 +154,9 @@ public class TenantServiceImpl implements TenantService {
         if (request.customCss() != null) {
             branding.updateCustomCss(request.customCss());
         }
+        if (request.layoutConfig() != null) {
+            branding.updateLayoutConfig(request.layoutConfig());
+        }
 
         // 색상 업데이트
         branding.updateAllColors(
