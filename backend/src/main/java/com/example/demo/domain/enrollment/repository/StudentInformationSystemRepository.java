@@ -1,6 +1,8 @@
 package com.example.demo.domain.enrollment.repository;
 
 import com.example.demo.domain.enrollment.entity.StudentInformationSystem;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -33,7 +35,7 @@ public interface StudentInformationSystemRepository extends JpaRepository<Studen
            "WHERE sis.id = :id")
     Optional<StudentInformationSystem> findByIdWithDetails(@Param("id") Long id);
 
-    /**
+/**
      * 테넌트 ID로 SIS 조회 (enrollment를 통해 tenantId 필터링)
      */
     @Query("SELECT sis FROM StudentInformationSystem sis " +
@@ -43,4 +45,13 @@ public interface StudentInformationSystemRepository extends JpaRepository<Studen
            "JOIN FETCH t.course c " +
            "WHERE e.tenantId = :tenantId")
     List<StudentInformationSystem> findAllByTenantId(@Param("tenantId") Long tenantId);
+
+    // 페이지네이션용 쿼리 (countQuery 분리로 N+1 방지)
+    @Query(value = "SELECT sis FROM StudentInformationSystem sis " +
+                   "JOIN FETCH sis.enrollment e " +
+                   "JOIN FETCH e.student s " +
+                   "JOIN FETCH e.term t " +
+                   "JOIN FETCH t.course c",
+           countQuery = "SELECT COUNT(sis) FROM StudentInformationSystem sis")
+    Page<StudentInformationSystem> findAllWithDetailsPaged(Pageable pageable);
 }

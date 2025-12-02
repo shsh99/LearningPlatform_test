@@ -2,6 +2,8 @@ package com.example.demo.domain.enrollment.service;
 
 import com.example.demo.domain.enrollment.dto.StudentInformationSystemDetailResponse;
 import com.example.demo.domain.enrollment.dto.StudentInformationSystemResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -16,6 +18,8 @@ public interface StudentInformationSystemService {
     List<StudentInformationSystemResponse> findAll();
 
     List<StudentInformationSystemDetailResponse> findAllWithDetails();
+
+    Page<StudentInformationSystemDetailResponse> findAllWithDetailsPaged(Pageable pageable);
 
     StudentInformationSystemDetailResponse findDetailById(Long id);
 
