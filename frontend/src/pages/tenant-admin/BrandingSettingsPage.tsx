@@ -7,6 +7,7 @@ import { uploadLogo, uploadFavicon, uploadFont, getFullFileUrl } from '../../api
 import type { UpdateTenantBrandingRequest, UpdateTenantLabelsRequest } from '../../types/tenant';
 import { DEFAULT_BRANDING, DEFAULT_LABELS } from '../../types/tenant';
 import { Navbar } from '../../components/Navbar';
+import { getErrorMessage } from '../../lib/errorHandler';
 
 // 프리셋 테마 정의
 interface ThemePreset {
@@ -949,7 +950,8 @@ export const BrandingSettingsPage = () => {
       setMessage({ type: 'success', text: '로고가 업로드되었습니다.' });
     } catch (error) {
       console.error('로고 업로드 실패:', error);
-      setMessage({ type: 'error', text: '로고 업로드에 실패했습니다.' });
+      const errorMessage = getErrorMessage(error);
+      setMessage({ type: 'error', text: `로고 업로드 실패: ${errorMessage}` });
     } finally {
       setIsUploadingLogo(false);
     }
@@ -963,7 +965,8 @@ export const BrandingSettingsPage = () => {
       setMessage({ type: 'success', text: '파비콘이 업로드되었습니다.' });
     } catch (error) {
       console.error('파비콘 업로드 실패:', error);
-      setMessage({ type: 'error', text: '파비콘 업로드에 실패했습니다.' });
+      const errorMessage = getErrorMessage(error);
+      setMessage({ type: 'error', text: `파비콘 업로드 실패: ${errorMessage}` });
     } finally {
       setIsUploadingFavicon(false);
     }
@@ -978,7 +981,8 @@ export const BrandingSettingsPage = () => {
       setMessage({ type: 'success', text: '폰트가 업로드되었습니다.' });
     } catch (error) {
       console.error('폰트 업로드 실패:', error);
-      setMessage({ type: 'error', text: '폰트 업로드에 실패했습니다.' });
+      const errorMessage = getErrorMessage(error);
+      setMessage({ type: 'error', text: `폰트 업로드 실패: ${errorMessage}` });
     } finally {
       setIsUploadingFont(false);
     }
@@ -1054,7 +1058,8 @@ export const BrandingSettingsPage = () => {
       setMessage({ type: 'success', text: `'${theme.name}' 테마가 적용되었습니다.` });
     } catch (error) {
       console.error('Failed to apply theme:', error);
-      setMessage({ type: 'error', text: '테마 적용에 실패했습니다.' });
+      const errorMessage = getErrorMessage(error);
+      setMessage({ type: 'error', text: `테마 적용 실패: ${errorMessage}` });
     } finally {
       setIsSaving(false);
       setTimeout(() => setMessage(null), 3000);
@@ -1075,7 +1080,8 @@ export const BrandingSettingsPage = () => {
       setMessage({ type: 'success', text: '브랜딩 설정이 저장되었습니다.' });
     } catch (error) {
       console.error('Failed to save branding:', error);
-      setMessage({ type: 'error', text: '브랜딩 설정 저장에 실패했습니다.' });
+      const errorMessage = getErrorMessage(error);
+      setMessage({ type: 'error', text: `브랜딩 설정 저장 실패: ${errorMessage}` });
     } finally {
       setIsSaving(false);
       setTimeout(() => setMessage(null), 3000);
@@ -1096,7 +1102,8 @@ export const BrandingSettingsPage = () => {
       setMessage({ type: 'success', text: '라벨 설정이 저장되었습니다.' });
     } catch (error) {
       console.error('Failed to save labels:', error);
-      setMessage({ type: 'error', text: '라벨 설정 저장에 실패했습니다.' });
+      const errorMessage = getErrorMessage(error);
+      setMessage({ type: 'error', text: `라벨 설정 저장 실패: ${errorMessage}` });
     } finally {
       setIsSaving(false);
       setTimeout(() => setMessage(null), 3000);

@@ -1,15 +1,56 @@
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTenant } from '../contexts/TenantContext';
 import { isDarkTheme } from '../utils/theme';
 import { getFullFileUrl } from '../api/file';
+import { getActiveTenants } from '../api/tenant';
+import type { Tenant } from '../types/tenant';
 
 export function Navbar() {
     const { user, isAuthenticated, logout } = useAuth();
     const { branding, labels, buildPath, tenantCode } = useTenant();
+    const navigate = useNavigate();
+
+    // SUPER_ADMIN 테넌트 선택 상태
+    const [tenants, setTenants] = useState<Tenant[]>([]);
+    const [showTenantDropdown, setShowTenantDropdown] = useState(false);
+    const [selectedTenantCode, setSelectedTenantCode] = useState<string | null>(null);
+    const dropdownRef = useRef<HTMLDivElement>(null);
 
     // 브랜딩 헤더 색상 기반 다크 테마 자동 감지
     const isThemeDark = isDarkTheme(branding.headerBgColor);
+
+    // 역할별 변수
+    const isSuperAdmin = user?.role === 'SUPER_ADMIN';
+
+    // SUPER_ADMIN인 경우 테넌트 목록 로드
+    useEffect(() => {
+        if (isSuperAdmin) {
+            getActiveTenants()
+                .then(setTenants)
+                .catch(err => console.error('Failed to load tenants:', err));
+        }
+    }, [isSuperAdmin]);
+
+    // 드롭다운 외부 클릭 시 닫기
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setShowTenantDropdown(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const handleTenantSelect = (tenant: Tenant) => {
+        setSelectedTenantCode(tenant.code);
+        setShowTenantDropdown(false);
+        // 선택한 테넌트의 URL로 이동
+        navigate(`/${tenant.code}/`);
+    };
 
     const handleLogout = () => {
         logout();
@@ -17,8 +58,6 @@ export function Navbar() {
         window.location.href = '/login';
     };
 
-    // 역할별 변수
-    const isSuperAdmin = user?.role === 'SUPER_ADMIN';
     const isTenantAdmin = user?.role === 'TENANT_ADMIN';
     const isOperator = user?.role === 'OPERATOR' || user?.role === 'ADMIN';
 
@@ -145,6 +184,53 @@ export function Navbar() {
                                 {/* SUPER_ADMIN 메뉴 - 절대 경로 사용 */}
                                 {isSuperAdmin && (
                                     <>
+                                        {/* 테넌트 선택 드롭다운 */}
+                                        <div className="relative" ref={dropdownRef}>
+                                            <button
+                                                onClick={() => setShowTenantDropdown(!showTenantDropdown)}
+                                                className="flex items-center gap-2 px-3 py-1.5 rounded-lg font-medium transition-all hover:opacity-80"
+                                                style={{
+                                                    backgroundColor: branding.primaryColor + '20',
+                                                    color: branding.headerTextColor,
+                                                }}
+                                            >
+                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                                </svg>
+                                                <span>{selectedTenantCode || tenantCode || '테넌트 선택'}</span>
+                                                <svg className={`w-4 h-4 transition-transform ${showTenantDropdown ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                </svg>
+                                            </button>
+
+                                            {showTenantDropdown && tenants.length > 0 && (
+                                                <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50 max-h-80 overflow-y-auto">
+                                                    <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase border-b border-gray-100">
+                                                        테넌트 전환
+                                                    </div>
+                                                    {tenants.map(tenant => (
+                                                        <button
+                                                            key={tenant.id}
+                                                            onClick={() => handleTenantSelect(tenant)}
+                                                            className={`w-full px-4 py-2.5 text-left hover:bg-gray-50 transition-colors flex items-center justify-between ${
+                                                                (selectedTenantCode || tenantCode) === tenant.code ? 'bg-indigo-50' : ''
+                                                            }`}
+                                                        >
+                                                            <div>
+                                                                <div className="font-medium text-gray-900">{tenant.name}</div>
+                                                                <div className="text-xs text-gray-500">{tenant.code}</div>
+                                                            </div>
+                                                            {(selectedTenantCode || tenantCode) === tenant.code && (
+                                                                <svg className="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                                </svg>
+                                                            )}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+
                                         <Link
                                             to="/super-admin/dashboard"
                                             className="font-medium transition-colors hover:opacity-80"
