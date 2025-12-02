@@ -71,7 +71,24 @@ public class FileController {
     }
 
     /**
-     * 파일 조회 (로고, 파비콘, 폰트) - 공개 접근 가능
+     * 배너 이미지 업로드
+     */
+    @PostMapping("/banner")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'TENANT_ADMIN', 'ADMIN')")
+    public ResponseEntity<Map<String, String>> uploadBanner(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("tenantId") Long tenantId,
+            Authentication authentication) {
+
+        String fileUrl = fileStorageService.uploadBanner(file, tenantId);
+        return ResponseEntity.ok(Map.of(
+            "url", fileUrl,
+            "message", "배너 이미지가 성공적으로 업로드되었습니다."
+        ));
+    }
+
+    /**
+     * 파일 조회 (로고, 파비콘, 폰트, 배너) - 공개 접근 가능
      */
     @GetMapping("/{subDir}/{filename}")
     public ResponseEntity<byte[]> getFile(
@@ -79,7 +96,7 @@ public class FileController {
             @PathVariable String filename) {
 
         // 허용된 디렉토리만 접근 가능
-        if (!subDir.matches("^(logos|favicons|fonts)$")) {
+        if (!subDir.matches("^(logos|favicons|fonts|banners)$")) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 

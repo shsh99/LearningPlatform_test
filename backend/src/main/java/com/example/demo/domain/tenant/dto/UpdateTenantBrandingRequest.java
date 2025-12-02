@@ -60,6 +60,14 @@ public record UpdateTenantBrandingRequest(
 
         String customCss,
 
-        String layoutConfig
+        String layoutConfig,
+
+        String layoutConfigTenantAdmin,
+
+        String layoutConfigOperator,
+
+        String layoutConfigUser,
+
+        String bannerConfig
 ) {
 }

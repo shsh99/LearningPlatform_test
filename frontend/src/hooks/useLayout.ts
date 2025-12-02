@@ -1,24 +1,66 @@
 import { useMemo } from 'react';
 import { useTenant } from '../contexts/TenantContext';
+import { useAuth } from '../contexts/AuthContext';
 import type {
   LayoutConfig,
   ComponentConfig,
   WidgetConfig,
-  BannerItemConfig,
   MenuItemConfig,
+  BannerConfig,
+  LayoutRole,
 } from '../types/layout';
-import { parseLayoutConfig } from '../types/layout';
+import { parseLayoutConfigForRole, DEFAULT_LAYOUTS_BY_ROLE } from '../types/layout';
+
+/**
+ * 사용자 역할을 레이아웃 역할로 매핑
+ */
+function getUserLayoutRole(userRole: string | undefined): LayoutRole {
+  switch (userRole) {
+    case 'SUPER_ADMIN':
+    case 'TENANT_ADMIN':
+      return 'tenantAdmin';
+    case 'OPERATOR':
+    case 'ADMIN':
+      return 'operator';
+    case 'USER':
+    default:
+      return 'user';
+  }
+}
 
 /**
  * 레이아웃 설정을 관리하는 Hook
+ * 현재 로그인한 사용자의 역할에 맞는 레이아웃 설정을 반환
  */
 export function useLayout() {
-  const { tenant } = useTenant();
+  const { branding } = useTenant();
+  const { user } = useAuth();
 
-  // layoutConfig를 파싱하여 사용
+  // 사용자 역할에 따른 레이아웃 역할 결정
+  const layoutRole = useMemo<LayoutRole>(() => {
+    return getUserLayoutRole(user?.role);
+  }, [user?.role]);
+
+  // 역할에 맞는 레이아웃 설정 JSON 선택
+  const layoutConfigJson = useMemo(() => {
+    if (!branding) return null;
+
+    switch (layoutRole) {
+      case 'tenantAdmin':
+        return branding.layoutConfigTenantAdmin;
+      case 'operator':
+        return branding.layoutConfigOperator;
+      case 'user':
+        return branding.layoutConfigUser;
+      default:
+        return null;
+    }
+  }, [branding, layoutRole]);
+
+  // 레이아웃 설정 파싱
   const layoutConfig = useMemo<LayoutConfig>(() => {
-    return parseLayoutConfig(tenant?.branding?.layoutConfig);
-  }, [tenant]);
+    return parseLayoutConfigForRole(layoutConfigJson, layoutRole);
+  }, [layoutConfigJson, layoutRole]);
 
   /**
    * 특정 컴포넌트가 활성화되어 있는지 확인
@@ -35,10 +77,9 @@ export function useLayout() {
     }
 
     if (category === 'banner') {
-      const bannerConfig = categoryConfig as LayoutConfig['banner'];
-      if (!bannerConfig || !bannerConfig.enabled) return false;
-      const item = bannerConfig.items.find((i) => i.id === componentId);
-      return item?.enabled ?? false;
+      // 배너는 단순히 enabled 여부만 확인
+      const bannerConfig = categoryConfig as BannerConfig;
+      return bannerConfig?.enabled ?? false;
     }
 
     if (category === 'menu') {
@@ -72,11 +113,10 @@ export function useLayout() {
   }, [layoutConfig]);
 
   /**
-   * 배너 아이템 목록 (활성화되고 정렬된)
+   * 배너 설정 (단순화됨 - enabled, position, title, content)
    */
-  const bannerItems = useMemo<BannerItemConfig[]>(() => {
-    if (!layoutConfig.banner?.enabled) return [];
-    return getSortedComponents(layoutConfig.banner.items);
+  const bannerConfig = useMemo<BannerConfig | undefined>(() => {
+    return layoutConfig.banner;
   }, [layoutConfig]);
 
   /**
@@ -87,20 +127,19 @@ export function useLayout() {
   }, [layoutConfig]);
 
   /**
-   * 특정 페이지의 컴포넌트 목록
+   * 현재 역할의 기본 레이아웃 설정
    */
-  const getPageComponents = (pageName: string): ComponentConfig[] => {
-    const pageConfig = layoutConfig.pages?.[pageName];
-    if (!pageConfig?.enabled) return [];
-    return getSortedComponents(pageConfig.components);
-  };
+  const defaultLayoutConfig = useMemo(() => {
+    return DEFAULT_LAYOUTS_BY_ROLE[layoutRole];
+  }, [layoutRole]);
 
   return {
     layoutConfig,
+    layoutRole,
     isComponentEnabled,
     dashboardWidgets,
-    bannerItems,
+    bannerConfig,
     menuItems,
-    getPageComponents,
+    defaultLayoutConfig,
   };
 }

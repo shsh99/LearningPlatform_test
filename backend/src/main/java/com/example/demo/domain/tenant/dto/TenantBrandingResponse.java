@@ -23,7 +23,11 @@ public record TenantBrandingResponse(
         String fontFamily,
         String fontUrl,
         String customCss,
-        String layoutConfig
+        String layoutConfig,
+        String layoutConfigTenantAdmin,
+        String layoutConfigOperator,
+        String layoutConfigUser,
+        String bannerConfig
 ) {
     public static TenantBrandingResponse from(TenantBranding branding) {
         if (branding == null) {
@@ -50,7 +54,11 @@ public record TenantBrandingResponse(
                 branding.getFontFamily(),
                 branding.getFontUrl(),
                 branding.getCustomCss(),
-                branding.getLayoutConfig()
+                branding.getLayoutConfig(),
+                branding.getLayoutConfigTenantAdmin(),
+                branding.getLayoutConfigOperator(),
+                branding.getLayoutConfigUser(),
+                branding.getBannerConfig()
         );
     }
 }

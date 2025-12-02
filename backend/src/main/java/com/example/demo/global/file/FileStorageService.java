@@ -37,6 +37,7 @@ public class FileStorageService {
             Files.createDirectories(this.uploadPath.resolve("logos"));
             Files.createDirectories(this.uploadPath.resolve("favicons"));
             Files.createDirectories(this.uploadPath.resolve("fonts"));
+            Files.createDirectories(this.uploadPath.resolve("banners"));
         } catch (IOException e) {
             throw new RuntimeException("파일 저장 디렉토리를 생성할 수 없습니다.", e);
         }
@@ -55,6 +56,11 @@ public class FileStorageService {
     public String uploadFont(MultipartFile file, Long tenantId) {
         validateFontFile(file);
         return uploadFile(file, "fonts", "font_" + tenantId);
+    }
+
+    public String uploadBanner(MultipartFile file, Long tenantId) {
+        validateImageFile(file);
+        return uploadFile(file, "banners", "banner_" + tenantId);
     }
 
     private String uploadFile(MultipartFile file, String subDir, String prefix) {

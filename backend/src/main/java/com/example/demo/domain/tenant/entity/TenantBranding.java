@@ -85,9 +85,23 @@ public class TenantBranding extends BaseTimeEntity {
     @Column(columnDefinition = "TEXT")
     private String customCss;
 
-    // 레이아웃 설정 (JSON 형태로 저장)
+    // 레이아웃 설정 (JSON 형태로 저장) - 기본/공통 설정
     @Column(columnDefinition = "TEXT")
     private String layoutConfig;
+
+    // 역할별 레이아웃 설정
+    @Column(columnDefinition = "TEXT")
+    private String layoutConfigTenantAdmin;
+
+    @Column(columnDefinition = "TEXT")
+    private String layoutConfigOperator;
+
+    @Column(columnDefinition = "TEXT")
+    private String layoutConfigUser;
+
+    // 테넌트 공통 배너 설정 (모든 사용자에게 적용, JSON)
+    @Column(columnDefinition = "TEXT")
+    private String bannerConfig;
 
     private TenantBranding(Tenant tenant) {
         this.tenant = tenant;
@@ -154,6 +168,30 @@ public class TenantBranding extends BaseTimeEntity {
 
     public void updateLayoutConfig(String layoutConfig) {
         this.layoutConfig = layoutConfig;
+    }
+
+    public void updateLayoutConfigTenantAdmin(String layoutConfigTenantAdmin) {
+        this.layoutConfigTenantAdmin = layoutConfigTenantAdmin;
+    }
+
+    public void updateLayoutConfigOperator(String layoutConfigOperator) {
+        this.layoutConfigOperator = layoutConfigOperator;
+    }
+
+    public void updateLayoutConfigUser(String layoutConfigUser) {
+        this.layoutConfigUser = layoutConfigUser;
+    }
+
+    public void updateAllLayoutConfigs(String layoutConfig, String layoutConfigTenantAdmin,
+                                        String layoutConfigOperator, String layoutConfigUser) {
+        this.layoutConfig = layoutConfig;
+        this.layoutConfigTenantAdmin = layoutConfigTenantAdmin;
+        this.layoutConfigOperator = layoutConfigOperator;
+        this.layoutConfigUser = layoutConfigUser;
+    }
+
+    public void updateBannerConfig(String bannerConfig) {
+        this.bannerConfig = bannerConfig;
     }
 
     public void updateAllColors(

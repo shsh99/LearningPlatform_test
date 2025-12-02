@@ -3,25 +3,32 @@ import { DraggableList } from '../common/DraggableList';
 import type {
   LayoutConfig,
   WidgetConfig,
-  BannerItemConfig,
   MenuItemConfig,
+  LayoutRole,
+  BannerConfig,
 } from '../../types/layout';
-import { parseLayoutConfig, layoutConfigToJson, DEFAULT_LAYOUT_CONFIG } from '../../types/layout';
+import {
+  parseLayoutConfigForRole,
+  layoutConfigToJson,
+  DEFAULT_LAYOUTS_BY_ROLE,
+  LAYOUT_ROLE_LABELS,
+} from '../../types/layout';
 
 interface LayoutConfigEditorProps {
   layoutConfigJson: string | null;
   onChange: (layoutConfigJson: string) => void;
+  role?: LayoutRole;
 }
 
-export function LayoutConfigEditor({ layoutConfigJson, onChange }: LayoutConfigEditorProps) {
+export function LayoutConfigEditor({ layoutConfigJson, onChange, role = 'operator' }: LayoutConfigEditorProps) {
   const [layoutConfig, setLayoutConfig] = useState<LayoutConfig>(() =>
-    parseLayoutConfig(layoutConfigJson)
+    parseLayoutConfigForRole(layoutConfigJson, role)
   );
   const [activeTab, setActiveTab] = useState<'dashboard' | 'banner' | 'menu'>('dashboard');
 
   useEffect(() => {
-    setLayoutConfig(parseLayoutConfig(layoutConfigJson));
-  }, [layoutConfigJson]);
+    setLayoutConfig(parseLayoutConfigForRole(layoutConfigJson, role));
+  }, [layoutConfigJson, role]);
 
   const handleConfigChange = (newConfig: LayoutConfig) => {
     setLayoutConfig(newConfig);
@@ -52,36 +59,13 @@ export function LayoutConfigEditor({ layoutConfigJson, onChange }: LayoutConfigE
     });
   };
 
-  // 배너 아이템 관리
-  const handleBannerReorder = (reorderedItems: BannerItemConfig[]) => {
+  // 배너 설정 관리 (단순화)
+  const handleBannerChange = (updates: Partial<BannerConfig>) => {
     handleConfigChange({
       ...layoutConfig,
       banner: {
         ...layoutConfig.banner!,
-        items: reorderedItems,
-      },
-    });
-  };
-
-  const handleBannerToggle = (id: string, enabled: boolean) => {
-    const updatedItems = layoutConfig.banner!.items.map((item) =>
-      item.id === id ? { ...item, enabled } : item
-    );
-    handleConfigChange({
-      ...layoutConfig,
-      banner: {
-        ...layoutConfig.banner!,
-        items: updatedItems,
-      },
-    });
-  };
-
-  const handleBannerEnabledToggle = (enabled: boolean) => {
-    handleConfigChange({
-      ...layoutConfig,
-      banner: {
-        ...layoutConfig.banner!,
-        enabled,
+        ...updates,
       },
     });
   };
@@ -110,7 +94,7 @@ export function LayoutConfigEditor({ layoutConfigJson, onChange }: LayoutConfigE
 
   // 초기화
   const handleReset = () => {
-    handleConfigChange(DEFAULT_LAYOUT_CONFIG);
+    handleConfigChange(DEFAULT_LAYOUTS_BY_ROLE[role]);
   };
 
   return (
@@ -195,27 +179,22 @@ export function LayoutConfigEditor({ layoutConfigJson, onChange }: LayoutConfigE
                   <input
                     type="checkbox"
                     checked={layoutConfig.banner?.enabled}
-                    onChange={(e) => handleBannerEnabledToggle(e.target.checked)}
+                    onChange={(e) => handleBannerChange({ enabled: e.target.checked })}
                     className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
                   />
                 </label>
               </div>
               {layoutConfig.banner?.enabled && (
-                <>
-                  <div className="mb-4">
+                <div className="space-y-4">
+                  {/* 배너 위치 */}
+                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       배너 위치
                     </label>
                     <select
                       value={layoutConfig.banner.position}
                       onChange={(e) =>
-                        handleConfigChange({
-                          ...layoutConfig,
-                          banner: {
-                            ...layoutConfig.banner!,
-                            position: e.target.value as 'top' | 'bottom',
-                          },
-                        })
+                        handleBannerChange({ position: e.target.value as 'top' | 'bottom' })
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
@@ -223,24 +202,79 @@ export function LayoutConfigEditor({ layoutConfigJson, onChange }: LayoutConfigE
                       <option value="bottom">하단</option>
                     </select>
                   </div>
-                  <DraggableList
-                    items={layoutConfig.banner?.items || []}
-                    onReorder={handleBannerReorder}
-                    onToggle={handleBannerToggle}
-                    renderItem={(item) => (
-                      <div className="flex flex-col">
-                        <span
-                          className={item.enabled ? 'text-gray-900' : 'text-gray-400'}
-                        >
-                          {item.label || item.id}
-                        </span>
-                        {item.type && (
-                          <span className="text-xs text-gray-500">타입: {item.type}</span>
-                        )}
+
+                  {/* 배너 제목 */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      배너 제목
+                    </label>
+                    <input
+                      type="text"
+                      value={layoutConfig.banner.title || ''}
+                      onChange={(e) => handleBannerChange({ title: e.target.value })}
+                      placeholder="배너 제목을 입력하세요"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+
+                  {/* 배너 내용 */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      배너 내용
+                    </label>
+                    <textarea
+                      value={layoutConfig.banner.content || ''}
+                      onChange={(e) => handleBannerChange({ content: e.target.value })}
+                      placeholder="배너 내용을 입력하세요"
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                    />
+                  </div>
+
+                  {/* 배너 색상 */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        배경색
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={layoutConfig.banner.backgroundColor || '#EFF6FF'}
+                          onChange={(e) => handleBannerChange({ backgroundColor: e.target.value })}
+                          className="w-10 h-10 rounded border border-gray-300 cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={layoutConfig.banner.backgroundColor || ''}
+                          onChange={(e) => handleBannerChange({ backgroundColor: e.target.value })}
+                          placeholder="#EFF6FF"
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                        />
                       </div>
-                    )}
-                  />
-                </>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        텍스트 색상
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={layoutConfig.banner.textColor || '#1E40AF'}
+                          onChange={(e) => handleBannerChange({ textColor: e.target.value })}
+                          className="w-10 h-10 rounded border border-gray-300 cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={layoutConfig.banner.textColor || ''}
+                          onChange={(e) => handleBannerChange({ textColor: e.target.value })}
+                          placeholder="#1E40AF"
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
           )}
@@ -290,9 +324,14 @@ export function LayoutConfigEditor({ layoutConfigJson, onChange }: LayoutConfigE
       {/* 오른쪽: 미리보기 영역 */}
       <div className="space-y-6">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">미리보기</h3>
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="text-lg font-semibold text-gray-900">미리보기</h3>
+            <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">
+              {LAYOUT_ROLE_LABELS[role]}
+            </span>
+          </div>
           <p className="text-sm text-gray-600">
-            설정한 레이아웃이 실제로 어떻게 보이는지 확인할 수 있습니다
+            {LAYOUT_ROLE_LABELS[role]}가 보게 될 레이아웃 미리보기입니다
           </p>
         </div>
 
@@ -300,28 +339,39 @@ export function LayoutConfigEditor({ layoutConfigJson, onChange }: LayoutConfigE
         {layoutConfig.banner?.enabled && layoutConfig.banner.position === 'top' && (
           <div className="bg-white border border-gray-200 rounded-lg p-4">
             <div className="text-xs font-semibold text-gray-500 uppercase mb-3">배너 (상단)</div>
-            <div className="space-y-2">
-              {layoutConfig.banner.items
-                .filter((item) => item.enabled)
-                .sort((a, b) => a.order - b.order)
-                .map((item) => (
+            <div
+              className="p-4 rounded-lg border"
+              style={{
+                backgroundColor: layoutConfig.banner.backgroundColor || '#EFF6FF',
+                borderColor: layoutConfig.banner.textColor || '#1E40AF',
+              }}
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                  style={{ backgroundColor: layoutConfig.banner.textColor || '#1E40AF' }}
+                >
+                  <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
+                    />
+                  </svg>
+                </div>
+                <div>
                   <div
-                    key={item.id}
-                    className="p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg"
+                    className="font-semibold"
+                    style={{ color: layoutConfig.banner.textColor || '#1E40AF' }}
                   >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-medium text-gray-900">{item.label || item.id}</div>
-                        {item.type && (
-                          <div className="text-xs text-gray-500 mt-1">타입: {item.type}</div>
-                        )}
-                      </div>
-                      <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                        #{item.order}
-                      </span>
-                    </div>
+                    {layoutConfig.banner.title || '공지사항'}
                   </div>
-                ))}
+                  <div className="text-sm text-gray-600 mt-1">
+                    {layoutConfig.banner.content || '배너 내용을 입력하세요'}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -389,28 +439,39 @@ export function LayoutConfigEditor({ layoutConfigJson, onChange }: LayoutConfigE
         {layoutConfig.banner?.enabled && layoutConfig.banner.position === 'bottom' && (
           <div className="bg-white border border-gray-200 rounded-lg p-4">
             <div className="text-xs font-semibold text-gray-500 uppercase mb-3">배너 (하단)</div>
-            <div className="space-y-2">
-              {layoutConfig.banner.items
-                .filter((item) => item.enabled)
-                .sort((a, b) => a.order - b.order)
-                .map((item) => (
+            <div
+              className="p-4 rounded-lg border"
+              style={{
+                backgroundColor: layoutConfig.banner.backgroundColor || '#EFF6FF',
+                borderColor: layoutConfig.banner.textColor || '#1E40AF',
+              }}
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                  style={{ backgroundColor: layoutConfig.banner.textColor || '#1E40AF' }}
+                >
+                  <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
+                    />
+                  </svg>
+                </div>
+                <div>
                   <div
-                    key={item.id}
-                    className="p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg"
+                    className="font-semibold"
+                    style={{ color: layoutConfig.banner.textColor || '#1E40AF' }}
                   >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-medium text-gray-900">{item.label || item.id}</div>
-                        {item.type && (
-                          <div className="text-xs text-gray-500 mt-1">타입: {item.type}</div>
-                        )}
-                      </div>
-                      <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                        #{item.order}
-                      </span>
-                    </div>
+                    {layoutConfig.banner.title || '공지사항'}
                   </div>
-                ))}
+                  <div className="text-sm text-gray-600 mt-1">
+                    {layoutConfig.banner.content || '배너 내용을 입력하세요'}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -426,12 +487,10 @@ export function LayoutConfigEditor({ layoutConfigJson, onChange }: LayoutConfigE
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-700">배너 아이템</span>
+              <span className="text-gray-700">배너</span>
               <span className="font-semibold text-green-700">
                 {layoutConfig.banner?.enabled
-                  ? `${layoutConfig.banner.items.filter((i) => i.enabled).length}개 (${
-                      layoutConfig.banner.position === 'top' ? '상단' : '하단'
-                    })`
+                  ? `활성 (${layoutConfig.banner.position === 'top' ? '상단' : '하단'})`
                   : '비활성'}
               </span>
             </div>

@@ -157,6 +157,18 @@ public class TenantServiceImpl implements TenantService {
         if (request.layoutConfig() != null) {
             branding.updateLayoutConfig(request.layoutConfig());
         }
+        if (request.layoutConfigTenantAdmin() != null) {
+            branding.updateLayoutConfigTenantAdmin(request.layoutConfigTenantAdmin());
+        }
+        if (request.layoutConfigOperator() != null) {
+            branding.updateLayoutConfigOperator(request.layoutConfigOperator());
+        }
+        if (request.layoutConfigUser() != null) {
+            branding.updateLayoutConfigUser(request.layoutConfigUser());
+        }
+        if (request.bannerConfig() != null) {
+            branding.updateBannerConfig(request.bannerConfig());
+        }
 
         // 색상 업데이트
         branding.updateAllColors(

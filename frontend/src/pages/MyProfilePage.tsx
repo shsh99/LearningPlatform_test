@@ -72,7 +72,7 @@ export const MyProfilePage = () => {
     try {
       const data = await getStudentInformationSystems();
       // 현재 유저의 기록만 필터링
-      const myRecords = user ? data.filter(record => record.userKey === user.id) : [];
+      const myRecords = user ? data.content.filter((record: StudentInformationSystem) => record.userKey === user.id) : [];
       setSisRecords(myRecords);
     } catch (err) {
       console.error('Failed to load SIS records:', err);
