@@ -38,6 +38,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/signup", "/api/auth/login", "/api/auth/refresh", "/api/auth/forgot-password", "/api/auth/reset-password").permitAll()
                 .requestMatchers("/api/auth/logout").authenticated()
                 .requestMatchers("/h2-console/**").permitAll()
+                // Swagger UI
+                .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/swagger-resources/**").permitAll()
                 // 파일 조회는 공개 (로고, 파비콘 등)
                 .requestMatchers(HttpMethod.GET, "/api/files/**").permitAll()
                 // 파일 업로드/삭제는 인증 필요
@@ -49,10 +51,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/public/tenant/**").permitAll()
                 // 테넌트 신청 생성 (비회원 가능)
                 .requestMatchers(HttpMethod.POST, "/api/tenant-applications").permitAll()
-                // 테넌트 브랜딩/라벨/설정 수정 (SUPER_ADMIN, TENANT_ADMIN, OPERATOR, ADMIN)
-                .requestMatchers("/api/tenants/{tenantId}/branding", "/api/tenants/{tenantId}/labels", "/api/tenants/{tenantId}/settings").hasAnyRole("SUPER_ADMIN", "TENANT_ADMIN", "OPERATOR", "ADMIN")
-                // 테넌트 관리 API (SUPER_ADMIN만)
-                .requestMatchers("/api/tenants/**").hasRole("SUPER_ADMIN")
+                // 테넌트 관리 API는 Controller의 @PreAuthorize로 권한 처리
+                .requestMatchers("/api/tenants/**").authenticated()
                 // 현재 테넌트 설정 조회 (인증된 사용자)
                 .requestMatchers("/api/tenant/**").authenticated()
                 .requestMatchers("/api/course-terms/**", "/api/instructor-assignments/**", "/api/student-information-system/**").authenticated()

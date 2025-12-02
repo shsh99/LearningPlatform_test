@@ -51,10 +51,26 @@ public class CourseServiceImpl implements CourseService {
     public CourseResponse findById(Long id) {
         log.debug("Finding course: id={}", id);
 
-        Course course = courseRepository.findById(id)
-            .orElseThrow(() -> new CourseNotFoundException(id));
-
+        Course course = findCourseWithTenantCheck(id);
         return CourseResponse.from(course);
+    }
+
+    /**
+     * ID로 강의 조회 시 테넌트 검증 수행
+     * SUPER_ADMIN(tenantId=null)은 모든 강의 접근 가능
+     */
+    private Course findCourseWithTenantCheck(Long id) {
+        Long tenantId = TenantContext.getTenantId();
+
+        if (tenantId == null) {
+            // SUPER_ADMIN: 모든 강의 접근 가능
+            return courseRepository.findById(id)
+                .orElseThrow(() -> new CourseNotFoundException(id));
+        }
+
+        // 일반 사용자: 본인 테넌트 강의만 접근 가능
+        return courseRepository.findByIdAndTenantId(id, tenantId)
+            .orElseThrow(() -> new CourseNotFoundException(id));
     }
 
     @Override
@@ -108,10 +124,8 @@ public class CourseServiceImpl implements CourseService {
     public CourseResponse update(Long id, UpdateCourseRequest request) {
         log.info("Updating course: id={}", id);
 
-        Course course = courseRepository.findById(id)
-            .orElseThrow(() -> new CourseNotFoundException(id));
+        Course course = findCourseWithTenantCheck(id);
 
-        // 수정 메서드 호출 (Entity에 추가 필요)
         course.update(
             request.title(),
             request.description(),
@@ -129,9 +143,7 @@ public class CourseServiceImpl implements CourseService {
     public void delete(Long id) {
         log.info("Deleting course: id={}", id);
 
-        Course course = courseRepository.findById(id)
-            .orElseThrow(() -> new CourseNotFoundException(id));
-
+        Course course = findCourseWithTenantCheck(id);
         courseRepository.delete(course);
 
         log.info("Course deleted: id={}", id);
@@ -143,9 +155,7 @@ public class CourseServiceImpl implements CourseService {
     public CourseResponse approve(Long id) {
         log.info("Approving course: id={}", id);
 
-        Course course = courseRepository.findById(id)
-            .orElseThrow(() -> new CourseNotFoundException(id));
-
+        Course course = findCourseWithTenantCheck(id);
         course.approve();
 
         log.info("Course approved: id={}", id);
@@ -158,9 +168,7 @@ public class CourseServiceImpl implements CourseService {
     public CourseResponse reject(Long id) {
         log.info("Rejecting course: id={}", id);
 
-        Course course = courseRepository.findById(id)
-            .orElseThrow(() -> new CourseNotFoundException(id));
-
+        Course course = findCourseWithTenantCheck(id);
         course.reject();
 
         log.info("Course rejected: id={}", id);

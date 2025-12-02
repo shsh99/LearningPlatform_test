@@ -19,6 +19,7 @@ import com.example.demo.domain.user.entity.UserRole;
 
 import java.util.Set;
 import com.example.demo.domain.timeschedule.entity.TermStatus;
+import com.example.demo.domain.timeschedule.exception.InvalidTermDateRangeException;
 import com.example.demo.domain.timeschedule.exception.TermNotFoundException;
 import com.example.demo.domain.timeschedule.repository.CourseTermRepository;
 import com.example.demo.global.exception.NotFoundException;
@@ -141,8 +142,7 @@ class CourseTermServiceTest {
 
         // when & then
         assertThatThrownBy(() -> courseTermService.createTerm(request))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("종료일은 시작일 이후여야 합니다");
+            .isInstanceOf(InvalidTermDateRangeException.class);
     }
 
     @Test
@@ -164,8 +164,7 @@ class CourseTermServiceTest {
 
         // when & then
         assertThatThrownBy(() -> courseTermService.createTerm(request))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("종료 시간은 시작 시간 이후여야 합니다");
+            .isInstanceOf(InvalidTermDateRangeException.class);
     }
 
     @Test
@@ -273,8 +272,7 @@ class CourseTermServiceTest {
 
         // when & then
         assertThatThrownBy(() -> courseTermService.updateTerm(1L, request))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("종료일은 시작일 이후여야 합니다");
+            .isInstanceOf(InvalidTermDateRangeException.class);
     }
 
     @Test

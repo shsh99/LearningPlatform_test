@@ -59,7 +59,16 @@ public class TenantFilter extends OncePerRequestFilter {
                 // SUPER_ADMIN은 모든 테넌트 접근 가능 (tenantId = null)
                 if (user.getRole() == UserRole.SUPER_ADMIN) {
                     TenantContext.setTenantId(null);
-                    log.debug("SUPER_ADMIN detected. Tenant filter NOT enabled. Full access granted.");
+
+                    // 크로스 테넌트 접근 감시 로깅
+                    String targetTenant = request.getHeader(TENANT_HEADER);
+                    if (targetTenant != null && !targetTenant.isBlank()) {
+                        log.warn("SUPER_ADMIN cross-tenant access: userId={}, email={}, targetTenant={}, uri={}, method={}",
+                                user.getId(), user.getEmail(), targetTenant,
+                                request.getRequestURI(), request.getMethod());
+                    } else {
+                        log.debug("SUPER_ADMIN detected. Tenant filter NOT enabled. Full access granted.");
+                    }
                 } else {
                     // 로그인한 사용자의 tenantId 사용
                     Long tenantId = user.getTenantId();

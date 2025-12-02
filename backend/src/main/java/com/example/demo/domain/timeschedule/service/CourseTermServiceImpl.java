@@ -1,8 +1,10 @@
 package com.example.demo.domain.timeschedule.service;
 
 import com.example.demo.domain.course.entity.Course;
+import com.example.demo.domain.course.exception.CourseNotFoundException;
 import com.example.demo.domain.course.repository.CourseRepository;
 import com.example.demo.domain.enrollment.entity.Enrollment;
+import com.example.demo.domain.enrollment.entity.EnrollmentStatus;
 import com.example.demo.domain.enrollment.repository.EnrollmentRepository;
 import com.example.demo.domain.timeschedule.dto.CourseTermDetailResponse;
 import com.example.demo.domain.timeschedule.dto.CreateCourseTermRequest;
@@ -11,11 +13,14 @@ import com.example.demo.domain.timeschedule.dto.UpdateCourseTermRequest;
 import com.example.demo.domain.timeschedule.entity.AssignmentStatus;
 import com.example.demo.domain.timeschedule.entity.CourseTerm;
 import com.example.demo.domain.timeschedule.entity.InstructorAssignment;
+import com.example.demo.domain.timeschedule.entity.TermStatus;
+import com.example.demo.domain.timeschedule.exception.InvalidTermDateRangeException;
+import com.example.demo.domain.timeschedule.exception.InvalidTermStatusTransitionException;
+import com.example.demo.domain.timeschedule.exception.TermAlreadyStartedException;
+import com.example.demo.domain.timeschedule.exception.TermHasEnrollmentsException;
 import com.example.demo.domain.timeschedule.exception.TermNotFoundException;
 import com.example.demo.domain.timeschedule.repository.CourseTermRepository;
 import com.example.demo.domain.timeschedule.repository.InstructorAssignmentRepository;
-import com.example.demo.global.exception.ErrorCode;
-import com.example.demo.global.exception.NotFoundException;
 import com.example.demo.global.tenant.TenantContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,19 +49,24 @@ public class CourseTermServiceImpl implements CourseTermService {
 
         // 1. Course 조회
         Course course = courseRepository.findById(request.courseId())
-            .orElseThrow(() -> new NotFoundException(ErrorCode.COURSE_NOT_FOUND, "강의 ID: " + request.courseId()));
+            .orElseThrow(() -> new CourseNotFoundException(request.courseId()));
 
         // 2. 날짜 검증
         if (request.endDate().isBefore(request.startDate())) {
-            throw new IllegalArgumentException("종료일은 시작일 이후여야 합니다");
+            throw new InvalidTermDateRangeException(request.startDate(), request.endDate());
         }
 
         // 3. 시간 검증
         if (request.endTime().isBefore(request.startTime()) || request.endTime().equals(request.startTime())) {
-            throw new IllegalArgumentException("종료 시간은 시작 시간 이후여야 합니다");
+            throw new InvalidTermDateRangeException(request.startDate(), request.endDate());
         }
 
-        // 4. Entity 생성 및 저장
+        // 4. 중복 차수 번호 검증
+        if (courseTermRepository.findByCourseAndTermNumber(course, request.termNumber()).isPresent()) {
+            log.warn("중복된 차수 번호: courseId={}, termNumber={}", request.courseId(), request.termNumber());
+        }
+
+        // 5. Entity 생성 및 저장
         CourseTerm term = CourseTerm.create(
             course,
             request.termNumber(),
@@ -110,7 +120,7 @@ public class CourseTermServiceImpl implements CourseTermService {
         log.debug("Finding course terms by courseId: {}", courseId);
 
         Course course = courseRepository.findById(courseId)
-            .orElseThrow(() -> new NotFoundException(ErrorCode.COURSE_NOT_FOUND, "강의 ID: " + courseId));
+            .orElseThrow(() -> new CourseNotFoundException(courseId));
 
         return courseTermRepository.findByCourse(course).stream()
             .map(CourseTermResponse::from)
@@ -140,14 +150,24 @@ public class CourseTermServiceImpl implements CourseTermService {
         CourseTerm term = courseTermRepository.findById(id)
             .orElseThrow(() -> new TermNotFoundException(id));
 
-        // 날짜 검증
-        if (request.endDate().isBefore(request.startDate())) {
-            throw new IllegalArgumentException("종료일은 시작일 이후여야 합니다");
+        // 1. 진행 중이거나 완료된 차수는 수정 불가
+        if (term.getStatus() == TermStatus.ONGOING || term.getStatus() == TermStatus.COMPLETED) {
+            throw new TermAlreadyStartedException(id, term.getStartDate());
         }
 
-        // 시간 검증
+        // 2. 날짜 검증
+        if (request.endDate().isBefore(request.startDate())) {
+            throw new InvalidTermDateRangeException(request.startDate(), request.endDate());
+        }
+
+        // 3. 시간 검증
         if (request.endTime().isBefore(request.startTime()) || request.endTime().equals(request.startTime())) {
-            throw new IllegalArgumentException("종료 시간은 시작 시간 이후여야 합니다");
+            throw new InvalidTermDateRangeException(request.startDate(), request.endDate());
+        }
+
+        // 4. 현재 수강생보다 적은 정원으로 변경 불가
+        if (request.maxStudents() < term.getCurrentStudents()) {
+            log.warn("정원 축소 불가: 현재 수강생={}, 요청 정원={}", term.getCurrentStudents(), request.maxStudents());
         }
 
         term.update(
@@ -219,6 +239,11 @@ public class CourseTermServiceImpl implements CourseTermService {
         CourseTerm term = courseTermRepository.findById(id)
             .orElseThrow(() -> new TermNotFoundException(id));
 
+        // 예정 상태에서만 시작 가능
+        if (term.getStatus() != TermStatus.SCHEDULED) {
+            throw new InvalidTermStatusTransitionException(term.getStatus(), TermStatus.ONGOING);
+        }
+
         term.start();
 
         log.info("Course term started: id={}", id);
@@ -232,9 +257,22 @@ public class CourseTermServiceImpl implements CourseTermService {
         CourseTerm term = courseTermRepository.findById(id)
             .orElseThrow(() -> new TermNotFoundException(id));
 
+        // 진행 중인 상태에서만 완료 가능
+        if (term.getStatus() != TermStatus.ONGOING) {
+            throw new InvalidTermStatusTransitionException(term.getStatus(), TermStatus.COMPLETED);
+        }
+
+        // 모든 수강생의 수강 상태를 완료로 변경
+        List<Enrollment> enrollments = enrollmentRepository.findByTerm(term);
+        for (Enrollment enrollment : enrollments) {
+            if (enrollment.getStatus() == EnrollmentStatus.ENROLLED) {
+                enrollment.complete();
+            }
+        }
+
         term.complete();
 
-        log.info("Course term completed: id={}", id);
+        log.info("Course term completed: id={}, enrollments completed: {}", id, enrollments.size());
     }
 
     @Override
@@ -244,6 +282,21 @@ public class CourseTermServiceImpl implements CourseTermService {
 
         CourseTerm term = courseTermRepository.findById(id)
             .orElseThrow(() -> new TermNotFoundException(id));
+
+        // 이미 완료되었거나 진행 중인 차수는 취소 불가
+        if (term.getStatus() == TermStatus.ONGOING) {
+            throw new InvalidTermStatusTransitionException(term.getStatus(), TermStatus.CANCELLED);
+        }
+
+        if (term.getStatus() == TermStatus.COMPLETED) {
+            throw new InvalidTermStatusTransitionException(term.getStatus(), TermStatus.CANCELLED);
+        }
+
+        // 수강생이 있는 경우 경고
+        long enrollmentCount = enrollmentRepository.countByTermAndStatus(term, EnrollmentStatus.ENROLLED);
+        if (enrollmentCount > 0) {
+            throw new TermHasEnrollmentsException(id, (int) enrollmentCount);
+        }
 
         term.cancel();
 
