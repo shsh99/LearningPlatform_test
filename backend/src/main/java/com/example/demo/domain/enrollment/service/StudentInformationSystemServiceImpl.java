@@ -5,6 +5,8 @@ import com.example.demo.domain.enrollment.dto.StudentInformationSystemResponse;
 import com.example.demo.domain.enrollment.repository.StudentInformationSystemRepository;
 import com.example.demo.global.tenant.TenantContext;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -63,6 +65,12 @@ public class StudentInformationSystemServiceImpl implements StudentInformationSy
         return sisRepository.findAllWithDetails().stream()
             .map(StudentInformationSystemDetailResponse::from)
             .collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<StudentInformationSystemDetailResponse> findAllWithDetailsPaged(Pageable pageable) {
+        return sisRepository.findAllWithDetailsPaged(pageable)
+            .map(StudentInformationSystemDetailResponse::from);
     }
 
     @Override

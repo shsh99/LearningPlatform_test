@@ -5,11 +5,18 @@ import { DirectEnrollmentModal } from '../../components/DirectEnrollmentModal';
 import { getStudentInformationSystems, cancelEnrollment, completeEnrollment } from '../../api/studentInformationSystem';
 import type { StudentInformationSystem } from '../../types/studentInformationSystem';
 
+const PAGE_SIZE = 10;
+
 export const StudentInformationSystemPage = () => {
   const [records, setRecords] = useState<StudentInformationSystem[]>([]);
   const [filteredRecords, setFilteredRecords] = useState<StudentInformationSystem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
 
   // Modal state
   const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null);
@@ -25,12 +32,20 @@ export const StudentInformationSystemPage = () => {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [progressRange, setProgressRange] = useState({ min: 0, max: 100 });
 
-  const loadRecords = async () => {
+  const loadRecords = async (page: number = 0) => {
     try {
       setIsLoading(true);
-      const data = await getStudentInformationSystems();
-      setRecords(data);
-      setFilteredRecords(data);
+      const response = await getStudentInformationSystems({
+        page,
+        size: PAGE_SIZE,
+        sort: 'id',
+        direction: 'desc'
+      });
+      setRecords(response.content);
+      setFilteredRecords(response.content);
+      setTotalPages(response.totalPages);
+      setTotalElements(response.totalElements);
+      setCurrentPage(response.number);
       setError(null);
     } catch (err) {
       console.error('Failed to load SIS records:', err);
@@ -41,10 +56,10 @@ export const StudentInformationSystemPage = () => {
   };
 
   useEffect(() => {
-    loadRecords();
+    loadRecords(0);
   }, []);
 
-  // Apply filters whenever filter states change
+  // Apply filters whenever filter states change (클라이언트 사이드 필터링 - 현재 페이지 내)
   useEffect(() => {
     applyFilters();
   }, [records, searchQuery, dateRange, statusFilter, progressRange]);
@@ -90,6 +105,12 @@ export const StudentInformationSystemPage = () => {
     setFilteredRecords(filtered);
   };
 
+  const handlePageChange = (page: number) => {
+    if (page >= 0 && page < totalPages) {
+      loadRecords(page);
+    }
+  };
+
   const handleCancelEnrollment = async (id: number, studentName: string) => {
     const confirmed = window.confirm(`${studentName} 학생의 수강을 취소하시겠습니까?`);
     if (!confirmed) return;
@@ -97,7 +118,7 @@ export const StudentInformationSystemPage = () => {
     try {
       await cancelEnrollment(id);
       alert('수강이 취소되었습니다.');
-      loadRecords();
+      loadRecords(currentPage);
     } catch (error) {
       console.error('Failed to cancel enrollment:', error);
       alert('수강 취소에 실패했습니다.');
@@ -111,7 +132,7 @@ export const StudentInformationSystemPage = () => {
     try {
       await completeEnrollment(id);
       alert('수료 처리되었습니다.');
-      loadRecords();
+      loadRecords(currentPage);
     } catch (error) {
       console.error('Failed to complete enrollment:', error);
       alert('수료 처리에 실패했습니다.');
@@ -168,6 +189,27 @@ export const StudentInformationSystemPage = () => {
       default:
         return 'bg-gray-400';
     }
+  };
+
+  // 페이지 번호 배열 생성 (최대 5개)
+  const getPageNumbers = () => {
+    const pages: number[] = [];
+    let startPage = Math.max(0, currentPage - 2);
+    let endPage = Math.min(totalPages - 1, currentPage + 2);
+
+    // 시작 페이지 조정
+    if (endPage - startPage < 4) {
+      if (startPage === 0) {
+        endPage = Math.min(4, totalPages - 1);
+      } else if (endPage === totalPages - 1) {
+        startPage = Math.max(0, totalPages - 5);
+      }
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    return pages;
   };
 
   if (isLoading && records.length === 0) {
@@ -318,8 +360,14 @@ export const StudentInformationSystemPage = () => {
           </div>
 
           {/* Results Summary */}
-          <div className="mb-4 text-sm text-gray-600">
-            전체 {records.length}건 중 {filteredRecords.length}건 표시
+          <div className="mb-4 flex items-center justify-between">
+            <span className="text-sm text-gray-600">
+              전체 {totalElements}건 중 {filteredRecords.length}건 표시
+              {totalPages > 1 && ` (페이지 ${currentPage + 1} / ${totalPages})`}
+            </span>
+            {isLoading && (
+              <span className="text-sm text-blue-600">로딩 중...</span>
+            )}
           </div>
 
           {/* Table */}
@@ -361,6 +409,8 @@ export const StudentInformationSystemPage = () => {
                       const isCancelled = record.enrollmentStatus === 'CANCELLED';
                       const progressPercentage = getProgressPercentage(record);
                       const progressBarColor = getProgressBarColor(record.enrollmentStatus);
+                      // 전체 순번 계산 (현재 페이지 * 페이지 크기 + 인덱스 + 1)
+                      const rowNumber = currentPage * PAGE_SIZE + index + 1;
 
                       return (
                         <tr
@@ -368,7 +418,7 @@ export const StudentInformationSystemPage = () => {
                           className={`hover:bg-gray-50 ${isCancelled ? 'opacity-60 bg-gray-50' : ''}`}
                         >
                           <td className={`px-6 py-4 whitespace-nowrap text-sm ${isCancelled ? 'text-gray-500' : 'text-gray-900'}`}>
-                            {index + 1}
+                            {rowNumber}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
                             <div className={`font-medium ${isCancelled ? 'text-gray-500' : 'text-gray-900'}`}>
@@ -399,56 +449,131 @@ export const StudentInformationSystemPage = () => {
                               </span>
                             </div>
                           </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          {getStatusBadge(record.enrollmentStatus)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {new Date(record.enrollmentCreatedAt).toLocaleDateString('ko-KR', {
-                            year: '2-digit',
-                            month: '2-digit',
-                            day: '2-digit'
-                          }).replace(/\. /g, '.').replace(/\.$/, '')}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <div className="flex gap-2">
-                            <button
-                              className="px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-xs font-medium"
-                              onClick={() => openDetailModal(record.id)}
-                            >
-                              상세
-                            </button>
-                            {record.enrollmentStatus === 'ENROLLED' && (
-                              <>
-                                <button
-                                  className="px-3 py-1.5 bg-red-600 text-white rounded hover:bg-red-700 transition-colors text-xs font-medium"
-                                  onClick={() => handleCancelEnrollment(record.id, record.studentName)}
-                                >
-                                  취소
-                                </button>
-                                <button
-                                  className="px-3 py-1.5 bg-green-600 text-white rounded hover:bg-green-700 transition-colors text-xs font-medium"
-                                  onClick={() => handleCompleteEnrollment(record.id, record.studentName)}
-                                >
-                                  수료
-                                </button>
-                              </>
-                            )}
-                            {record.enrollmentStatus === 'COMPLETED' && (
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            {getStatusBadge(record.enrollmentStatus)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {new Date(record.enrollmentCreatedAt).toLocaleDateString('ko-KR', {
+                              year: '2-digit',
+                              month: '2-digit',
+                              day: '2-digit'
+                            }).replace(/\. /g, '.').replace(/\.$/, '')}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <div className="flex gap-2">
                               <button
-                                className="px-3 py-1.5 bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors text-xs font-medium"
-                                onClick={() => alert(`${record.studentName}의 수료증\n\n이 기능은 추후 구현 예정입니다.`)}
+                                className="px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-xs font-medium"
+                                onClick={() => openDetailModal(record.id)}
                               >
-                                증명서
+                                상세
                               </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
+                              {record.enrollmentStatus === 'ENROLLED' && (
+                                <>
+                                  <button
+                                    className="px-3 py-1.5 bg-red-600 text-white rounded hover:bg-red-700 transition-colors text-xs font-medium"
+                                    onClick={() => handleCancelEnrollment(record.id, record.studentName)}
+                                  >
+                                    취소
+                                  </button>
+                                  <button
+                                    className="px-3 py-1.5 bg-green-600 text-white rounded hover:bg-green-700 transition-colors text-xs font-medium"
+                                    onClick={() => handleCompleteEnrollment(record.id, record.studentName)}
+                                  >
+                                    수료
+                                  </button>
+                                </>
+                              )}
+                              {record.enrollmentStatus === 'COMPLETED' && (
+                                <button
+                                  className="px-3 py-1.5 bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors text-xs font-medium"
+                                  onClick={() => alert(`${record.studentName}의 수료증\n\n이 기능은 추후 구현 예정입니다.`)}
+                                >
+                                  증명서
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
                       );
                     })}
                   </tbody>
                 </table>
               </div>
+
+              {/* Pagination - 항상 표시 */}
+              {totalPages >= 1 && (
+                <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-gray-500">
+                      총 {totalElements}건
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {/* 처음 */}
+                      <button
+                        onClick={() => handlePageChange(0)}
+                        disabled={currentPage === 0}
+                        className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                          currentPage === 0
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+                        }`}
+                      >
+                        «
+                      </button>
+                      {/* 이전 */}
+                      <button
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 0}
+                        className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                          currentPage === 0
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+                        }`}
+                      >
+                        ‹
+                      </button>
+                      {/* 페이지 번호 */}
+                      {getPageNumbers().map((pageNum) => (
+                        <button
+                          key={pageNum}
+                          onClick={() => handlePageChange(pageNum)}
+                          className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                            pageNum === currentPage
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+                          }`}
+                        >
+                          {pageNum + 1}
+                        </button>
+                      ))}
+                      {/* 다음 */}
+                      <button
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages - 1}
+                        className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                          currentPage === totalPages - 1
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+                        }`}
+                      >
+                        ›
+                      </button>
+                      {/* 마지막 */}
+                      <button
+                        onClick={() => handlePageChange(totalPages - 1)}
+                        disabled={currentPage === totalPages - 1}
+                        className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                          currentPage === totalPages - 1
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+                        }`}
+                      >
+                        »
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -468,7 +593,7 @@ export const StudentInformationSystemPage = () => {
         isOpen={isEnrollModalOpen}
         onClose={() => setIsEnrollModalOpen(false)}
         onSuccess={() => {
-          loadRecords();
+          loadRecords(currentPage);
           alert('수강 신청이 완료되었습니다.');
         }}
       />
