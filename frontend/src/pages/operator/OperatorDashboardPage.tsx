@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Navbar } from '../../components/Navbar';
-import { getAllCourseApplications, getCourseApplicationsByStatus, approveCourseApplication, rejectCourseApplication } from '../../api/courseApplication';
 import { getAllUsers } from '../../api/user';
 import { getDashboardStats } from '../../api/dashboard';
 import {
@@ -11,17 +10,17 @@ import {
   InstructorStatsTable,
   UserRoleChart,
 } from '../../components/dashboard';
+import { RequestManagementTab } from '../../components/operator/RequestManagementTab';
 import { useTenant } from '../../contexts/TenantContext';
 import { useLayoutConfigForRole } from '../../hooks/useLayoutConfig';
-import type { CourseApplication, ApplicationStatus } from '../../types/courseApplication';
 import type { User } from '../../api/user';
 import type { DashboardStats } from '../../types/dashboard';
 
-type TabType = 'dashboard' | 'applications' | 'users';
+type TabType = 'dashboard' | 'requests' | 'users';
 
 export const OperatorDashboardPage = () => {
   const { branding, labels } = useTenant();
-  const { dashboardWidgets, isWidgetEnabled } = useLayoutConfigForRole('operator');
+  const { dashboardWidgets } = useLayoutConfigForRole('operator');
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
 
   // 대시보드 통계 state
@@ -52,12 +51,6 @@ export const OperatorDashboardPage = () => {
     };
   }, [dashboardStats]);
 
-  // 신청 관련 state
-  const [applications, setApplications] = useState<CourseApplication[]>([]);
-  const [loadingApplications, setLoadingApplications] = useState(true);
-  const [filterStatus, setFilterStatus] = useState<ApplicationStatus | 'ALL'>('ALL');
-  const [rejectingId, setRejectingId] = useState<number | null>(null);
-  const [rejectionReason, setRejectionReason] = useState('');
 
   // 유저 관련 state
   const [users, setUsers] = useState<User[]>([]);
@@ -69,10 +62,8 @@ export const OperatorDashboardPage = () => {
   useEffect(() => {
     if (activeTab === 'dashboard') {
       fetchDashboardStats();
-    } else if (activeTab === 'applications') {
-      fetchApplications();
     }
-  }, [filterStatus, activeTab]);
+  }, [activeTab]);
 
   const fetchDashboardStats = async () => {
     try {
@@ -88,22 +79,6 @@ export const OperatorDashboardPage = () => {
     }
   };
 
-  const fetchApplications = async () => {
-    try {
-      setLoadingApplications(true);
-      setError(null);
-      const data = filterStatus === 'ALL'
-        ? await getAllCourseApplications()
-        : await getCourseApplicationsByStatus(filterStatus);
-      setApplications(data);
-    } catch (err) {
-      setError('강의 개설 신청 목록을 불러오는데 실패했습니다.');
-      console.error('Error fetching applications:', err);
-    } finally {
-      setLoadingApplications(false);
-    }
-  };
-
   const fetchUsers = async () => {
     try {
       setLoadingUsers(true);
@@ -116,53 +91,6 @@ export const OperatorDashboardPage = () => {
     } finally {
       setLoadingUsers(false);
     }
-  };
-
-  const handleApprove = async (id: number) => {
-    try {
-      await approveCourseApplication(id);
-      alert('강의 개설 신청이 승인되었습니다.');
-      fetchApplications();
-    } catch (err) {
-      alert('승인에 실패했습니다.');
-      console.error('Error approving application:', err);
-    }
-  };
-
-  const handleReject = async (id: number) => {
-    if (!rejectionReason.trim()) {
-      alert('거부 사유를 입력해주세요.');
-      return;
-    }
-
-    try {
-      await rejectCourseApplication(id, { reason: rejectionReason });
-      alert('강의 개설 신청이 거부되었습니다.');
-      setRejectingId(null);
-      setRejectionReason('');
-      fetchApplications();
-    } catch (err) {
-      alert('거부에 실패했습니다.');
-      console.error('Error rejecting application:', err);
-    }
-  };
-
-  const getStatusBadge = (status: ApplicationStatus) => {
-    const badges = {
-      PENDING: 'bg-amber-50 text-amber-700 border-amber-200',
-      APPROVED: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-      REJECTED: 'bg-rose-50 text-rose-700 border-rose-200',
-    };
-    const labels = {
-      PENDING: '검토 대기',
-      APPROVED: '승인 완료',
-      REJECTED: '반려',
-    };
-    return (
-      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${badges[status]}`}>
-        {labels[status]}
-      </span>
-    );
   };
 
   const getRoleBadge = (role: string) => {
@@ -181,13 +109,6 @@ export const OperatorDashboardPage = () => {
   const filteredUsers = searchEmail
     ? users.filter(user => user.email.toLowerCase().includes(searchEmail.toLowerCase()))
     : users;
-
-  const stats = {
-    total: applications.length,
-    pending: applications.filter(a => a.status === 'PENDING').length,
-    approved: applications.filter(a => a.status === 'APPROVED').length,
-    rejected: applications.filter(a => a.status === 'REJECTED').length,
-  };
 
   return (
     <>
@@ -211,67 +132,6 @@ export const OperatorDashboardPage = () => {
         </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* 통계 카드 (신청 탭일 때만 표시) */}
-        {activeTab === 'applications' && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">전체 신청</p>
-                  <p className="text-3xl font-bold text-gray-900 mt-2">{stats.total}</p>
-                </div>
-                <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">검토 대기</p>
-                  <p className="text-3xl font-bold text-amber-600 mt-2">{stats.pending}</p>
-                </div>
-                <div className="w-12 h-12 bg-amber-50 rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">승인 완료</p>
-                  <p className="text-3xl font-bold text-emerald-600 mt-2">{stats.approved}</p>
-                </div>
-                <div className="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">반려</p>
-                  <p className="text-3xl font-bold text-rose-600 mt-2">{stats.rejected}</p>
-                </div>
-                <div className="w-12 h-12 bg-rose-50 rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* 탭 네비게이션 */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
           <div className="border-b border-gray-200">
@@ -293,19 +153,19 @@ export const OperatorDashboardPage = () => {
                 </div>
               </button>
               <button
-                onClick={() => setActiveTab('applications')}
+                onClick={() => setActiveTab('requests')}
                 className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === 'applications'
+                  activeTab === 'requests'
                     ? 'border-transparent text-gray-900'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
-                style={activeTab === 'applications' ? { borderColor: branding.primaryColor, color: branding.primaryColor } : {}}
+                style={activeTab === 'requests' ? { borderColor: branding.primaryColor, color: branding.primaryColor } : {}}
               >
                 <div className="flex items-center gap-2">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                   </svg>
-                  {labels.courseLabel} 개설 {labels.applicationLabel}
+                  요청 관리
                 </div>
               </button>
               <button
@@ -381,187 +241,8 @@ export const OperatorDashboardPage = () => {
               </>
             )}
 
-            {/* 강의 개설 신청 관리 탭 */}
-            {activeTab === 'applications' && (
-              <>
-                {/* 필터 */}
-                <div className="mb-6 flex flex-wrap gap-2">
-                  <button
-                    onClick={() => setFilterStatus('ALL')}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      filterStatus === 'ALL'
-                        ? 'bg-blue-600 text-white shadow-sm'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    전체 보기
-                  </button>
-                  <button
-                    onClick={() => setFilterStatus('PENDING')}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      filterStatus === 'PENDING'
-                        ? 'bg-amber-600 text-white shadow-sm'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    검토 대기
-                  </button>
-                  <button
-                    onClick={() => setFilterStatus('APPROVED')}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      filterStatus === 'APPROVED'
-                        ? 'bg-emerald-600 text-white shadow-sm'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    승인 완료
-                  </button>
-                  <button
-                    onClick={() => setFilterStatus('REJECTED')}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      filterStatus === 'REJECTED'
-                        ? 'bg-rose-600 text-white shadow-sm'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    반려
-                  </button>
-                </div>
-
-                {loadingApplications ? (
-                  <div className="text-center py-16">
-                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                    <p className="mt-4 text-gray-600">로딩 중...</p>
-                  </div>
-                ) : applications.length === 0 ? (
-                  <div className="text-center py-16">
-                    <svg className="mx-auto h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <p className="mt-4 text-gray-500 text-lg font-medium">표시할 신청이 없습니다</p>
-                    <p className="mt-1 text-gray-400 text-sm">신청이 접수되면 여기에 표시됩니다</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {applications.map((application) => (
-                      <div key={application.id} className="bg-gray-50 rounded-xl p-6 border border-gray-200 hover:border-blue-300 transition-colors">
-                        <div className="flex justify-between items-start mb-4">
-                          <div className="flex-1">
-                            <div className="flex items-start gap-3">
-                              <div className="flex-1">
-                                <h3 className="text-lg font-bold text-gray-900 mb-2">
-                                  {application.title}
-                                </h3>
-                                <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
-                                  <div className="flex items-center gap-1.5">
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                    </svg>
-                                    <span>{application.applicantName}</span>
-                                  </div>
-                                  <span className="text-gray-400">•</span>
-                                  <div className="flex items-center gap-1.5">
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                    </svg>
-                                    <span>{application.applicantEmail}</span>
-                                  </div>
-                                  <span className="text-gray-400">•</span>
-                                  <div className="flex items-center gap-1.5">
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                    <span>{new Date(application.createdAt).toLocaleDateString('ko-KR')}</span>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="ml-4">
-                            {getStatusBadge(application.status)}
-                          </div>
-                        </div>
-
-                        <div className="bg-white rounded-lg p-4 mb-4">
-                          <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
-                            {application.description}
-                          </p>
-                        </div>
-
-                        {application.rejectionReason && (
-                          <div className="mb-4 p-4 bg-rose-50 border border-rose-200 rounded-lg">
-                            <div className="flex items-start gap-2">
-                              <svg className="w-5 h-5 text-rose-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                              </svg>
-                              <div className="flex-1">
-                                <p className="text-sm font-semibold text-rose-800 mb-1">반려 사유</p>
-                                <p className="text-sm text-rose-700">{application.rejectionReason}</p>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-
-                        {application.status === 'PENDING' && (
-                          <div className="flex gap-3">
-                            <button
-                              onClick={() => handleApprove(application.id)}
-                              className="flex-1 sm:flex-none px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2"
-                            >
-                              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                              </svg>
-                              승인
-                            </button>
-                            <button
-                              onClick={() => setRejectingId(application.id)}
-                              className="flex-1 sm:flex-none px-6 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-medium rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2"
-                            >
-                              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                              </svg>
-                              반려
-                            </button>
-                          </div>
-                        )}
-
-                        {rejectingId === application.id && (
-                          <div className="mt-4 p-4 bg-white border-2 border-rose-200 rounded-lg">
-                            <label className="block text-sm font-semibold text-gray-900 mb-2">
-                              반려 사유를 입력해주세요
-                            </label>
-                            <textarea
-                              value={rejectionReason}
-                              onChange={(e) => setRejectionReason(e.target.value)}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent resize-none"
-                              rows={3}
-                              placeholder="반려 사유를 구체적으로 작성해주세요..."
-                            />
-                            <div className="flex gap-2 mt-3">
-                              <button
-                                onClick={() => handleReject(application.id)}
-                                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-medium rounded-lg transition-colors text-sm"
-                              >
-                                반려 확정
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setRejectingId(null);
-                                  setRejectionReason('');
-                                }}
-                                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors text-sm"
-                              >
-                                취소
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
+            {/* 요청 관리 탭 */}
+            {activeTab === 'requests' && <RequestManagementTab />}
 
             {/* 유저 조회 탭 */}
             {activeTab === 'users' && (
