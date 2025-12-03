@@ -52,7 +52,7 @@ public class CourseTermRequestController {
      * GET /api/course-term-requests/change/my
      */
     @GetMapping("/change/my")
-    @PreAuthorize("hasRole('INSTRUCTOR')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<ChangeRequestResponse>> getMyChangeRequests(Principal principal) {
         Long requesterId = Long.parseLong(principal.getName());
         log.info("GET /api/course-term-requests/change/my - requesterId: {}", requesterId);
@@ -100,7 +100,7 @@ public class CourseTermRequestController {
      * GET /api/course-term-requests/delete/my
      */
     @GetMapping("/delete/my")
-    @PreAuthorize("hasRole('INSTRUCTOR')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<DeleteRequestResponse>> getMyDeleteRequests(Principal principal) {
         Long requesterId = Long.parseLong(principal.getName());
         log.info("GET /api/course-term-requests/delete/my - requesterId: {}", requesterId);

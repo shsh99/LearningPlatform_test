@@ -18,9 +18,16 @@ import java.util.Optional;
 public interface CourseTermChangeRequestRepository extends JpaRepository<CourseTermChangeRequest, Long> {
 
     /**
-     * 요청자별 변경 요청 목록 조회
+     * 요청자별 변경 요청 목록 조회 (Fetch Join)
      */
-    List<CourseTermChangeRequest> findByRequester(User requester);
+    @Query("SELECT r FROM CourseTermChangeRequest r " +
+           "JOIN FETCH r.courseTerm ct " +
+           "JOIN FETCH ct.course c " +
+           "JOIN FETCH r.requester " +
+           "LEFT JOIN FETCH r.processedBy " +
+           "WHERE r.requester = :requester " +
+           "ORDER BY r.createdAt DESC")
+    List<CourseTermChangeRequest> findByRequester(@Param("requester") User requester);
 
     /**
      * 요청자별 변경 요청 목록 페이징 조회

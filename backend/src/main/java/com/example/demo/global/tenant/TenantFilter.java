@@ -72,12 +72,16 @@ public class TenantFilter extends OncePerRequestFilter {
                 } else {
                     // 로그인한 사용자의 tenantId 사용
                     Long tenantId = user.getTenantId();
+                    log.info("User tenant info: userId={}, email={}, role={}, tenantId={}",
+                        user.getId(), user.getEmail(), user.getRole(), tenantId);
                     TenantContext.setTenantId(tenantId);
 
                     if (tenantId != null) {
                         Session session = entityManager.unwrap(Session.class);
                         session.enableFilter("tenantFilter").setParameter("tenantId", tenantId);
                         log.debug("User tenant resolved and filter enabled: userId={}, tenantId={}", user.getId(), tenantId);
+                    } else {
+                        log.warn("User has no tenantId: userId={}, email={}", user.getId(), user.getEmail());
                     }
                 }
             } else {

@@ -52,14 +52,21 @@ public class AuthService {
 
         String encodedPassword = passwordEncoder.encode(request.password());
 
-        // tenantCode가 제공된 경우 테넌트 조회 및 연결
-        Long tenantId = null;
-        String tenantCode = null;
+        // tenantCode가 제공된 경우 해당 테넌트 조회, 없으면 기본 테넌트(default) 사용
+        Long tenantId;
+        String tenantCode;
         if (request.tenantCode() != null && !request.tenantCode().isBlank()) {
             Tenant tenant = tenantRepository.findByCode(request.tenantCode())
                 .orElseThrow(() -> new BusinessException(ErrorCode.TENANT_NOT_FOUND));
             tenantId = tenant.getId();
             tenantCode = tenant.getCode();
+        } else {
+            // 기본 테넌트 사용
+            Tenant defaultTenant = tenantRepository.findByCode("default")
+                .orElseThrow(() -> new BusinessException(ErrorCode.TENANT_NOT_FOUND, "기본 테넌트를 찾을 수 없습니다."));
+            tenantId = defaultTenant.getId();
+            tenantCode = defaultTenant.getCode();
+            log.info("No tenantCode provided, using default tenant: id={}", tenantId);
         }
 
         User user = User.create(request.email(), encodedPassword, request.name(), tenantId);

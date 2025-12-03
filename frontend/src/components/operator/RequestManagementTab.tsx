@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getAllCourseApplications, getCourseApplicationsByStatus, approveCourseApplication, rejectCourseApplication } from '../../api/courseApplication';
 import { useTermRequests, useApproveChangeRequest, useRejectChangeRequest, useApproveDeleteRequest, useRejectDeleteRequest } from '../../hooks/useCourseTermRequests';
 import type { CourseApplication, ApplicationStatus } from '../../types/courseApplication';
@@ -54,27 +54,28 @@ export const RequestManagementTab = () => {
   const approveDeleteMutation = useApproveDeleteRequest();
   const rejectDeleteMutation = useRejectDeleteRequest();
 
+  // 개설 요청 로드 함수
+  const fetchCreateApplications = useCallback(async () => {
+    try {
+      setLoadingCreate(true);
+      const applicationStatus = statusFilter === 'ALL' ? undefined : statusFilter as ApplicationStatus;
+      const data = applicationStatus
+        ? await getCourseApplicationsByStatus(applicationStatus)
+        : await getAllCourseApplications();
+      setCreateApplications(data);
+    } catch (err) {
+      console.error('Error fetching applications:', err);
+    } finally {
+      setLoadingCreate(false);
+    }
+  }, [statusFilter]);
+
   // 개설 요청 로드
   useEffect(() => {
-    const fetchCreateApplications = async () => {
-      try {
-        setLoadingCreate(true);
-        const applicationStatus = statusFilter === 'ALL' ? undefined : statusFilter as ApplicationStatus;
-        const data = applicationStatus
-          ? await getCourseApplicationsByStatus(applicationStatus)
-          : await getAllCourseApplications();
-        setCreateApplications(data);
-      } catch (err) {
-        console.error('Error fetching applications:', err);
-      } finally {
-        setLoadingCreate(false);
-      }
-    };
-
     if (typeFilter === 'ALL' || typeFilter === 'CREATE') {
       fetchCreateApplications();
     }
-  }, [statusFilter, typeFilter]);
+  }, [statusFilter, typeFilter, fetchCreateApplications]);
 
   // 통합 요청 목록 생성
   const unifiedRequests: UnifiedRequest[] = [];

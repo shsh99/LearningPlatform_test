@@ -1,15 +1,19 @@
 import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   useMyChangeRequests,
   useMyDeleteRequests,
   useCancelChangeRequest,
   useCancelDeleteRequest,
 } from '../../hooks/useCourseTermRequests';
-import type { ChangeRequestResponse, DeleteRequestResponse, TermRequestStatus } from '../../types/courseTermRequest';
+import { getMyCourseApplications, cancelCourseApplication } from '../../api/courseApplication';
+import type { ChangeRequestResponse, DeleteRequestResponse } from '../../types/courseTermRequest';
+import type { CourseApplication } from '../../types/courseApplication';
 
 type RequestFilter = 'all' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
+type RequestTypeFilter = 'all' | 'CREATE' | 'CHANGE' | 'DELETE';
 
-const STATUS_LABELS: Record<TermRequestStatus, { label: string; className: string }> = {
+const STATUS_LABELS: Record<string, { label: string; className: string }> = {
   PENDING: { label: '대기중', className: 'bg-yellow-100 text-yellow-800' },
   APPROVED: { label: '승인됨', className: 'bg-green-100 text-green-800' },
   REJECTED: { label: '반려됨', className: 'bg-red-100 text-red-800' },
@@ -27,35 +31,60 @@ const DAY_OF_WEEK_LABELS: Record<string, string> = {
 };
 
 export const MyRequestsTab = () => {
-  const [filter, setFilter] = useState<RequestFilter>('all');
+  const queryClient = useQueryClient();
+  const [statusFilter, setStatusFilter] = useState<RequestFilter>('all');
+  const [typeFilter, setTypeFilter] = useState<RequestTypeFilter>('all');
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
+  // 강의 개설 요청 조회
+  const { data: createRequests, isLoading: createLoading } = useQuery({
+    queryKey: ['myCourseApplications'],
+    queryFn: getMyCourseApplications,
+  });
+
+  // 변경/삭제 요청 조회
   const { data: changeRequests, isLoading: changeLoading } = useMyChangeRequests();
   const { data: deleteRequests, isLoading: deleteLoading } = useMyDeleteRequests();
 
+  // 취소 mutations
+  const cancelCreateMutation = useMutation({
+    mutationFn: cancelCourseApplication,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['myCourseApplications'] });
+    },
+  });
   const cancelChangeMutation = useCancelChangeRequest();
   const cancelDeleteMutation = useCancelDeleteRequest();
 
-  const isLoading = changeLoading || deleteLoading;
+  const isLoading = createLoading || changeLoading || deleteLoading;
 
-  // 모든 요청을 통합하고 정렬
-  const allRequests: Array<
-    | { type: 'change'; data: ChangeRequestResponse }
-    | { type: 'delete'; data: DeleteRequestResponse }
-  > = [
-    ...(changeRequests?.map((r) => ({ type: 'change' as const, data: r })) || []),
-    ...(deleteRequests?.map((r) => ({ type: 'delete' as const, data: r })) || []),
+  // 모든 요청을 통합
+  type UnifiedRequest =
+    | { type: 'CREATE'; data: CourseApplication }
+    | { type: 'CHANGE'; data: ChangeRequestResponse }
+    | { type: 'DELETE'; data: DeleteRequestResponse };
+
+  const allRequests: UnifiedRequest[] = [
+    ...(createRequests?.map((r) => ({ type: 'CREATE' as const, data: r })) || []),
+    ...(changeRequests?.map((r) => ({ type: 'CHANGE' as const, data: r })) || []),
+    ...(deleteRequests?.map((r) => ({ type: 'DELETE' as const, data: r })) || []),
   ].sort((a, b) => new Date(b.data.createdAt).getTime() - new Date(a.data.createdAt).getTime());
 
   // 필터링
-  const filteredRequests = filter === 'all'
-    ? allRequests
-    : allRequests.filter((r) => r.data.status === filter);
+  const filteredRequests = allRequests.filter((r) => {
+    // 유형 필터
+    if (typeFilter !== 'all' && r.type !== typeFilter) return false;
+    // 상태 필터
+    if (statusFilter !== 'all' && r.data.status !== statusFilter) return false;
+    return true;
+  });
 
-  const handleCancelRequest = async (type: 'change' | 'delete', id: number) => {
+  const handleCancelRequest = async (type: 'CREATE' | 'CHANGE' | 'DELETE', id: number) => {
     if (!confirm('요청을 취소하시겠습니까?')) return;
 
-    if (type === 'change') {
+    if (type === 'CREATE') {
+      await cancelCreateMutation.mutateAsync(id);
+    } else if (type === 'CHANGE') {
       await cancelChangeMutation.mutateAsync(id);
     } else {
       await cancelDeleteMutation.mutateAsync(id);
@@ -64,6 +93,16 @@ export const MyRequestsTab = () => {
 
   const toggleExpand = (id: string) => {
     setExpandedId(expandedId === id ? null : id);
+  };
+
+  const getTypeBadge = (type: 'CREATE' | 'CHANGE' | 'DELETE') => {
+    const config = {
+      CREATE: { label: '개설', className: 'bg-blue-100 text-blue-800' },
+      CHANGE: { label: '변경', className: 'bg-amber-100 text-amber-800' },
+      DELETE: { label: '삭제', className: 'bg-red-100 text-red-800' },
+    };
+    const { label, className } = config[type];
+    return <span className={`px-2 py-1 text-xs font-medium rounded ${className}`}>{label}</span>;
   };
 
   if (isLoading) {
@@ -77,26 +116,52 @@ export const MyRequestsTab = () => {
   return (
     <div className="space-y-4">
       {/* 필터 버튼 */}
-      <div className="flex gap-2 flex-wrap">
-        {[
-          { value: 'all', label: '전체' },
-          { value: 'PENDING', label: '대기중' },
-          { value: 'APPROVED', label: '승인됨' },
-          { value: 'REJECTED', label: '반려됨' },
-          { value: 'CANCELLED', label: '취소됨' },
-        ].map((option) => (
-          <button
-            key={option.value}
-            onClick={() => setFilter(option.value as RequestFilter)}
-            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-              filter === option.value
-                ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-            }`}
-          >
-            {option.label}
-          </button>
-        ))}
+      <div className="flex flex-wrap gap-4">
+        {/* 유형 필터 */}
+        <div className="flex gap-2">
+          <span className="text-sm font-medium text-gray-500 self-center mr-1">유형:</span>
+          {[
+            { value: 'all', label: '전체' },
+            { value: 'CREATE', label: '개설' },
+            { value: 'CHANGE', label: '변경' },
+            { value: 'DELETE', label: '삭제' },
+          ].map((option) => (
+            <button
+              key={option.value}
+              onClick={() => setTypeFilter(option.value as RequestTypeFilter)}
+              className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                typeFilter === option.value
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+
+        {/* 상태 필터 */}
+        <div className="flex gap-2">
+          <span className="text-sm font-medium text-gray-500 self-center mr-1">상태:</span>
+          {[
+            { value: 'all', label: '전체' },
+            { value: 'PENDING', label: '대기중' },
+            { value: 'APPROVED', label: '승인됨' },
+            { value: 'REJECTED', label: '반려됨' },
+          ].map((option) => (
+            <button
+              key={option.value}
+              onClick={() => setStatusFilter(option.value as RequestFilter)}
+              className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                statusFilter === option.value
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* 요청 목록 */}
@@ -110,9 +175,7 @@ export const MyRequestsTab = () => {
           {filteredRequests.map((request) => {
             const uniqueId = `${request.type}-${request.data.id}`;
             const isExpanded = expandedId === uniqueId;
-            const statusInfo = STATUS_LABELS[request.data.status];
-            const isChangeRequest = request.type === 'change';
-            const changeData = isChangeRequest ? (request.data as ChangeRequestResponse) : null;
+            const statusInfo = STATUS_LABELS[request.data.status] || STATUS_LABELS.PENDING;
 
             return (
               <div
@@ -125,18 +188,13 @@ export const MyRequestsTab = () => {
                   className="px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-gray-50"
                 >
                   <div className="flex items-center gap-3">
-                    <span
-                      className={`px-2 py-1 text-xs font-medium rounded ${
-                        isChangeRequest
-                          ? 'bg-blue-100 text-blue-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}
-                    >
-                      {isChangeRequest ? '변경' : '삭제'}
-                    </span>
+                    {getTypeBadge(request.type)}
                     <div>
                       <div className="font-medium text-gray-900">
-                        {request.data.courseName} - {request.data.termNumber}차수
+                        {request.type === 'CREATE'
+                          ? (request.data as CourseApplication).title
+                          : `${(request.data as ChangeRequestResponse | DeleteRequestResponse).courseName} - ${(request.data as ChangeRequestResponse | DeleteRequestResponse).termNumber}차수`
+                        }
                       </div>
                       <div className="text-sm text-gray-500">
                         {new Date(request.data.createdAt).toLocaleDateString('ko-KR')}
@@ -170,56 +228,90 @@ export const MyRequestsTab = () => {
                 {/* 확장된 상세 정보 */}
                 {isExpanded && (
                   <div className="px-4 py-3 border-t border-gray-200 bg-gray-50">
-                    {isChangeRequest && changeData && (
+                    {/* 개설 요청 상세 */}
+                    {request.type === 'CREATE' && (
+                      <div className="space-y-3">
+                        <div>
+                          <div className="text-sm font-medium text-gray-500 mb-1">설명</div>
+                          <p className="text-sm text-gray-700">
+                            {(request.data as CourseApplication).description || '설명 없음'}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 변경 요청 상세 */}
+                    {request.type === 'CHANGE' && (
                       <div className="space-y-3">
                         {/* 변경 전후 비교 */}
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <div className="text-sm font-medium text-gray-500 mb-2">변경 전</div>
                             <div className="text-sm space-y-1">
-                              <p>기간: {changeData.beforeStartDate} ~ {changeData.beforeEndDate}</p>
+                              <p>기간: {(request.data as ChangeRequestResponse).beforeStartDate} ~ {(request.data as ChangeRequestResponse).beforeEndDate}</p>
                               <p>
-                                요일: {changeData.beforeDaysOfWeek.map(d => DAY_OF_WEEK_LABELS[d]).join(', ')}
+                                요일: {(request.data as ChangeRequestResponse).beforeDaysOfWeek.map(d => DAY_OF_WEEK_LABELS[d]).join(', ')}
                               </p>
-                              <p>시간: {changeData.beforeStartTime} ~ {changeData.beforeEndTime}</p>
-                              <p>정원: {changeData.beforeMaxStudents}명</p>
+                              <p>시간: {(request.data as ChangeRequestResponse).beforeStartTime} ~ {(request.data as ChangeRequestResponse).beforeEndTime}</p>
+                              <p>정원: {(request.data as ChangeRequestResponse).beforeMaxStudents}명</p>
                             </div>
                           </div>
                           <div>
                             <div className="text-sm font-medium text-gray-500 mb-2">변경 후</div>
                             <div className="text-sm space-y-1">
-                              <p>기간: {changeData.afterStartDate} ~ {changeData.afterEndDate}</p>
+                              <p>기간: {(request.data as ChangeRequestResponse).afterStartDate} ~ {(request.data as ChangeRequestResponse).afterEndDate}</p>
                               <p>
-                                요일: {changeData.afterDaysOfWeek.map(d => DAY_OF_WEEK_LABELS[d]).join(', ')}
+                                요일: {(request.data as ChangeRequestResponse).afterDaysOfWeek.map(d => DAY_OF_WEEK_LABELS[d]).join(', ')}
                               </p>
-                              <p>시간: {changeData.afterStartTime} ~ {changeData.afterEndTime}</p>
-                              <p>정원: {changeData.afterMaxStudents}명</p>
+                              <p>시간: {(request.data as ChangeRequestResponse).afterStartTime} ~ {(request.data as ChangeRequestResponse).afterEndTime}</p>
+                              <p>정원: {(request.data as ChangeRequestResponse).afterMaxStudents}명</p>
                             </div>
                           </div>
                         </div>
                       </div>
                     )}
 
-                    {/* 사유 */}
-                    {request.data.reason && (
+                    {/* 삭제 요청 상세 */}
+                    {request.type === 'DELETE' && (
+                      <div className="space-y-3">
+                        <div className="p-3 bg-red-50 rounded-md">
+                          <div className="text-sm font-medium text-red-700 mb-1">삭제 요청</div>
+                          <p className="text-sm text-red-600">
+                            이 차수의 삭제를 요청했습니다.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 사유 (변경/삭제 요청) */}
+                    {(request.type === 'CHANGE' || request.type === 'DELETE') && (request.data as ChangeRequestResponse | DeleteRequestResponse).reason && (
                       <div className="mt-3">
                         <div className="text-sm font-medium text-gray-500 mb-1">요청 사유</div>
-                        <p className="text-sm text-gray-700">{request.data.reason}</p>
+                        <p className="text-sm text-gray-700">{(request.data as ChangeRequestResponse | DeleteRequestResponse).reason}</p>
                       </div>
                     )}
 
                     {/* 반려 사유 */}
-                    {request.data.status === 'REJECTED' && request.data.rejectionReason && (
+                    {request.data.status === 'REJECTED' && (
                       <div className="mt-3 p-3 bg-red-50 rounded-md">
                         <div className="text-sm font-medium text-red-700 mb-1">반려 사유</div>
-                        <p className="text-sm text-red-600">{request.data.rejectionReason}</p>
+                        <p className="text-sm text-red-600">
+                          {request.type === 'CREATE'
+                            ? (request.data as CourseApplication).rejectionReason
+                            : (request.data as ChangeRequestResponse | DeleteRequestResponse).rejectionReason
+                          }
+                        </p>
                       </div>
                     )}
 
-                    {/* 처리자 정보 */}
-                    {request.data.processedByName && (
+                    {/* 처리자 정보 (변경/삭제 요청) */}
+                    {(request.type === 'CHANGE' || request.type === 'DELETE') &&
+                      (request.data as ChangeRequestResponse | DeleteRequestResponse).processedByName && (
                       <div className="mt-3 text-sm text-gray-500">
-                        처리자: {request.data.processedByName} ({request.data.processedAt && new Date(request.data.processedAt).toLocaleDateString('ko-KR')})
+                        처리자: {(request.data as ChangeRequestResponse | DeleteRequestResponse).processedByName} (
+                        {(request.data as ChangeRequestResponse | DeleteRequestResponse).processedAt &&
+                          new Date((request.data as ChangeRequestResponse | DeleteRequestResponse).processedAt!).toLocaleDateString('ko-KR')}
+                        )
                       </div>
                     )}
 
@@ -231,7 +323,11 @@ export const MyRequestsTab = () => {
                             e.stopPropagation();
                             handleCancelRequest(request.type, request.data.id);
                           }}
-                          disabled={cancelChangeMutation.isPending || cancelDeleteMutation.isPending}
+                          disabled={
+                            cancelCreateMutation.isPending ||
+                            cancelChangeMutation.isPending ||
+                            cancelDeleteMutation.isPending
+                          }
                           className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
                         >
                           요청 취소
