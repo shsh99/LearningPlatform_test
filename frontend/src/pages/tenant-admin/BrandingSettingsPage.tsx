@@ -882,6 +882,9 @@ export const BrandingSettingsPage = () => {
     }
   }, [isAuthenticated, user, navigate]);
 
+  // 탭 상태
+  const [activeTab, setActiveTab] = useState<'branding' | 'labels' | 'banner' | 'footer'>('branding');
+
   // 브랜딩 상태
   const [brandingForm, setBrandingForm] = useState<UpdateTenantBrandingRequest>({});
   // 라벨 상태
@@ -1221,9 +1224,57 @@ export const BrandingSettingsPage = () => {
             </div>
           )}
 
+          {/* 탭 네비게이션 */}
+          <div className="mb-6 border-b border-gray-200">
+            <nav className="flex gap-4">
+              <button
+                onClick={() => setActiveTab('branding')}
+                className={`px-4 py-3 font-medium border-b-2 transition-colors ${
+                  activeTab === 'branding'
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+                }`}
+              >
+                브랜딩 & 색상
+              </button>
+              <button
+                onClick={() => setActiveTab('labels')}
+                className={`px-4 py-3 font-medium border-b-2 transition-colors ${
+                  activeTab === 'labels'
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+                }`}
+              >
+                라벨 설정
+              </button>
+              <button
+                onClick={() => setActiveTab('banner')}
+                className={`px-4 py-3 font-medium border-b-2 transition-colors ${
+                  activeTab === 'banner'
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+                }`}
+              >
+                배너 관리
+              </button>
+              <button
+                onClick={() => setActiveTab('footer')}
+                className={`px-4 py-3 font-medium border-b-2 transition-colors ${
+                  activeTab === 'footer'
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+                }`}
+              >
+                푸터 관리
+              </button>
+            </nav>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* 왼쪽: 설정 폼 */}
             <div className="space-y-6">
+              {activeTab === 'branding' && (
+                <>
               {/* 로고 및 기본 설정 */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">로고 및 기본 설정</h2>
@@ -1413,9 +1464,12 @@ export const BrandingSettingsPage = () => {
                   {isSaving ? '저장 중...' : '브랜딩 저장'}
                 </button>
               </div>
+                </>
+              )}
 
-              {/* 라벨 설정 */}
-              <h2 className="text-2xl font-bold text-gray-900 mt-8">라벨 설정</h2>
+              {/* 라벨 설정 탭 */}
+              {activeTab === 'labels' && (
+                <>
 
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">플랫폼 이름 및 메뉴 라벨</h2>
@@ -1490,12 +1544,12 @@ export const BrandingSettingsPage = () => {
                   {isSaving ? '저장 중...' : '라벨 저장'}
                 </button>
               </div>
+                </>
+              )}
 
-              {/* 배너 설정 */}
-              <h2 className="text-2xl font-bold text-gray-900 mt-8">배너 설정</h2>
-              <p className="text-sm text-gray-500 mb-4">
-                모든 사용자에게 표시되는 공통 배너를 설정합니다. 상단/하단에 이미지 슬라이더 형태로 배너를 표시할 수 있습니다.
-              </p>
+              {/* 배너 설정 탭 */}
+              {activeTab === 'banner' && (
+                <>
 
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                 <BannerEditor config={bannerConfig} onChange={setBannerConfig} />
@@ -1517,12 +1571,12 @@ export const BrandingSettingsPage = () => {
                   {isSaving ? '저장 중...' : '배너 저장'}
                 </button>
               </div>
+                </>
+              )}
 
-              {/* 푸터 설정 */}
-              <h2 className="text-2xl font-bold text-gray-900 mt-8">푸터 설정</h2>
-              <p className="text-sm text-gray-500 mb-4">
-                모든 페이지 하단에 표시되는 푸터를 설정합니다. 회사 정보, 링크, 소셜 미디어 등을 관리할 수 있습니다.
-              </p>
+              {/* 푸터 설정 탭 */}
+              {activeTab === 'footer' && (
+                <>
 
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                 <FooterEditor config={footerConfig} onChange={setFooterConfig} />
@@ -1544,9 +1598,12 @@ export const BrandingSettingsPage = () => {
                   {isSaving ? '저장 중...' : '푸터 저장'}
                 </button>
               </div>
+                </>
+              )}
             </div>
 
-            {/* 오른쪽: 테마 선택 + 미리보기 (sticky) */}
+            {/* 오른쪽: 테마 선택 + 미리보기 (sticky) - 브랜딩 탭에서만 표시 */}
+            {activeTab === 'branding' && (
             <div className="lg:sticky lg:top-8 lg:self-start space-y-6">
               {/* 테마 프리셋 선택 */}
               <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4">
@@ -1610,6 +1667,7 @@ export const BrandingSettingsPage = () => {
               {/* 미리보기 */}
               <Preview branding={brandingForm} labels={labelsForm} />
             </div>
+            )}
           </div>
         </div>
       </div>
