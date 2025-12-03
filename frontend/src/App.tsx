@@ -17,7 +17,6 @@ import { MyCourseApplicationsPage } from './pages/courseapplication/MyCourseAppl
 import { MyEnrollmentsPage } from './pages/enrollment/MyEnrollmentsPage';
 import { MyProfilePage } from './pages/MyProfilePage';
 import { OperatorDashboardPage } from './pages/operator/OperatorDashboardPage';
-import { OperatorTermsPage } from './pages/operator/OperatorTermsPage';
 import { OperatorAssignmentsPage } from './pages/operator/OperatorAssignmentsPage';
 import { CourseTermManagementPage } from './pages/timeschedule/CourseTermManagementPage';
 import { CourseTermDetailPage } from './pages/timeschedule/CourseTermDetailPage';
@@ -58,7 +57,7 @@ function TenantRoutes() {
                 <Route path="my-enrollments" element={<MyEnrollmentsPage />} />
                 <Route path="my-profile" element={<MyProfilePage />} />
                 <Route path="operator/dashboard" element={<OperatorDashboardPage />} />
-                <Route path="operator/terms" element={<OperatorTermsPage />} />
+                <Route path="operator/terms" element={<CourseTermManagementPage />} />
                 <Route path="operator/assignments" element={<OperatorAssignmentsPage />} />
                 <Route path="ts/terms" element={<CourseTermManagementPage />} />
                 <Route path="ts/terms/:id" element={<CourseTermDetailPage />} />
