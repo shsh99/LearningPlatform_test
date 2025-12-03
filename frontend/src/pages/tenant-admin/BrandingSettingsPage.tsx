@@ -204,7 +204,7 @@ const ColorInput = ({ label, value, onChange }: ColorInputProps) => (
     <div className="flex items-center gap-2">
       <input
         type="color"
-        value={value}
+        value={value || '#000000'}
         onChange={(e) => onChange(e.target.value)}
         className="w-10 h-10 rounded cursor-pointer border border-gray-300"
       />
@@ -949,8 +949,8 @@ export const BrandingSettingsPage = () => {
       try {
         const parsed = JSON.parse(branding.bannerConfig);
         setBannerConfig({
-          top: parsed.top ? { ...DEFAULT_TENANT_BANNER.top, ...parsed.top } : DEFAULT_TENANT_BANNER.top,
-          bottom: parsed.bottom ? { ...DEFAULT_TENANT_BANNER.bottom, ...parsed.bottom } : DEFAULT_TENANT_BANNER.bottom,
+          top: parsed.top ? { ...DEFAULT_TENANT_BANNER.top, ...parsed.top, slides: parsed.top.slides || [] } : DEFAULT_TENANT_BANNER.top,
+          bottom: parsed.bottom ? { ...DEFAULT_TENANT_BANNER.bottom, ...parsed.bottom, slides: parsed.bottom.slides || [] } : DEFAULT_TENANT_BANNER.bottom,
         });
       } catch (e) {
         console.error('Failed to parse banner config:', e);
@@ -1687,21 +1687,27 @@ export const BrandingSettingsPage = () => {
                   <p className="text-sm text-gray-500 mb-4">설정한 배너가 어떻게 표시되는지 확인하세요</p>
                   <div className="space-y-4">
                     {/* 상단 배너 미리보기 */}
-                    {bannerConfig.top.enabled && (
+                    {bannerConfig.top?.enabled && bannerConfig.top.slides && bannerConfig.top.slides.length > 0 && (
                       <div>
                         <p className="text-xs font-medium text-gray-600 mb-2">상단 배너</p>
-                        <BannerCarousel slides={bannerConfig.top.slides} autoPlay={bannerConfig.top.autoPlay} interval={bannerConfig.top.interval} />
+                        <BannerCarousel config={bannerConfig.top} position="top" />
                       </div>
                     )}
                     {/* 하단 배너 미리보기 */}
-                    {bannerConfig.bottom.enabled && (
+                    {bannerConfig.bottom?.enabled && bannerConfig.bottom.slides && bannerConfig.bottom.slides.length > 0 && (
                       <div>
                         <p className="text-xs font-medium text-gray-600 mb-2">하단 배너</p>
-                        <BannerCarousel slides={bannerConfig.bottom.slides} autoPlay={bannerConfig.bottom.autoPlay} interval={bannerConfig.bottom.interval} />
+                        <BannerCarousel config={bannerConfig.bottom} position="bottom" />
                       </div>
                     )}
-                    {!bannerConfig.top.enabled && !bannerConfig.bottom.enabled && (
-                      <p className="text-sm text-gray-400 text-center py-8">활성화된 배너가 없습니다</p>
+                    {/* 배너가 없거나 슬라이드가 없을 때 메시지 표시 */}
+                    {(!bannerConfig.top?.enabled || !bannerConfig.top.slides || bannerConfig.top.slides.length === 0) &&
+                     (!bannerConfig.bottom?.enabled || !bannerConfig.bottom.slides || bannerConfig.bottom.slides.length === 0) && (
+                      <p className="text-sm text-gray-400 text-center py-8">
+                        {!bannerConfig.top?.enabled && !bannerConfig.bottom?.enabled
+                          ? '활성화된 배너가 없습니다'
+                          : '배너 슬라이드를 추가해주세요'}
+                      </p>
                     )}
                   </div>
                 </div>
