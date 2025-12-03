@@ -69,6 +69,20 @@ public class CourseTerm extends BaseTimeEntity implements TenantAware {
     @Column(nullable = false, length = 20)
     private TermStatus status;
 
+    // ===== 모집 관리 필드 (Phase 1) =====
+    @Column(name = "enrollment_start_date")
+    private LocalDate enrollmentStartDate;
+
+    @Column(name = "enrollment_end_date")
+    private LocalDate enrollmentEndDate;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "enrollment_type", length = 20)
+    private EnrollmentType enrollmentType;
+
+    @Column(name = "min_students")
+    private Integer minStudents;
+
     // ===== 정적 팩토리 메서드 =====
     public static CourseTerm create(
             Course course,
@@ -79,6 +93,24 @@ public class CourseTerm extends BaseTimeEntity implements TenantAware {
             LocalTime startTime,
             LocalTime endTime,
             Integer maxStudents
+    ) {
+        return create(course, termNumber, startDate, endDate, daysOfWeek, startTime, endTime,
+                maxStudents, null, null, null, null);
+    }
+
+    public static CourseTerm create(
+            Course course,
+            Integer termNumber,
+            LocalDate startDate,
+            LocalDate endDate,
+            Set<DayOfWeek> daysOfWeek,
+            LocalTime startTime,
+            LocalTime endTime,
+            Integer maxStudents,
+            LocalDate enrollmentStartDate,
+            LocalDate enrollmentEndDate,
+            EnrollmentType enrollmentType,
+            Integer minStudents
     ) {
         CourseTerm term = new CourseTerm();
         term.course = course;
@@ -92,6 +124,11 @@ public class CourseTerm extends BaseTimeEntity implements TenantAware {
         term.maxStudents = maxStudents;
         term.currentStudents = 0;
         term.status = TermStatus.SCHEDULED;
+        // 모집 관리 필드 (기본값 처리)
+        term.enrollmentStartDate = enrollmentStartDate != null ? enrollmentStartDate : startDate;
+        term.enrollmentEndDate = enrollmentEndDate != null ? enrollmentEndDate : startDate.minusDays(1);
+        term.enrollmentType = enrollmentType != null ? enrollmentType : EnrollmentType.FIRST_COME;
+        term.minStudents = minStudents != null ? minStudents : 0;
         return term;
     }
 
@@ -111,8 +148,28 @@ public class CourseTerm extends BaseTimeEntity implements TenantAware {
     }
 
     public boolean isEnrollable() {
+        LocalDate today = LocalDate.now();
+        boolean withinEnrollmentPeriod = (enrollmentStartDate == null || !today.isBefore(enrollmentStartDate))
+                && (enrollmentEndDate == null || !today.isAfter(enrollmentEndDate));
         return this.status == TermStatus.SCHEDULED
-            && this.currentStudents < this.maxStudents;
+            && this.currentStudents < this.maxStudents
+            && withinEnrollmentPeriod;
+    }
+
+    /**
+     * 모집 기간 내인지 확인
+     */
+    public boolean isWithinEnrollmentPeriod() {
+        LocalDate today = LocalDate.now();
+        return (enrollmentStartDate == null || !today.isBefore(enrollmentStartDate))
+                && (enrollmentEndDate == null || !today.isAfter(enrollmentEndDate));
+    }
+
+    /**
+     * 최소 인원 충족 여부 확인
+     */
+    public boolean hasMinimumStudents() {
+        return minStudents == null || minStudents == 0 || currentStudents >= minStudents;
     }
 
     public void start() {
@@ -144,6 +201,21 @@ public class CourseTerm extends BaseTimeEntity implements TenantAware {
             LocalTime endTime,
             Integer maxStudents
     ) {
+        update(startDate, endDate, daysOfWeek, startTime, endTime, maxStudents, null, null, null, null);
+    }
+
+    public void update(
+            LocalDate startDate,
+            LocalDate endDate,
+            Set<DayOfWeek> daysOfWeek,
+            LocalTime startTime,
+            LocalTime endTime,
+            Integer maxStudents,
+            LocalDate enrollmentStartDate,
+            LocalDate enrollmentEndDate,
+            EnrollmentType enrollmentType,
+            Integer minStudents
+    ) {
         if (this.status != TermStatus.SCHEDULED) {
             throw new IllegalStateException("Only scheduled terms can be updated");
         }
@@ -153,5 +225,18 @@ public class CourseTerm extends BaseTimeEntity implements TenantAware {
         this.startTime = startTime;
         this.endTime = endTime;
         this.maxStudents = maxStudents;
+        // 모집 관리 필드 업데이트 (null이 아닌 경우에만)
+        if (enrollmentStartDate != null) {
+            this.enrollmentStartDate = enrollmentStartDate;
+        }
+        if (enrollmentEndDate != null) {
+            this.enrollmentEndDate = enrollmentEndDate;
+        }
+        if (enrollmentType != null) {
+            this.enrollmentType = enrollmentType;
+        }
+        if (minStudents != null) {
+            this.minStudents = minStudents;
+        }
     }
 }

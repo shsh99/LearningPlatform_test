@@ -66,7 +66,24 @@ public class CourseTermServiceImpl implements CourseTermService {
             log.warn("중복된 차수 번호: courseId={}, termNumber={}", request.courseId(), request.termNumber());
         }
 
-        // 5. Entity 생성 및 저장
+        // 5. 모집 기간 검증 (설정된 경우)
+        if (request.enrollmentStartDate() != null && request.enrollmentEndDate() != null) {
+            if (request.enrollmentEndDate().isBefore(request.enrollmentStartDate())) {
+                throw new InvalidTermDateRangeException(request.enrollmentStartDate(), request.enrollmentEndDate());
+            }
+            // 모집 종료일은 운영 시작일 이전이어야 함
+            if (!request.enrollmentEndDate().isBefore(request.startDate())) {
+                log.warn("모집 종료일은 운영 시작일 이전이어야 합니다: enrollmentEndDate={}, startDate={}",
+                    request.enrollmentEndDate(), request.startDate());
+            }
+        }
+
+        // 6. 최소 인원 검증
+        if (request.minStudents() != null && request.minStudents() > request.maxStudents()) {
+            throw new IllegalArgumentException("최소 인원은 최대 정원보다 클 수 없습니다");
+        }
+
+        // 7. Entity 생성 및 저장
         CourseTerm term = CourseTerm.create(
             course,
             request.termNumber(),
@@ -75,7 +92,11 @@ public class CourseTermServiceImpl implements CourseTermService {
             request.daysOfWeek(),
             request.startTime(),
             request.endTime(),
-            request.maxStudents()
+            request.maxStudents(),
+            request.enrollmentStartDate(),
+            request.enrollmentEndDate(),
+            request.enrollmentType(),
+            request.minStudents()
         );
 
         CourseTerm savedTerm = courseTermRepository.save(term);
@@ -170,13 +191,29 @@ public class CourseTermServiceImpl implements CourseTermService {
             log.warn("정원 축소 불가: 현재 수강생={}, 요청 정원={}", term.getCurrentStudents(), request.maxStudents());
         }
 
+        // 5. 모집 기간 검증 (설정된 경우)
+        if (request.enrollmentStartDate() != null && request.enrollmentEndDate() != null) {
+            if (request.enrollmentEndDate().isBefore(request.enrollmentStartDate())) {
+                throw new InvalidTermDateRangeException(request.enrollmentStartDate(), request.enrollmentEndDate());
+            }
+        }
+
+        // 6. 최소 인원 검증
+        if (request.minStudents() != null && request.minStudents() > request.maxStudents()) {
+            throw new IllegalArgumentException("최소 인원은 최대 정원보다 클 수 없습니다");
+        }
+
         term.update(
             request.startDate(),
             request.endDate(),
             request.daysOfWeek(),
             request.startTime(),
             request.endTime(),
-            request.maxStudents()
+            request.maxStudents(),
+            request.enrollmentStartDate(),
+            request.enrollmentEndDate(),
+            request.enrollmentType(),
+            request.minStudents()
         );
 
         log.info("Course term updated: id={}", id);
