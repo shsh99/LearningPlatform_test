@@ -26,6 +26,8 @@ public record CourseTermResponse(
     // ===== 모집 관리 필드 =====
     LocalDate enrollmentStartDate,
     LocalDate enrollmentEndDate,
+    LocalTime enrollmentStartTime,
+    LocalTime enrollmentEndTime,
     EnrollmentType enrollmentType,
     Integer minStudents,
     LocalDateTime createdAt,
@@ -47,6 +49,8 @@ public record CourseTermResponse(
             term.getStatus(),
             term.getEnrollmentStartDate(),
             term.getEnrollmentEndDate(),
+            term.getEnrollmentStartTime(),
+            term.getEnrollmentEndTime(),
             term.getEnrollmentType(),
             term.getMinStudents(),
             term.getCreatedAt(),

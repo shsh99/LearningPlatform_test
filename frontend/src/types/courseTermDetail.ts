@@ -13,6 +13,13 @@ export interface CourseTermDetail {
   maxStudents: number;
   currentStudents: number;
   status: 'SCHEDULED' | 'ONGOING' | 'COMPLETED' | 'CANCELLED';
+  // 모집 관리 필드
+  enrollmentStartDate: string | null;
+  enrollmentEndDate: string | null;
+  enrollmentStartTime: string | null;
+  enrollmentEndTime: string | null;
+  enrollmentType: 'FIRST_COME' | 'SELECTION' | null;
+  minStudents: number | null;
   instructor: AssignedInstructor | null;
   enrolledStudents: EnrolledStudent[];
   createdAt: string;

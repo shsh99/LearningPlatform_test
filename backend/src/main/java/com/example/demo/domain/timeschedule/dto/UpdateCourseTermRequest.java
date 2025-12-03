@@ -35,6 +35,10 @@ public record UpdateCourseTermRequest(
 
     LocalDate enrollmentEndDate,
 
+    LocalTime enrollmentStartTime,
+
+    LocalTime enrollmentEndTime,
+
     EnrollmentType enrollmentType,
 
     @Min(value = 0, message = "최소 학생 수는 0명 이상이어야 합니다")

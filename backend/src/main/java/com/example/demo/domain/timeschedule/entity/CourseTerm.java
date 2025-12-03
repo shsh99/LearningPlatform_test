@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Filter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -76,6 +77,12 @@ public class CourseTerm extends BaseTimeEntity implements TenantAware {
     @Column(name = "enrollment_end_date")
     private LocalDate enrollmentEndDate;
 
+    @Column(name = "enrollment_start_time")
+    private LocalTime enrollmentStartTime;
+
+    @Column(name = "enrollment_end_time")
+    private LocalTime enrollmentEndTime;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "enrollment_type", length = 20)
     private EnrollmentType enrollmentType;
@@ -95,7 +102,7 @@ public class CourseTerm extends BaseTimeEntity implements TenantAware {
             Integer maxStudents
     ) {
         return create(course, termNumber, startDate, endDate, daysOfWeek, startTime, endTime,
-                maxStudents, null, null, null, null);
+                maxStudents, null, null, null, null, null, null);
     }
 
     public static CourseTerm create(
@@ -109,6 +116,8 @@ public class CourseTerm extends BaseTimeEntity implements TenantAware {
             Integer maxStudents,
             LocalDate enrollmentStartDate,
             LocalDate enrollmentEndDate,
+            LocalTime enrollmentStartTime,
+            LocalTime enrollmentEndTime,
             EnrollmentType enrollmentType,
             Integer minStudents
     ) {
@@ -127,6 +136,8 @@ public class CourseTerm extends BaseTimeEntity implements TenantAware {
         // 모집 관리 필드 (기본값 처리)
         term.enrollmentStartDate = enrollmentStartDate != null ? enrollmentStartDate : startDate;
         term.enrollmentEndDate = enrollmentEndDate != null ? enrollmentEndDate : startDate.minusDays(1);
+        term.enrollmentStartTime = enrollmentStartTime;
+        term.enrollmentEndTime = enrollmentEndTime;
         term.enrollmentType = enrollmentType != null ? enrollmentType : EnrollmentType.FIRST_COME;
         term.minStudents = minStudents != null ? minStudents : 0;
         return term;
@@ -157,12 +168,19 @@ public class CourseTerm extends BaseTimeEntity implements TenantAware {
     }
 
     /**
-     * 모집 기간 내인지 확인
+     * 모집 기간 내인지 확인 (날짜 + 시간)
      */
     public boolean isWithinEnrollmentPeriod() {
-        LocalDate today = LocalDate.now();
-        return (enrollmentStartDate == null || !today.isBefore(enrollmentStartDate))
-                && (enrollmentEndDate == null || !today.isAfter(enrollmentEndDate));
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime start = enrollmentStartDate != null
+                ? enrollmentStartDate.atTime(enrollmentStartTime != null ? enrollmentStartTime : LocalTime.MIN)
+                : null;
+        LocalDateTime end = enrollmentEndDate != null
+                ? enrollmentEndDate.atTime(enrollmentEndTime != null ? enrollmentEndTime : LocalTime.MAX)
+                : null;
+
+        return (start == null || !now.isBefore(start))
+                && (end == null || !now.isAfter(end));
     }
 
     /**
@@ -201,7 +219,7 @@ public class CourseTerm extends BaseTimeEntity implements TenantAware {
             LocalTime endTime,
             Integer maxStudents
     ) {
-        update(startDate, endDate, daysOfWeek, startTime, endTime, maxStudents, null, null, null, null);
+        update(startDate, endDate, daysOfWeek, startTime, endTime, maxStudents, null, null, null, null, null, null);
     }
 
     public void update(
@@ -213,6 +231,8 @@ public class CourseTerm extends BaseTimeEntity implements TenantAware {
             Integer maxStudents,
             LocalDate enrollmentStartDate,
             LocalDate enrollmentEndDate,
+            LocalTime enrollmentStartTime,
+            LocalTime enrollmentEndTime,
             EnrollmentType enrollmentType,
             Integer minStudents
     ) {
@@ -231,6 +251,12 @@ public class CourseTerm extends BaseTimeEntity implements TenantAware {
         }
         if (enrollmentEndDate != null) {
             this.enrollmentEndDate = enrollmentEndDate;
+        }
+        if (enrollmentStartTime != null) {
+            this.enrollmentStartTime = enrollmentStartTime;
+        }
+        if (enrollmentEndTime != null) {
+            this.enrollmentEndTime = enrollmentEndTime;
         }
         if (enrollmentType != null) {
             this.enrollmentType = enrollmentType;

@@ -29,6 +29,13 @@ public record CourseTermDetailResponse(
         Integer maxStudents,
         Integer currentStudents,
         TermStatus status,
+        // ===== 모집 관리 필드 =====
+        LocalDate enrollmentStartDate,
+        LocalDate enrollmentEndDate,
+        LocalTime enrollmentStartTime,
+        LocalTime enrollmentEndTime,
+        String enrollmentType,
+        Integer minStudents,
         AssignedInstructorDto instructor,
         List<EnrolledStudentDto> enrolledStudents,
         LocalDateTime createdAt
@@ -135,6 +142,12 @@ public record CourseTermDetailResponse(
                 term.getMaxStudents(),
                 term.getCurrentStudents(),
                 term.getStatus(),
+                term.getEnrollmentStartDate(),
+                term.getEnrollmentEndDate(),
+                term.getEnrollmentStartTime(),
+                term.getEnrollmentEndTime(),
+                term.getEnrollmentType() != null ? term.getEnrollmentType().name() : null,
+                term.getMinStudents(),
                 instructorDto,
                 students,
                 term.getCreatedAt()
