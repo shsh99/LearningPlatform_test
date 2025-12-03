@@ -163,7 +163,7 @@ export const DEFAULT_LAYOUT_CONFIG: LayoutConfig = {
     items: [
       { id: 'courses', enabled: true, order: 1, label: '강의 탐색', icon: 'book', path: '/courses' },
       { id: 'myLearning', enabled: true, order: 2, label: '내 강의실', icon: 'school', path: '/my-learning' },
-      { id: 'myApplications', enabled: true, order: 3, label: '신청 현황', icon: 'assignment', path: '/my-applications' },
+      { id: 'myAssignedCourses', enabled: true, order: 3, label: '담당 강의', icon: 'assignment', path: '/my-assigned-courses' },
       { id: 'myProfile', enabled: true, order: 4, label: '마이페이지', icon: 'person', path: '/my-profile' },
     ],
   },
@@ -249,7 +249,7 @@ export const DEFAULT_USER_LAYOUT: LayoutConfig = {
       { id: 'courses', enabled: true, order: 1, label: '강의 탐색', icon: 'book', path: '/courses' },
       { id: 'myLearning', enabled: true, order: 2, label: '내 강의실', icon: 'school', path: '/my-learning' },
       { id: 'myEnrollments', enabled: true, order: 3, label: '수강 현황', icon: 'assignment', path: '/my-enrollments' },
-      { id: 'myApplications', enabled: true, order: 4, label: '신청 현황', icon: 'calendar', path: '/my-applications' },
+      { id: 'myAssignedCourses', enabled: true, order: 4, label: '담당 강의', icon: 'calendar', path: '/my-assigned-courses' },
       { id: 'myProfile', enabled: true, order: 5, label: '마이페이지', icon: 'person', path: '/my-profile' },
     ],
   },

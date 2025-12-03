@@ -91,4 +91,17 @@ export const queryKeys = {
     lists: () => [...queryKeys.courseApplications.all, 'list'] as const,
     detail: (id: number) => [...queryKeys.courseApplications.all, 'detail', id] as const,
   },
+
+  // Term Requests (변경/삭제 요청)
+  termRequests: {
+    all: ['termRequests'] as const,
+    lists: () => [...queryKeys.termRequests.all, 'list'] as const,
+    list: (status?: string, type?: string) => [...queryKeys.termRequests.lists(), { status, type }] as const,
+    changeRequests: () => [...queryKeys.termRequests.all, 'change'] as const,
+    changeDetail: (id: number) => [...queryKeys.termRequests.changeRequests(), id] as const,
+    deleteRequests: () => [...queryKeys.termRequests.all, 'delete'] as const,
+    deleteDetail: (id: number) => [...queryKeys.termRequests.deleteRequests(), id] as const,
+    myChange: () => [...queryKeys.termRequests.all, 'myChange'] as const,
+    myDelete: () => [...queryKeys.termRequests.all, 'myDelete'] as const,
+  },
 } as const;
