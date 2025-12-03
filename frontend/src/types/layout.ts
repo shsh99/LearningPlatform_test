@@ -112,12 +112,13 @@ export interface LayoutConfig {
 /**
  * 역할 타입 (레이아웃 설정용)
  */
-export type LayoutRole = 'tenantAdmin' | 'operator' | 'user';
+export type LayoutRole = 'superAdmin' | 'tenantAdmin' | 'operator' | 'user';
 
 /**
  * 역할별 레이아웃 설정 키 매핑
  */
 export const LAYOUT_CONFIG_KEYS: Record<LayoutRole, string> = {
+  superAdmin: 'layoutConfigSuperAdmin',
   tenantAdmin: 'layoutConfigTenantAdmin',
   operator: 'layoutConfigOperator',
   user: 'layoutConfigUser',
@@ -127,6 +128,7 @@ export const LAYOUT_CONFIG_KEYS: Record<LayoutRole, string> = {
  * 역할별 표시 이름
  */
 export const LAYOUT_ROLE_LABELS: Record<LayoutRole, string> = {
+  superAdmin: '슈퍼 관리자',
   tenantAdmin: '테넌트 관리자',
   operator: '운영자',
   user: '일반 사용자',
@@ -136,6 +138,7 @@ export const LAYOUT_ROLE_LABELS: Record<LayoutRole, string> = {
  * 역할별 설명
  */
 export const LAYOUT_ROLE_DESCRIPTIONS: Record<LayoutRole, string> = {
+  superAdmin: '슈퍼 관리자가 보는 페이지 레이아웃을 설정합니다',
   tenantAdmin: '테넌트 관리자가 보는 페이지 레이아웃을 설정합니다',
   operator: '운영자가 보는 페이지 레이아웃을 설정합니다',
   user: '일반 사용자가 보는 페이지 레이아웃을 설정합니다',
@@ -170,6 +173,35 @@ export const DEFAULT_LAYOUT_CONFIG: LayoutConfig = {
 };
 
 /**
+ * 슈퍼 관리자용 기본 레이아웃 설정
+ */
+export const DEFAULT_SUPER_ADMIN_LAYOUT: LayoutConfig = {
+  dashboard: {
+    enabled: true,
+    widgets: [
+      { id: 'systemStats', enabled: true, order: 1, label: '시스템 통계' },
+      { id: 'tenantOverview', enabled: true, order: 2, label: '테넌트 현황' },
+      { id: 'recentApplications', enabled: true, order: 3, label: '최근 신청' },
+    ],
+  },
+  banner: {
+    enabled: false,
+    position: 'top',
+    title: '',
+    content: '',
+  },
+  menu: {
+    items: [
+      { id: 'dashboard', enabled: true, order: 1, label: '대시보드', icon: 'dashboard', path: '/super-admin/dashboard' },
+      { id: 'tenants', enabled: true, order: 2, label: '테넌트 관리', icon: 'people', path: '/super-admin/tenants' },
+      { id: 'applications', enabled: true, order: 3, label: '신청 관리', icon: 'assignment', path: '/super-admin/applications' },
+      { id: 'notices', enabled: true, order: 4, label: '공지 관리', icon: 'notifications', path: '/super-admin/notices' },
+      { id: 'createTenantAdmin', enabled: true, order: 5, label: '관리자 생성', icon: 'person', path: '/super-admin/create-tenant-admin' },
+    ],
+  },
+};
+
+/**
  * 테넌트 관리자용 기본 레이아웃 설정
  */
 export const DEFAULT_TENANT_ADMIN_LAYOUT: LayoutConfig = {
@@ -192,7 +224,8 @@ export const DEFAULT_TENANT_ADMIN_LAYOUT: LayoutConfig = {
       { id: 'dashboard', enabled: true, order: 1, label: '대시보드', icon: 'dashboard', path: '/tenant-admin/dashboard' },
       { id: 'branding', enabled: true, order: 2, label: '브랜딩 설정', icon: 'palette', path: '/tenant-admin/branding' },
       { id: 'layout', enabled: true, order: 3, label: '레이아웃 설정', icon: 'layout', path: '/tenant-admin/layout' },
-      { id: 'operators', enabled: true, order: 4, label: '운영자 관리', icon: 'people', path: '/tenant-admin/operators' },
+      { id: 'notices', enabled: true, order: 4, label: '공지 관리', icon: 'notifications', path: '/tenant-admin/notices' },
+      { id: 'operators', enabled: true, order: 5, label: '운영자 관리', icon: 'people', path: '/tenant-admin/operators' },
     ],
   },
 };
@@ -259,6 +292,7 @@ export const DEFAULT_USER_LAYOUT: LayoutConfig = {
  * 역할별 기본 레이아웃 설정 매핑
  */
 export const DEFAULT_LAYOUTS_BY_ROLE: Record<LayoutRole, LayoutConfig> = {
+  superAdmin: DEFAULT_SUPER_ADMIN_LAYOUT,
   tenantAdmin: DEFAULT_TENANT_ADMIN_LAYOUT,
   operator: DEFAULT_OPERATOR_LAYOUT,
   user: DEFAULT_USER_LAYOUT,

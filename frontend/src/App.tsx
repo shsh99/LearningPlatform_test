@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { TenantProvider } from './contexts/TenantContext';
+import { NoticeProvider } from './components/notice';
 
 // 페이지 컴포넌트
 import { HomePage } from './pages/HomePage';
@@ -32,7 +33,9 @@ import { TenantManagementPage } from './pages/super-admin/TenantManagementPage';
 import { CreateTenantAdminPage } from './pages/super-admin/CreateTenantAdminPage';
 import { TenantApplicationManagementPage } from './pages/super-admin/TenantApplicationManagementPage';
 import { SuperAdminDashboardPage } from './pages/super-admin/SuperAdminDashboardPage';
+import { NoticeManagementPage } from './pages/super-admin/NoticeManagementPage';
 import { ApplyTenantPage } from './pages/ApplyTenantPage';
+import { TenantNoticeManagementPage } from './pages/tenant-admin/TenantNoticeManagementPage';
 
 /**
  * 테넌트 내부 라우트 (회사별 페이지)
@@ -66,6 +69,7 @@ function TenantRoutes() {
             <Route path="tenant-admin/branding" element={<BrandingSettingsPage />} />
             <Route path="tenant-admin/layout" element={<LayoutSettingsPage />} />
             <Route path="tenant-admin/operators" element={<OperatorManagementPage />} />
+            <Route path="tenant-admin/notices" element={<TenantNoticeManagementPage />} />
         </Routes>
     );
 }
@@ -107,6 +111,7 @@ function AppRoutes() {
             <Route path="/super-admin/tenants" element={<TenantManagementPage />} />
             <Route path="/super-admin/create-tenant-admin" element={<CreateTenantAdminPage />} />
             <Route path="/super-admin/applications" element={<TenantApplicationManagementPage />} />
+            <Route path="/super-admin/notices" element={<NoticeManagementPage />} />
 
             {/* ===== 테넌트 라우트 (/:tenantCode/*) ===== */}
             <Route path="/:tenantCode/*" element={<TenantRoutes />} />
@@ -119,7 +124,9 @@ function App() {
         <BrowserRouter>
             <AuthProvider>
                 <TenantProvider>
-                    <AppRoutes />
+                    <NoticeProvider>
+                        <AppRoutes />
+                    </NoticeProvider>
                 </TenantProvider>
             </AuthProvider>
         </BrowserRouter>

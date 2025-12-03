@@ -113,6 +113,9 @@ public enum ErrorCode {
     TERM_REQUEST_NOT_OWNER("TR006", "본인의 요청만 취소할 수 있습니다.", HttpStatus.FORBIDDEN),
     TERM_REQUEST_NOT_INSTRUCTOR("TR007", "해당 차수의 담당 강사만 요청할 수 있습니다.", HttpStatus.FORBIDDEN),
 
+    // ==================== Notice (N0xx) ====================
+    NOTICE_NOT_FOUND("N001", "공지를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+
     // ==================== File (F0xx) ====================
     FILE_NOT_FOUND("F001", "파일을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     FILE_UPLOAD_FAILED("F002", "파일 업로드에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
