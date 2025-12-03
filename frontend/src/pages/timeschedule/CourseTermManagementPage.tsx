@@ -43,6 +43,8 @@ export const CourseTermManagementPage = () => {
     maxStudents: 30,
     enrollmentStartDate: '',
     enrollmentEndDate: '',
+    enrollmentStartTime: '',
+    enrollmentEndTime: '',
     enrollmentType: 'FIRST_COME',
     minStudents: 0,
   });
@@ -55,6 +57,8 @@ export const CourseTermManagementPage = () => {
     maxStudents: 30,
     enrollmentStartDate: '',
     enrollmentEndDate: '',
+    enrollmentStartTime: '',
+    enrollmentEndTime: '',
     enrollmentType: 'FIRST_COME',
     minStudents: 0,
   });
@@ -99,6 +103,8 @@ export const CourseTermManagementPage = () => {
       maxStudents: 30,
       enrollmentStartDate: '',
       enrollmentEndDate: '',
+      enrollmentStartTime: '',
+      enrollmentEndTime: '',
       enrollmentType: 'FIRST_COME',
       minStudents: 0,
     });
@@ -192,6 +198,8 @@ export const CourseTermManagementPage = () => {
       maxStudents: term.maxStudents,
       enrollmentStartDate: term.enrollmentStartDate || '',
       enrollmentEndDate: term.enrollmentEndDate || '',
+      enrollmentStartTime: term.enrollmentStartTime || '',
+      enrollmentEndTime: term.enrollmentEndTime || '',
       enrollmentType: term.enrollmentType || 'FIRST_COME',
       minStudents: term.minStudents || 0,
     });
@@ -454,12 +462,34 @@ export const CourseTermManagementPage = () => {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
+                          모집 시작 시간
+                        </label>
+                        <Input
+                          type="time"
+                          value={formData.enrollmentStartTime || ''}
+                          onChange={(e) => setFormData({ ...formData, enrollmentStartTime: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
                           모집 종료일
                         </label>
                         <Input
                           type="date"
                           value={formData.enrollmentEndDate || ''}
                           onChange={(e) => setFormData({ ...formData, enrollmentEndDate: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          모집 마감 시간
+                        </label>
+                        <Input
+                          type="time"
+                          value={formData.enrollmentEndTime || ''}
+                          onChange={(e) => setFormData({ ...formData, enrollmentEndTime: e.target.value })}
                         />
                       </div>
                     </div>
@@ -647,12 +677,34 @@ export const CourseTermManagementPage = () => {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
+                          모집 시작 시간
+                        </label>
+                        <Input
+                          type="time"
+                          value={editFormData.enrollmentStartTime || ''}
+                          onChange={(e) => setEditFormData({ ...editFormData, enrollmentStartTime: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
                           모집 종료일
                         </label>
                         <Input
                           type="date"
                           value={editFormData.enrollmentEndDate || ''}
                           onChange={(e) => setEditFormData({ ...editFormData, enrollmentEndDate: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          모집 마감 시간
+                        </label>
+                        <Input
+                          type="time"
+                          value={editFormData.enrollmentEndTime || ''}
+                          onChange={(e) => setEditFormData({ ...editFormData, enrollmentEndTime: e.target.value })}
                         />
                       </div>
                     </div>

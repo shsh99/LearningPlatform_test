@@ -18,6 +18,8 @@ export interface CourseTerm {
   // 모집 관리 필드
   enrollmentStartDate: string | null;
   enrollmentEndDate: string | null;
+  enrollmentStartTime: string | null;
+  enrollmentEndTime: string | null;
   enrollmentType: EnrollmentType | null;
   minStudents: number | null;
   createdAt: string;
@@ -36,6 +38,8 @@ export interface CreateCourseTermRequest {
   // 모집 관리 필드 (선택)
   enrollmentStartDate?: string;
   enrollmentEndDate?: string;
+  enrollmentStartTime?: string;
+  enrollmentEndTime?: string;
   enrollmentType?: EnrollmentType;
   minStudents?: number;
 }
@@ -50,6 +54,8 @@ export interface UpdateCourseTermRequest {
   // 모집 관리 필드 (선택)
   enrollmentStartDate?: string;
   enrollmentEndDate?: string;
+  enrollmentStartTime?: string;
+  enrollmentEndTime?: string;
   enrollmentType?: EnrollmentType;
   minStudents?: number;
 }

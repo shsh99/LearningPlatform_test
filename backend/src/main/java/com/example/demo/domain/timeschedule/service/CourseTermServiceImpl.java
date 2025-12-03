@@ -95,6 +95,8 @@ public class CourseTermServiceImpl implements CourseTermService {
             request.maxStudents(),
             request.enrollmentStartDate(),
             request.enrollmentEndDate(),
+            request.enrollmentStartTime(),
+            request.enrollmentEndTime(),
             request.enrollmentType(),
             request.minStudents()
         );
@@ -212,6 +214,8 @@ public class CourseTermServiceImpl implements CourseTermService {
             request.maxStudents(),
             request.enrollmentStartDate(),
             request.enrollmentEndDate(),
+            request.enrollmentStartTime(),
+            request.enrollmentEndTime(),
             request.enrollmentType(),
             request.minStudents()
         );
