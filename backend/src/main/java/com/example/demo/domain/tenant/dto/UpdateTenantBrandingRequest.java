@@ -68,6 +68,8 @@ public record UpdateTenantBrandingRequest(
 
         String layoutConfigUser,
 
-        String bannerConfig
+        String bannerConfig,
+
+        String footerConfig
 ) {
 }
