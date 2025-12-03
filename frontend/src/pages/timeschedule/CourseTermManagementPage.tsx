@@ -5,7 +5,7 @@ import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { getAllCourseTerms, createCourseTerm, updateCourseTerm, startCourseTerm, completeCourseTerm, cancelCourseTerm } from '../../api/courseTerm';
 import { getAllCourses } from '../../api/course';
-import type { CourseTerm, CreateCourseTermRequest, UpdateCourseTermRequest, DayOfWeek } from '../../types/courseTerm';
+import type { CourseTerm, CreateCourseTermRequest, UpdateCourseTermRequest, DayOfWeek, EnrollmentType } from '../../types/courseTerm';
 import type { Course } from '../../types/course';
 
 const DAY_OF_WEEK_OPTIONS: { value: DayOfWeek; label: string }[] = [
@@ -16,6 +16,11 @@ const DAY_OF_WEEK_OPTIONS: { value: DayOfWeek; label: string }[] = [
   { value: 'FRIDAY', label: '금' },
   { value: 'SATURDAY', label: '토' },
   { value: 'SUNDAY', label: '일' },
+];
+
+const ENROLLMENT_TYPE_OPTIONS: { value: EnrollmentType; label: string }[] = [
+  { value: 'FIRST_COME', label: '선착순' },
+  { value: 'SELECTION', label: '선발' },
 ];
 
 export const CourseTermManagementPage = () => {
@@ -36,6 +41,10 @@ export const CourseTermManagementPage = () => {
     startTime: '09:00',
     endTime: '18:00',
     maxStudents: 30,
+    enrollmentStartDate: '',
+    enrollmentEndDate: '',
+    enrollmentType: 'FIRST_COME',
+    minStudents: 0,
   });
   const [editFormData, setEditFormData] = useState<UpdateCourseTermRequest>({
     startDate: '',
@@ -44,6 +53,10 @@ export const CourseTermManagementPage = () => {
     startTime: '09:00',
     endTime: '18:00',
     maxStudents: 30,
+    enrollmentStartDate: '',
+    enrollmentEndDate: '',
+    enrollmentType: 'FIRST_COME',
+    minStudents: 0,
   });
 
   useEffect(() => {
@@ -84,6 +97,10 @@ export const CourseTermManagementPage = () => {
       startTime: '09:00',
       endTime: '18:00',
       maxStudents: 30,
+      enrollmentStartDate: '',
+      enrollmentEndDate: '',
+      enrollmentType: 'FIRST_COME',
+      minStudents: 0,
     });
     setShowCreateModal(true);
   };
@@ -173,6 +190,10 @@ export const CourseTermManagementPage = () => {
       startTime: term.startTime,
       endTime: term.endTime,
       maxStudents: term.maxStudents,
+      enrollmentStartDate: term.enrollmentStartDate || '',
+      enrollmentEndDate: term.enrollmentEndDate || '',
+      enrollmentType: term.enrollmentType || 'FIRST_COME',
+      minStudents: term.minStudents || 0,
     });
     setShowEditModal(true);
   };
@@ -374,125 +395,208 @@ export const CourseTermManagementPage = () => {
       {/* 차수 생성 모달 */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">차수 생성</h2>
 
             <form onSubmit={handleCreateTerm}>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    강의 선택
-                  </label>
-                  <select
-                    value={formData.courseId}
-                    onChange={(e) => setFormData({ ...formData, courseId: Number(e.target.value) })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  >
-                    <option value={0}>강의를 선택하세요</option>
-                    {courses.map((course) => (
-                      <option key={course.id} value={course.id}>
-                        {course.title}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    차수 번호
-                  </label>
-                  <Input
-                    type="number"
-                    value={formData.termNumber}
-                    onChange={(e) => setFormData({ ...formData, termNumber: Number(e.target.value) })}
-                    min={1}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    시작일
-                  </label>
-                  <Input
-                    type="date"
-                    value={formData.startDate}
-                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    종료일
-                  </label>
-                  <Input
-                    type="date"
-                    value={formData.endDate}
-                    onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    수업 요일 (복수 선택 가능)
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {DAY_OF_WEEK_OPTIONS.map((option) => (
-                      <button
-                        key={option.value}
-                        type="button"
-                        onClick={() => handleDayToggle(option.value)}
-                        className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
-                          formData.daysOfWeek.includes(option.value)
-                            ? 'bg-blue-600 text-white border-blue-600'
-                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                        }`}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-6">
+                {/* 기본 정보 섹션 */}
+                <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      시작 시간
+                      강의 선택
                     </label>
-                    <Input
-                      type="time"
-                      value={formData.startTime}
-                      onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+                    <select
+                      value={formData.courseId}
+                      onChange={(e) => setFormData({ ...formData, courseId: Number(e.target.value) })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       required
-                    />
+                    >
+                      <option value={0}>강의를 선택하세요</option>
+                      {courses.map((course) => (
+                        <option key={course.id} value={course.id}>
+                          {course.title}
+                        </option>
+                      ))}
+                    </select>
                   </div>
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      종료 시간
+                      차수 번호
                     </label>
                     <Input
-                      type="time"
-                      value={formData.endTime}
-                      onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+                      type="number"
+                      value={formData.termNumber}
+                      onChange={(e) => setFormData({ ...formData, termNumber: Number(e.target.value) })}
+                      min={1}
                       required
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    최대 정원
-                  </label>
-                  <Input
-                    type="number"
-                    value={formData.maxStudents}
-                    onChange={(e) => setFormData({ ...formData, maxStudents: Number(e.target.value) })}
-                    min={1}
-                    required
-                  />
+                {/* 모집 설정 섹션 */}
+                <div className="border-t pt-4">
+                  <h3 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                    <span>모집 설정</span>
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          모집 시작일
+                        </label>
+                        <Input
+                          type="date"
+                          value={formData.enrollmentStartDate || ''}
+                          onChange={(e) => setFormData({ ...formData, enrollmentStartDate: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          모집 종료일
+                        </label>
+                        <Input
+                          type="date"
+                          value={formData.enrollmentEndDate || ''}
+                          onChange={(e) => setFormData({ ...formData, enrollmentEndDate: e.target.value })}
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        모집 방식
+                      </label>
+                      <div className="flex gap-4">
+                        {ENROLLMENT_TYPE_OPTIONS.map((option) => (
+                          <label key={option.value} className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="enrollmentType"
+                              value={option.value}
+                              checked={formData.enrollmentType === option.value}
+                              onChange={(e) => setFormData({ ...formData, enrollmentType: e.target.value as EnrollmentType })}
+                              className="w-4 h-4 text-blue-600"
+                            />
+                            <span className="text-sm text-gray-700">{option.label}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 운영 설정 섹션 */}
+                <div className="border-t pt-4">
+                  <h3 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                    <span>운영 설정</span>
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          운영 시작일
+                        </label>
+                        <Input
+                          type="date"
+                          value={formData.startDate}
+                          onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          운영 종료일
+                        </label>
+                        <Input
+                          type="date"
+                          value={formData.endDate}
+                          onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        수업 요일 (복수 선택 가능)
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {DAY_OF_WEEK_OPTIONS.map((option) => (
+                          <button
+                            key={option.value}
+                            type="button"
+                            onClick={() => handleDayToggle(option.value)}
+                            className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                              formData.daysOfWeek.includes(option.value)
+                                ? 'bg-blue-600 text-white border-blue-600'
+                                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                            }`}
+                          >
+                            {option.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          시작 시간
+                        </label>
+                        <Input
+                          type="time"
+                          value={formData.startTime}
+                          onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          종료 시간
+                        </label>
+                        <Input
+                          type="time"
+                          value={formData.endTime}
+                          onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 정원 설정 섹션 */}
+                <div className="border-t pt-4">
+                  <h3 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                    <span>정원 설정</span>
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        최소 인원
+                      </label>
+                      <Input
+                        type="number"
+                        value={formData.minStudents || 0}
+                        onChange={(e) => setFormData({ ...formData, minStudents: Number(e.target.value) })}
+                        min={0}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        최대 정원
+                      </label>
+                      <Input
+                        type="number"
+                        value={formData.maxStudents}
+                        onChange={(e) => setFormData({ ...formData, maxStudents: Number(e.target.value) })}
+                        min={1}
+                        required
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -516,98 +620,172 @@ export const CourseTermManagementPage = () => {
       {/* 차수 수정 모달 */}
       {showEditModal && editingTerm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">차수 수정</h2>
 
             <form onSubmit={handleUpdateTerm}>
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div className="bg-gray-50 p-3 rounded-lg">
                   <p className="text-sm text-gray-600">강의: <span className="font-medium text-gray-900">{editingTerm.courseTitle}</span></p>
                   <p className="text-sm text-gray-600">차수: <span className="font-medium text-gray-900">{editingTerm.termNumber}차</span></p>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    시작일
-                  </label>
-                  <Input
-                    type="date"
-                    value={editFormData.startDate}
-                    onChange={(e) => setEditFormData({ ...editFormData, startDate: e.target.value })}
-                    required
-                  />
-                </div>
+                {/* 모집 설정 섹션 */}
+                <div className="border-t pt-4">
+                  <h3 className="text-sm font-semibold text-gray-800 mb-3">모집 설정</h3>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          모집 시작일
+                        </label>
+                        <Input
+                          type="date"
+                          value={editFormData.enrollmentStartDate || ''}
+                          onChange={(e) => setEditFormData({ ...editFormData, enrollmentStartDate: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          모집 종료일
+                        </label>
+                        <Input
+                          type="date"
+                          value={editFormData.enrollmentEndDate || ''}
+                          onChange={(e) => setEditFormData({ ...editFormData, enrollmentEndDate: e.target.value })}
+                        />
+                      </div>
+                    </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    종료일
-                  </label>
-                  <Input
-                    type="date"
-                    value={editFormData.endDate}
-                    onChange={(e) => setEditFormData({ ...editFormData, endDate: e.target.value })}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    수업 요일 (복수 선택 가능)
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {DAY_OF_WEEK_OPTIONS.map((option) => (
-                      <button
-                        key={option.value}
-                        type="button"
-                        onClick={() => handleEditDayToggle(option.value)}
-                        className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
-                          editFormData.daysOfWeek.includes(option.value)
-                            ? 'bg-blue-600 text-white border-blue-600'
-                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                        }`}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        모집 방식
+                      </label>
+                      <div className="flex gap-4">
+                        {ENROLLMENT_TYPE_OPTIONS.map((option) => (
+                          <label key={option.value} className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="editEnrollmentType"
+                              value={option.value}
+                              checked={editFormData.enrollmentType === option.value}
+                              onChange={(e) => setEditFormData({ ...editFormData, enrollmentType: e.target.value as EnrollmentType })}
+                              className="w-4 h-4 text-blue-600"
+                            />
+                            <span className="text-sm text-gray-700">{option.label}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      시작 시간
-                    </label>
-                    <Input
-                      type="time"
-                      value={editFormData.startTime}
-                      onChange={(e) => setEditFormData({ ...editFormData, startTime: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      종료 시간
-                    </label>
-                    <Input
-                      type="time"
-                      value={editFormData.endTime}
-                      onChange={(e) => setEditFormData({ ...editFormData, endTime: e.target.value })}
-                      required
-                    />
+                {/* 운영 설정 섹션 */}
+                <div className="border-t pt-4">
+                  <h3 className="text-sm font-semibold text-gray-800 mb-3">운영 설정</h3>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          운영 시작일
+                        </label>
+                        <Input
+                          type="date"
+                          value={editFormData.startDate}
+                          onChange={(e) => setEditFormData({ ...editFormData, startDate: e.target.value })}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          운영 종료일
+                        </label>
+                        <Input
+                          type="date"
+                          value={editFormData.endDate}
+                          onChange={(e) => setEditFormData({ ...editFormData, endDate: e.target.value })}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        수업 요일 (복수 선택 가능)
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {DAY_OF_WEEK_OPTIONS.map((option) => (
+                          <button
+                            key={option.value}
+                            type="button"
+                            onClick={() => handleEditDayToggle(option.value)}
+                            className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                              editFormData.daysOfWeek.includes(option.value)
+                                ? 'bg-blue-600 text-white border-blue-600'
+                                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                            }`}
+                          >
+                            {option.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          시작 시간
+                        </label>
+                        <Input
+                          type="time"
+                          value={editFormData.startTime}
+                          onChange={(e) => setEditFormData({ ...editFormData, startTime: e.target.value })}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          종료 시간
+                        </label>
+                        <Input
+                          type="time"
+                          value={editFormData.endTime}
+                          onChange={(e) => setEditFormData({ ...editFormData, endTime: e.target.value })}
+                          required
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    최대 정원
-                  </label>
-                  <Input
-                    type="number"
-                    value={editFormData.maxStudents}
-                    onChange={(e) => setEditFormData({ ...editFormData, maxStudents: Number(e.target.value) })}
-                    min={1}
-                    required
-                  />
+                {/* 정원 설정 섹션 */}
+                <div className="border-t pt-4">
+                  <h3 className="text-sm font-semibold text-gray-800 mb-3">정원 설정</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        최소 인원
+                      </label>
+                      <Input
+                        type="number"
+                        value={editFormData.minStudents || 0}
+                        onChange={(e) => setEditFormData({ ...editFormData, minStudents: Number(e.target.value) })}
+                        min={0}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        최대 정원
+                      </label>
+                      <Input
+                        type="number"
+                        value={editFormData.maxStudents}
+                        onChange={(e) => setEditFormData({ ...editFormData, maxStudents: Number(e.target.value) })}
+                        min={editingTerm.currentStudents}
+                        required
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 

@@ -3,7 +3,7 @@ import { Navbar } from '../../components/Navbar';
 import { PageHeader } from '../../components/PageHeader';
 import { getAllCourseTerms, createCourseTerm, updateCourseTerm, startCourseTerm, completeCourseTerm, cancelCourseTerm } from '../../api/courseTerm';
 import { getAllCourses } from '../../api/course';
-import type { CourseTerm, CreateCourseTermRequest, UpdateCourseTermRequest, DayOfWeek } from '../../types/courseTerm';
+import type { CourseTerm, CreateCourseTermRequest, UpdateCourseTermRequest, DayOfWeek, EnrollmentType } from '../../types/courseTerm';
 import type { Course } from '../../types/course';
 
 const DAY_OF_WEEK_OPTIONS: { value: DayOfWeek; label: string }[] = [
@@ -14,6 +14,11 @@ const DAY_OF_WEEK_OPTIONS: { value: DayOfWeek; label: string }[] = [
     { value: 'FRIDAY', label: '금' },
     { value: 'SATURDAY', label: '토' },
     { value: 'SUNDAY', label: '일' },
+];
+
+const ENROLLMENT_TYPE_OPTIONS: { value: EnrollmentType; label: string }[] = [
+    { value: 'FIRST_COME', label: '선착순' },
+    { value: 'SELECTION', label: '선발' },
 ];
 
 export function OperatorTermsPage() {
@@ -33,6 +38,10 @@ export function OperatorTermsPage() {
         startTime: '09:00',
         endTime: '18:00',
         maxStudents: 30,
+        enrollmentStartDate: '',
+        enrollmentEndDate: '',
+        enrollmentType: 'FIRST_COME',
+        minStudents: 0,
     });
     const [editFormData, setEditFormData] = useState<UpdateCourseTermRequest>({
         startDate: '',
@@ -41,6 +50,10 @@ export function OperatorTermsPage() {
         startTime: '09:00',
         endTime: '18:00',
         maxStudents: 30,
+        enrollmentStartDate: '',
+        enrollmentEndDate: '',
+        enrollmentType: 'FIRST_COME',
+        minStudents: 0,
     });
 
     useEffect(() => {
@@ -87,6 +100,10 @@ export function OperatorTermsPage() {
                 startTime: '09:00',
                 endTime: '18:00',
                 maxStudents: 30,
+                enrollmentStartDate: '',
+                enrollmentEndDate: '',
+                enrollmentType: 'FIRST_COME',
+                minStudents: 0,
             });
             loadData();
         } catch (err) {
@@ -122,6 +139,10 @@ export function OperatorTermsPage() {
             startTime: term.startTime,
             endTime: term.endTime,
             maxStudents: term.maxStudents,
+            enrollmentStartDate: term.enrollmentStartDate || '',
+            enrollmentEndDate: term.enrollmentEndDate || '',
+            enrollmentType: term.enrollmentType || 'FIRST_COME',
+            minStudents: term.minStudents || 0,
         });
         setShowEditForm(true);
     };
@@ -266,30 +287,85 @@ export function OperatorTermsPage() {
                                 />
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        시작일 *
-                                    </label>
-                                    <input
-                                        type="date"
-                                        value={formData.startDate}
-                                        onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        required
-                                    />
+                            {/* 모집 설정 섹션 */}
+                            <div className="border-t pt-4 mt-4">
+                                <h4 className="text-sm font-semibold text-gray-800 mb-3">모집 설정</h4>
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                모집 시작일
+                                            </label>
+                                            <input
+                                                type="date"
+                                                value={formData.enrollmentStartDate || ''}
+                                                onChange={(e) => setFormData({ ...formData, enrollmentStartDate: e.target.value })}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                모집 종료일
+                                            </label>
+                                            <input
+                                                type="date"
+                                                value={formData.enrollmentEndDate || ''}
+                                                onChange={(e) => setFormData({ ...formData, enrollmentEndDate: e.target.value })}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            모집 방식
+                                        </label>
+                                        <div className="flex gap-4">
+                                            {ENROLLMENT_TYPE_OPTIONS.map((option) => (
+                                                <label key={option.value} className="flex items-center gap-2 cursor-pointer">
+                                                    <input
+                                                        type="radio"
+                                                        name="enrollmentType"
+                                                        value={option.value}
+                                                        checked={formData.enrollmentType === option.value}
+                                                        onChange={(e) => setFormData({ ...formData, enrollmentType: e.target.value as EnrollmentType })}
+                                                        className="w-4 h-4 text-blue-600"
+                                                    />
+                                                    <span className="text-sm text-gray-700">{option.label}</span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        종료일 *
-                                    </label>
-                                    <input
-                                        type="date"
-                                        value={formData.endDate}
-                                        onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        required
-                                    />
+                            </div>
+
+                            {/* 운영 설정 섹션 */}
+                            <div className="border-t pt-4 mt-4">
+                                <h4 className="text-sm font-semibold text-gray-800 mb-3">운영 설정</h4>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            운영 시작일 *
+                                        </label>
+                                        <input
+                                            type="date"
+                                            value={formData.startDate}
+                                            onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            운영 종료일 *
+                                        </label>
+                                        <input
+                                            type="date"
+                                            value={formData.endDate}
+                                            onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            required
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
@@ -342,19 +418,37 @@ export function OperatorTermsPage() {
                                 </div>
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    최대 학생 수 *
-                                </label>
-                                <input
-                                    type="number"
-                                    min="1"
-                                    max="1000"
-                                    value={formData.maxStudents}
-                                    onChange={(e) => setFormData({ ...formData, maxStudents: Number(e.target.value) })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    required
-                                />
+                            {/* 정원 설정 섹션 */}
+                            <div className="border-t pt-4 mt-4">
+                                <h4 className="text-sm font-semibold text-gray-800 mb-3">정원 설정</h4>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            최소 인원
+                                        </label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            value={formData.minStudents || 0}
+                                            onChange={(e) => setFormData({ ...formData, minStudents: Number(e.target.value) })}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            최대 정원 *
+                                        </label>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max="1000"
+                                            value={formData.maxStudents}
+                                            onChange={(e) => setFormData({ ...formData, maxStudents: Number(e.target.value) })}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            required
+                                        />
+                                    </div>
+                                </div>
                             </div>
 
                             <div className="flex justify-end gap-2">
@@ -465,95 +559,170 @@ export function OperatorTermsPage() {
                             <p className="text-sm text-gray-600">차수: <span className="font-medium text-gray-900">{editingTerm.termNumber}차</span></p>
                         </div>
                         <form onSubmit={handleUpdate} className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        시작일 *
-                                    </label>
-                                    <input
-                                        type="date"
-                                        value={editFormData.startDate}
-                                        onChange={(e) => setEditFormData({ ...editFormData, startDate: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        종료일 *
-                                    </label>
-                                    <input
-                                        type="date"
-                                        value={editFormData.endDate}
-                                        onChange={(e) => setEditFormData({ ...editFormData, endDate: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        required
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    수업 요일 * (복수 선택 가능)
-                                </label>
-                                <div className="flex flex-wrap gap-2">
-                                    {DAY_OF_WEEK_OPTIONS.map((option) => (
-                                        <button
-                                            key={option.value}
-                                            type="button"
-                                            onClick={() => handleEditDayToggle(option.value)}
-                                            className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
-                                                editFormData.daysOfWeek.includes(option.value)
-                                                    ? 'bg-blue-600 text-white border-blue-600'
-                                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                                            }`}
-                                        >
-                                            {option.label}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        시작 시간 *
-                                    </label>
-                                    <input
-                                        type="time"
-                                        value={editFormData.startTime}
-                                        onChange={(e) => setEditFormData({ ...editFormData, startTime: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        종료 시간 *
-                                    </label>
-                                    <input
-                                        type="time"
-                                        value={editFormData.endTime}
-                                        onChange={(e) => setEditFormData({ ...editFormData, endTime: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        required
-                                    />
+                            {/* 모집 설정 섹션 */}
+                            <div className="border-t pt-4">
+                                <h4 className="text-sm font-semibold text-gray-800 mb-3">모집 설정</h4>
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                모집 시작일
+                                            </label>
+                                            <input
+                                                type="date"
+                                                value={editFormData.enrollmentStartDate || ''}
+                                                onChange={(e) => setEditFormData({ ...editFormData, enrollmentStartDate: e.target.value })}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                모집 종료일
+                                            </label>
+                                            <input
+                                                type="date"
+                                                value={editFormData.enrollmentEndDate || ''}
+                                                onChange={(e) => setEditFormData({ ...editFormData, enrollmentEndDate: e.target.value })}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            모집 방식
+                                        </label>
+                                        <div className="flex gap-4">
+                                            {ENROLLMENT_TYPE_OPTIONS.map((option) => (
+                                                <label key={option.value} className="flex items-center gap-2 cursor-pointer">
+                                                    <input
+                                                        type="radio"
+                                                        name="editEnrollmentType"
+                                                        value={option.value}
+                                                        checked={editFormData.enrollmentType === option.value}
+                                                        onChange={(e) => setEditFormData({ ...editFormData, enrollmentType: e.target.value as EnrollmentType })}
+                                                        className="w-4 h-4 text-blue-600"
+                                                    />
+                                                    <span className="text-sm text-gray-700">{option.label}</span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    최대 학생 수 *
-                                </label>
-                                <input
-                                    type="number"
-                                    min="1"
-                                    max="1000"
-                                    value={editFormData.maxStudents}
-                                    onChange={(e) => setEditFormData({ ...editFormData, maxStudents: Number(e.target.value) })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    required
-                                />
+                            {/* 운영 설정 섹션 */}
+                            <div className="border-t pt-4">
+                                <h4 className="text-sm font-semibold text-gray-800 mb-3">운영 설정</h4>
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                운영 시작일 *
+                                            </label>
+                                            <input
+                                                type="date"
+                                                value={editFormData.startDate}
+                                                onChange={(e) => setEditFormData({ ...editFormData, startDate: e.target.value })}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                required
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                운영 종료일 *
+                                            </label>
+                                            <input
+                                                type="date"
+                                                value={editFormData.endDate}
+                                                onChange={(e) => setEditFormData({ ...editFormData, endDate: e.target.value })}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            수업 요일 * (복수 선택 가능)
+                                        </label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {DAY_OF_WEEK_OPTIONS.map((option) => (
+                                                <button
+                                                    key={option.value}
+                                                    type="button"
+                                                    onClick={() => handleEditDayToggle(option.value)}
+                                                    className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                                                        editFormData.daysOfWeek.includes(option.value)
+                                                            ? 'bg-blue-600 text-white border-blue-600'
+                                                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                                                    }`}
+                                                >
+                                                    {option.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                시작 시간 *
+                                            </label>
+                                            <input
+                                                type="time"
+                                                value={editFormData.startTime}
+                                                onChange={(e) => setEditFormData({ ...editFormData, startTime: e.target.value })}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                required
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                종료 시간 *
+                                            </label>
+                                            <input
+                                                type="time"
+                                                value={editFormData.endTime}
+                                                onChange={(e) => setEditFormData({ ...editFormData, endTime: e.target.value })}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 정원 설정 섹션 */}
+                            <div className="border-t pt-4">
+                                <h4 className="text-sm font-semibold text-gray-800 mb-3">정원 설정</h4>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            최소 인원
+                                        </label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            value={editFormData.minStudents || 0}
+                                            onChange={(e) => setEditFormData({ ...editFormData, minStudents: Number(e.target.value) })}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            최대 정원 *
+                                        </label>
+                                        <input
+                                            type="number"
+                                            min={editingTerm.currentStudents}
+                                            max="1000"
+                                            value={editFormData.maxStudents}
+                                            onChange={(e) => setEditFormData({ ...editFormData, maxStudents: Number(e.target.value) })}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            required
+                                        />
+                                    </div>
+                                </div>
                             </div>
 
                             <div className="flex justify-end gap-2">
