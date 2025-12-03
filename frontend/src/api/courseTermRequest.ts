@@ -80,12 +80,16 @@ export const cancelDeleteRequest = async (id: number): Promise<void> => {
  * 요청 목록 조회 (변경+삭제 통합)
  */
 export const getAllTermRequests = async (
-  status: TermRequestStatus = 'PENDING',
+  status?: TermRequestStatus,
   type?: TermRequestType
 ): Promise<TermRequestListResponse[]> => {
+  const params: { status?: TermRequestStatus; type?: TermRequestType } = {};
+  if (status) params.status = status;
+  if (type) params.type = type;
+
   const response = await apiClient.get<TermRequestListResponse[]>(
     '/course-term-requests',
-    { params: { status, type } }
+    { params }
   );
   return response.data;
 };

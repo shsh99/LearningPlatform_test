@@ -121,7 +121,7 @@ export function useCancelDeleteRequest() {
  * 전체 요청 목록 조회 Hook
  */
 export function useTermRequests(
-  status: TermRequestStatus = 'PENDING',
+  status?: TermRequestStatus,
   type?: TermRequestType
 ) {
   return useQuery({

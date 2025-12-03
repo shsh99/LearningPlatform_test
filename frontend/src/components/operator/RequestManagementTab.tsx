@@ -40,7 +40,7 @@ export const RequestManagementTab = () => {
     undefined;
 
   const { data: termRequests, isLoading: loadingTermRequests, refetch: refetchTermRequests } = useTermRequests(
-    termRequestStatus || 'PENDING',
+    termRequestStatus,
     termRequestType
   );
 

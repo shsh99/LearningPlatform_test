@@ -185,8 +185,18 @@ public class CourseTermRequestServiceImpl implements CourseTermRequestService {
 
         // 변경 요청 조회
         if (type == null || "CHANGE".equalsIgnoreCase(type)) {
-            List<CourseTermChangeRequest> changeRequests = changeRequestRepository
-                    .findByTenantIdAndStatusWithDetails(tenantId, status);
+            List<CourseTermChangeRequest> changeRequests;
+            if (status == null) {
+                // 전체 상태 조회
+                if (tenantId == null) {
+                    changeRequests = changeRequestRepository.findAllWithDetails();
+                } else {
+                    changeRequests = changeRequestRepository.findByTenantIdWithDetails(tenantId);
+                }
+            } else {
+                // 특정 상태 조회
+                changeRequests = changeRequestRepository.findByTenantIdAndStatusWithDetails(tenantId, status);
+            }
             result.addAll(changeRequests.stream()
                     .map(TermRequestListResponse::fromChangeRequest)
                     .collect(Collectors.toList()));
@@ -194,8 +204,18 @@ public class CourseTermRequestServiceImpl implements CourseTermRequestService {
 
         // 삭제 요청 조회
         if (type == null || "DELETE".equalsIgnoreCase(type)) {
-            List<CourseTermDeleteRequest> deleteRequests = deleteRequestRepository
-                    .findByTenantIdAndStatusWithDetails(tenantId, status);
+            List<CourseTermDeleteRequest> deleteRequests;
+            if (status == null) {
+                // 전체 상태 조회
+                if (tenantId == null) {
+                    deleteRequests = deleteRequestRepository.findAllWithDetails();
+                } else {
+                    deleteRequests = deleteRequestRepository.findByTenantIdWithDetails(tenantId);
+                }
+            } else {
+                // 특정 상태 조회
+                deleteRequests = deleteRequestRepository.findByTenantIdAndStatusWithDetails(tenantId, status);
+            }
             result.addAll(deleteRequests.stream()
                     .map(TermRequestListResponse::fromDeleteRequest)
                     .collect(Collectors.toList()));

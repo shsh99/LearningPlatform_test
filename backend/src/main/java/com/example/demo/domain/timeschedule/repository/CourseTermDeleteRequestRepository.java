@@ -59,6 +59,27 @@ public interface CourseTermDeleteRequestRepository extends JpaRepository<CourseT
     );
 
     /**
+     * 테넌트 ID로 모든 삭제 요청 목록 조회 (상태 무관)
+     */
+    @Query("SELECT r FROM CourseTermDeleteRequest r " +
+           "JOIN FETCH r.courseTerm ct " +
+           "JOIN FETCH ct.course c " +
+           "JOIN FETCH r.requester " +
+           "WHERE r.tenantId = :tenantId " +
+           "ORDER BY r.createdAt DESC")
+    List<CourseTermDeleteRequest> findByTenantIdWithDetails(@Param("tenantId") Long tenantId);
+
+    /**
+     * 모든 삭제 요청 목록 조회 (SUPER_ADMIN용)
+     */
+    @Query("SELECT r FROM CourseTermDeleteRequest r " +
+           "JOIN FETCH r.courseTerm ct " +
+           "JOIN FETCH ct.course c " +
+           "JOIN FETCH r.requester " +
+           "ORDER BY r.createdAt DESC")
+    List<CourseTermDeleteRequest> findAllWithDetails();
+
+    /**
      * 차수에 대기 중인 삭제 요청이 있는지 확인
      */
     boolean existsByCourseTermAndStatus(CourseTerm courseTerm, TermRequestStatus status);

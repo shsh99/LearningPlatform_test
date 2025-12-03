@@ -59,12 +59,17 @@ public class CourseApplication extends BaseTimeEntity implements TenantAware {
 
     // ===== 정적 팩토리 메서드 =====
     public static CourseApplication create(String title, String description, Integer maxStudents, User applicant) {
+        return create(title, description, maxStudents, applicant, applicant.getTenantId());
+    }
+
+    public static CourseApplication create(String title, String description, Integer maxStudents, User applicant, Long tenantId) {
         CourseApplication application = new CourseApplication();
         application.title = title;
         application.description = description;
         application.maxStudents = maxStudents;
         application.applicant = applicant;
         application.status = ApplicationStatus.PENDING;
+        application.tenantId = tenantId;
         return application;
     }
 

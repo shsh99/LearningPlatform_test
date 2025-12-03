@@ -9,6 +9,7 @@ import com.example.demo.domain.courseapplication.entity.ApplicationStatus;
 import com.example.demo.domain.courseapplication.entity.CourseApplication;
 import com.example.demo.domain.courseapplication.exception.CourseApplicationNotFoundException;
 import com.example.demo.domain.courseapplication.repository.CourseApplicationRepository;
+import com.example.demo.domain.tenant.repository.TenantRepository;
 import com.example.demo.domain.user.entity.User;
 import com.example.demo.domain.user.exception.UserNotFoundException;
 import com.example.demo.domain.user.repository.UserRepository;
@@ -34,6 +35,7 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
     private final CourseApplicationRepository courseApplicationRepository;
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
+    private final TenantRepository tenantRepository;
 
     @Override
     @Transactional
@@ -41,14 +43,31 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         User applicant = userRepository.findById(applicantId)
             .orElseThrow(() -> new UserNotFoundException(applicantId));
 
+        log.info("Creating course application: applicantId={}, applicantEmail={}, applicantTenantId={}, title={}",
+            applicantId, applicant.getEmail(), applicant.getTenantId(), request.title());
+
+        // 사용자의 tenantId가 null이면 기본 테넌트 사용
+        Long effectiveTenantId = applicant.getTenantId();
+        if (effectiveTenantId == null) {
+            log.warn("Applicant has no tenantId. Using default tenant. applicantId={}, email={}",
+                applicantId, applicant.getEmail());
+            effectiveTenantId = tenantRepository.findByCode("default")
+                .map(tenant -> tenant.getId())
+                .orElse(null);
+            log.info("Default tenant resolved: tenantId={}", effectiveTenantId);
+        }
+
         // CourseApplication 생성 (Course는 승인 시 생성)
         CourseApplication application = CourseApplication.create(
             request.title(),
             request.description(),
             50, // 기본 50명
-            applicant
+            applicant,
+            effectiveTenantId
         );
         CourseApplication saved = courseApplicationRepository.save(application);
+
+        log.info("CourseApplication created: id={}, tenantId={}", saved.getId(), saved.getTenantId());
 
         return CourseApplicationResponse.from(saved);
     }

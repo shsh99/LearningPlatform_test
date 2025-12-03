@@ -32,9 +32,10 @@ public class CourseTermRequestController {
     /**
      * 변경 요청 생성
      * POST /api/course-term-requests/change
+     * 담당 강사 여부는 서비스 레이어에서 검증
      */
     @PostMapping("/change")
-    @PreAuthorize("hasRole('INSTRUCTOR')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ChangeRequestResponse> createChangeRequest(
             Principal principal,
             @Valid @RequestBody CreateChangeRequestDto request
@@ -64,9 +65,10 @@ public class CourseTermRequestController {
     /**
      * 변경 요청 취소
      * DELETE /api/course-term-requests/change/{id}
+     * 본인 요청 여부는 서비스 레이어에서 검증
      */
     @DeleteMapping("/change/{id}")
-    @PreAuthorize("hasRole('INSTRUCTOR')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> cancelChangeRequest(Principal principal, @PathVariable Long id) {
         Long requesterId = Long.parseLong(principal.getName());
         log.info("DELETE /api/course-term-requests/change/{} - requesterId: {}", id, requesterId);
@@ -80,9 +82,10 @@ public class CourseTermRequestController {
     /**
      * 삭제 요청 생성
      * POST /api/course-term-requests/delete
+     * 담당 강사 여부는 서비스 레이어에서 검증
      */
     @PostMapping("/delete")
-    @PreAuthorize("hasRole('INSTRUCTOR')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<DeleteRequestResponse> createDeleteRequest(
             Principal principal,
             @Valid @RequestBody CreateDeleteRequestDto request
@@ -112,9 +115,10 @@ public class CourseTermRequestController {
     /**
      * 삭제 요청 취소
      * DELETE /api/course-term-requests/delete/{id}
+     * 본인 요청 여부는 서비스 레이어에서 검증
      */
     @DeleteMapping("/delete/{id}")
-    @PreAuthorize("hasRole('INSTRUCTOR')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> cancelDeleteRequest(Principal principal, @PathVariable Long id) {
         Long requesterId = Long.parseLong(principal.getName());
         log.info("DELETE /api/course-term-requests/delete/{} - requesterId: {}", id, requesterId);
@@ -128,11 +132,12 @@ public class CourseTermRequestController {
     /**
      * 요청 목록 조회 (변경+삭제 통합)
      * GET /api/course-term-requests?status=PENDING&type=CHANGE|DELETE
+     * status가 없으면 전체 상태 조회
      */
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
     public ResponseEntity<List<TermRequestListResponse>> getAllRequests(
-            @RequestParam(defaultValue = "PENDING") TermRequestStatus status,
+            @RequestParam(required = false) TermRequestStatus status,
             @RequestParam(required = false) String type
     ) {
         log.info("GET /api/course-term-requests - status: {}, type: {}", status, type);
@@ -146,7 +151,7 @@ public class CourseTermRequestController {
      * GET /api/course-term-requests/change/{id}
      */
     @GetMapping("/change/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'INSTRUCTOR')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ChangeRequestResponse> getChangeRequestDetail(@PathVariable Long id) {
         log.info("GET /api/course-term-requests/change/{}", id);
 
@@ -159,7 +164,7 @@ public class CourseTermRequestController {
      * GET /api/course-term-requests/delete/{id}
      */
     @GetMapping("/delete/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'INSTRUCTOR')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<DeleteRequestResponse> getDeleteRequestDetail(@PathVariable Long id) {
         log.info("GET /api/course-term-requests/delete/{}", id);
 
