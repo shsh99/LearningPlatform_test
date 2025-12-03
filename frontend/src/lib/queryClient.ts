@@ -91,4 +91,15 @@ export const queryKeys = {
     lists: () => [...queryKeys.courseApplications.all, 'list'] as const,
     detail: (id: number) => [...queryKeys.courseApplications.all, 'detail', id] as const,
   },
+
+  // Notices
+  notices: {
+    all: ['notices'] as const,
+    lists: () => [...queryKeys.notices.all, 'list'] as const,
+    system: () => [...queryKeys.notices.lists(), 'system'] as const,
+    tenant: () => [...queryKeys.notices.lists(), 'tenant'] as const,
+    activeSystem: () => [...queryKeys.notices.all, 'active', 'system'] as const,
+    activeTenant: () => [...queryKeys.notices.all, 'active', 'tenant'] as const,
+    detail: (id: number) => [...queryKeys.notices.all, 'detail', id] as const,
+  },
 } as const;
