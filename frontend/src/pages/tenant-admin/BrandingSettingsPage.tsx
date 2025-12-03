@@ -9,7 +9,7 @@ import { DEFAULT_BRANDING, DEFAULT_LABELS } from '../../types/tenant';
 import type { TenantBannerConfig, FooterConfig } from '../../types/layout';
 import { DEFAULT_TENANT_BANNER, DEFAULT_FOOTER_CONFIG, parseFooterConfig, footerConfigToJson } from '../../types/layout';
 import { Navbar } from '../../components/Navbar';
-import { BannerEditor, FooterEditor } from '../../components/layout';
+import { BannerEditor, FooterEditor, BannerCarousel } from '../../components/layout';
 import { getErrorMessage } from '../../lib/errorHandler';
 
 // 프리셋 테마 정의
