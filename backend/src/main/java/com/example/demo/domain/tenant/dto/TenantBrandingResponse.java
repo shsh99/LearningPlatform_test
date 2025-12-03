@@ -27,7 +27,8 @@ public record TenantBrandingResponse(
         String layoutConfigTenantAdmin,
         String layoutConfigOperator,
         String layoutConfigUser,
-        String bannerConfig
+        String bannerConfig,
+        String footerConfig
 ) {
     public static TenantBrandingResponse from(TenantBranding branding) {
         if (branding == null) {
@@ -58,7 +59,8 @@ public record TenantBrandingResponse(
                 branding.getLayoutConfigTenantAdmin(),
                 branding.getLayoutConfigOperator(),
                 branding.getLayoutConfigUser(),
-                branding.getBannerConfig()
+                branding.getBannerConfig(),
+                branding.getFooterConfig()
         );
     }
 }

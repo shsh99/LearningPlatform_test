@@ -103,6 +103,10 @@ public class TenantBranding extends BaseTimeEntity {
     @Column(columnDefinition = "TEXT")
     private String bannerConfig;
 
+    // 테넌트 푸터 설정 (모든 사용자에게 적용, JSON)
+    @Column(columnDefinition = "TEXT")
+    private String footerConfig;
+
     private TenantBranding(Tenant tenant) {
         this.tenant = tenant;
     }
@@ -192,6 +196,10 @@ public class TenantBranding extends BaseTimeEntity {
 
     public void updateBannerConfig(String bannerConfig) {
         this.bannerConfig = bannerConfig;
+    }
+
+    public void updateFooterConfig(String footerConfig) {
+        this.footerConfig = footerConfig;
     }
 
     public void updateAllColors(

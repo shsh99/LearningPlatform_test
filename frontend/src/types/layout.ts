@@ -93,6 +93,63 @@ export interface MenuItemConfig extends ComponentConfig {
 }
 
 /**
+ * 푸터 링크 아이템
+ */
+export interface FooterLinkItem {
+  id: string;
+  label: string;
+  url: string;
+  enabled: boolean;
+  order: number;
+}
+
+/**
+ * 푸터 소셜 링크
+ */
+export interface FooterSocialLink {
+  id: string;
+  platform: 'facebook' | 'twitter' | 'instagram' | 'linkedin' | 'youtube' | 'github' | 'other';
+  url: string;
+  enabled: boolean;
+}
+
+/**
+ * 푸터 설정
+ */
+export interface FooterConfig {
+  enabled: boolean;
+  companyName?: string;
+  companyDescription?: string;
+  copyrightText?: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+  links: FooterLinkItem[];
+  socialLinks: FooterSocialLink[];
+  backgroundColor?: string;
+  textColor?: string;
+  showLogo?: boolean;
+}
+
+/**
+ * 기본 푸터 설정
+ */
+export const DEFAULT_FOOTER_CONFIG: FooterConfig = {
+  enabled: true,
+  companyName: '',
+  companyDescription: '',
+  copyrightText: '',
+  address: '',
+  phone: '',
+  email: '',
+  links: [],
+  socialLinks: [],
+  backgroundColor: '#1f2937',
+  textColor: '#ffffff',
+  showLogo: true,
+};
+
+/**
  * 전체 레이아웃 설정
  */
 export interface LayoutConfig {
@@ -369,4 +426,31 @@ export function parseLayoutConfigForRole(
     console.error(`Failed to parse layout config for role ${role}:`, error);
     return defaultConfig;
   }
+}
+
+/**
+ * JSON 문자열을 푸터 설정으로 파싱
+ */
+export function parseFooterConfig(json: string | null | undefined): FooterConfig {
+  if (!json) return DEFAULT_FOOTER_CONFIG;
+
+  try {
+    const parsed = JSON.parse(json);
+    return {
+      ...DEFAULT_FOOTER_CONFIG,
+      ...parsed,
+      links: parsed.links || [],
+      socialLinks: parsed.socialLinks || [],
+    };
+  } catch (error) {
+    console.error('Failed to parse footer config:', error);
+    return DEFAULT_FOOTER_CONFIG;
+  }
+}
+
+/**
+ * 푸터 설정을 JSON 문자열로 변환
+ */
+export function footerConfigToJson(config: FooterConfig): string {
+  return JSON.stringify(config, null, 2);
 }
