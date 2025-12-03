@@ -169,6 +169,9 @@ public class TenantServiceImpl implements TenantService {
         if (request.bannerConfig() != null) {
             branding.updateBannerConfig(request.bannerConfig());
         }
+        if (request.footerConfig() != null) {
+            branding.updateFooterConfig(request.footerConfig());
+        }
 
         // 색상 업데이트
         branding.updateAllColors(

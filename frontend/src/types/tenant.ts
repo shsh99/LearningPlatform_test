@@ -45,6 +45,7 @@ export interface TenantBranding {
   layoutConfigOperator: string | null;
   layoutConfigUser: string | null;
   bannerConfig: string | null; // 테넌트 공통 배너 설정 (JSON)
+  footerConfig: string | null; // 테넌트 푸터 설정 (JSON)
 }
 
 // 테넌트 설정 (기능 ON/OFF)
@@ -124,6 +125,7 @@ export interface UpdateTenantBrandingRequest {
   layoutConfigOperator?: string;
   layoutConfigUser?: string;
   bannerConfig?: string;
+  footerConfig?: string;
 }
 
 export interface UpdateTenantSettingsRequest {
@@ -183,6 +185,7 @@ export const DEFAULT_BRANDING: TenantBranding = {
   layoutConfigOperator: null,
   layoutConfigUser: null,
   bannerConfig: null,
+  footerConfig: null,
 };
 
 // 기본 라벨 값

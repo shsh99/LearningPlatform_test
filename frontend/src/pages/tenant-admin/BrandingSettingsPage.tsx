@@ -6,10 +6,10 @@ import { updateTenantBranding, updateTenantLabels } from '../../api/tenant';
 import { uploadLogo, uploadFavicon, uploadFont, getFullFileUrl } from '../../api/file';
 import type { UpdateTenantBrandingRequest, UpdateTenantLabelsRequest } from '../../types/tenant';
 import { DEFAULT_BRANDING, DEFAULT_LABELS } from '../../types/tenant';
-import type { TenantBannerConfig } from '../../types/layout';
-import { DEFAULT_TENANT_BANNER } from '../../types/layout';
+import type { TenantBannerConfig, FooterConfig } from '../../types/layout';
+import { DEFAULT_TENANT_BANNER, DEFAULT_FOOTER_CONFIG, parseFooterConfig, footerConfigToJson } from '../../types/layout';
 import { Navbar } from '../../components/Navbar';
-import { BannerEditor } from '../../components/layout/BannerEditor';
+import { BannerEditor, FooterEditor } from '../../components/layout';
 import { getErrorMessage } from '../../lib/errorHandler';
 
 // 프리셋 테마 정의
@@ -888,6 +888,8 @@ export const BrandingSettingsPage = () => {
   const [labelsForm, setLabelsForm] = useState<UpdateTenantLabelsRequest>({});
   // 배너 상태
   const [bannerConfig, setBannerConfig] = useState<TenantBannerConfig>(DEFAULT_TENANT_BANNER);
+  // 푸터 상태
+  const [footerConfig, setFooterConfig] = useState<FooterConfig>(DEFAULT_FOOTER_CONFIG);
   // 선택된 테마 ID
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
 
@@ -955,6 +957,12 @@ export const BrandingSettingsPage = () => {
       setBannerConfig(DEFAULT_TENANT_BANNER);
     }
   }, [branding.bannerConfig]);
+
+  // 푸터 설정 로드
+  useEffect(() => {
+    const parsed = parseFooterConfig(branding.footerConfig);
+    setFooterConfig(parsed);
+  }, [branding.footerConfig]);
 
   const handleBrandingChange = (key: keyof UpdateTenantBrandingRequest, value: string) => {
     setBrandingForm((prev) => ({ ...prev, [key]: value }));
@@ -1150,6 +1158,29 @@ export const BrandingSettingsPage = () => {
       console.error('Failed to save banner:', error);
       const errorMessage = getErrorMessage(error);
       setMessage({ type: 'error', text: `배너 설정 저장 실패: ${errorMessage}` });
+    } finally {
+      setIsSaving(false);
+      setTimeout(() => setMessage(null), 3000);
+    }
+  };
+
+  // 푸터 설정 저장
+  const handleSaveFooter = async () => {
+    const tid = branding.tenantId || 1;
+    if (!tid) {
+      setMessage({ type: 'error', text: '테넌트 정보를 찾을 수 없습니다. 다시 로그인해주세요.' });
+      return;
+    }
+    try {
+      setIsSaving(true);
+      const footerConfigJson = footerConfigToJson(footerConfig);
+      await updateTenantBranding(tid, { footerConfig: footerConfigJson });
+      await refreshTenant();
+      setMessage({ type: 'success', text: '푸터 설정이 저장되었습니다.' });
+    } catch (error) {
+      console.error('Failed to save footer:', error);
+      const errorMessage = getErrorMessage(error);
+      setMessage({ type: 'error', text: `푸터 설정 저장 실패: ${errorMessage}` });
     } finally {
       setIsSaving(false);
       setTimeout(() => setMessage(null), 3000);
@@ -1484,6 +1515,33 @@ export const BrandingSettingsPage = () => {
                   className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
                 >
                   {isSaving ? '저장 중...' : '배너 저장'}
+                </button>
+              </div>
+
+              {/* 푸터 설정 */}
+              <h2 className="text-2xl font-bold text-gray-900 mt-8">푸터 설정</h2>
+              <p className="text-sm text-gray-500 mb-4">
+                모든 페이지 하단에 표시되는 푸터를 설정합니다. 회사 정보, 링크, 소셜 미디어 등을 관리할 수 있습니다.
+              </p>
+
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <FooterEditor config={footerConfig} onChange={setFooterConfig} />
+              </div>
+
+              <div className="flex justify-end gap-3 mt-4">
+                <button
+                  onClick={() => setFooterConfig(DEFAULT_FOOTER_CONFIG)}
+                  disabled={isSaving}
+                  className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                >
+                  기본값으로 초기화
+                </button>
+                <button
+                  onClick={handleSaveFooter}
+                  disabled={isSaving}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {isSaving ? '저장 중...' : '푸터 저장'}
                 </button>
               </div>
             </div>

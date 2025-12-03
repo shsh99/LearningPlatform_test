@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { TenantProvider } from './contexts/TenantContext';
 import { NoticeProvider } from './components/notice';
+import { TenantLayout } from './components/layout';
 
 // 페이지 컴포넌트
 import { HomePage } from './pages/HomePage';
@@ -42,33 +43,35 @@ import { TenantNoticeManagementPage } from './pages/tenant-admin/TenantNoticeMan
  */
 function TenantRoutes() {
     return (
-        <Routes>
-            <Route index element={<HomePage />} />
-            <Route path="login" element={<LoginPage />} />
-            <Route path="signup" element={<SignupPage />} />
-            <Route path="forgot-password" element={<ForgotPasswordPage />} />
-            <Route path="reset-password/:token" element={<ResetPasswordPage />} />
-            <Route path="courses" element={<CoursePage />} />
-            <Route path="courses/:id" element={<CourseDetailPage />} />
-            <Route path="apply-course" element={<CreateCourseApplicationPage />} />
-            <Route path="my-applications" element={<MyCourseApplicationsPage />} />
-            <Route path="my-enrollments" element={<MyEnrollmentsPage />} />
-            <Route path="my-profile" element={<MyProfilePage />} />
-            <Route path="operator/dashboard" element={<OperatorDashboardPage />} />
-            <Route path="operator/terms" element={<OperatorTermsPage />} />
-            <Route path="operator/assignments" element={<OperatorAssignmentsPage />} />
-            <Route path="ts/terms" element={<CourseTermManagementPage />} />
-            <Route path="ts/terms/:id" element={<CourseTermDetailPage />} />
-            <Route path="ts/assignments" element={<InstructorAssignmentManagementPage />} />
-            <Route path="ts/iis" element={<InstructorInformationSystemPage />} />
-            <Route path="enrollment/sis" element={<StudentInformationSystemPage />} />
-            <Route path="my-learning" element={<MyLearningPage />} />
-            <Route path="tenant-admin/dashboard" element={<TenantAdminDashboardPage />} />
-            <Route path="tenant-admin/branding" element={<BrandingSettingsPage />} />
-            <Route path="tenant-admin/layout" element={<LayoutSettingsPage />} />
-            <Route path="tenant-admin/operators" element={<OperatorManagementPage />} />
-            <Route path="tenant-admin/notices" element={<TenantNoticeManagementPage />} />
-        </Routes>
+        <TenantLayout>
+            <Routes>
+                <Route index element={<HomePage />} />
+                <Route path="login" element={<LoginPage />} />
+                <Route path="signup" element={<SignupPage />} />
+                <Route path="forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="reset-password/:token" element={<ResetPasswordPage />} />
+                <Route path="courses" element={<CoursePage />} />
+                <Route path="courses/:id" element={<CourseDetailPage />} />
+                <Route path="apply-course" element={<CreateCourseApplicationPage />} />
+                <Route path="my-applications" element={<MyCourseApplicationsPage />} />
+                <Route path="my-enrollments" element={<MyEnrollmentsPage />} />
+                <Route path="my-profile" element={<MyProfilePage />} />
+                <Route path="operator/dashboard" element={<OperatorDashboardPage />} />
+                <Route path="operator/terms" element={<OperatorTermsPage />} />
+                <Route path="operator/assignments" element={<OperatorAssignmentsPage />} />
+                <Route path="ts/terms" element={<CourseTermManagementPage />} />
+                <Route path="ts/terms/:id" element={<CourseTermDetailPage />} />
+                <Route path="ts/assignments" element={<InstructorAssignmentManagementPage />} />
+                <Route path="ts/iis" element={<InstructorInformationSystemPage />} />
+                <Route path="enrollment/sis" element={<StudentInformationSystemPage />} />
+                <Route path="my-learning" element={<MyLearningPage />} />
+                <Route path="tenant-admin/dashboard" element={<TenantAdminDashboardPage />} />
+                <Route path="tenant-admin/branding" element={<BrandingSettingsPage />} />
+                <Route path="tenant-admin/layout" element={<LayoutSettingsPage />} />
+                <Route path="tenant-admin/operators" element={<OperatorManagementPage />} />
+                <Route path="tenant-admin/notices" element={<TenantNoticeManagementPage />} />
+            </Routes>
+        </TenantLayout>
     );
 }
 
