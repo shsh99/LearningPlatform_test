@@ -17,6 +17,7 @@ import { parseLayoutConfigForRole, DEFAULT_LAYOUTS_BY_ROLE } from '../types/layo
 function getUserLayoutRole(userRole: string | undefined): LayoutRole {
   switch (userRole) {
     case 'SUPER_ADMIN':
+      return 'superAdmin';
     case 'TENANT_ADMIN':
       return 'tenantAdmin';
     case 'OPERATOR':
@@ -42,10 +43,13 @@ export function useLayout() {
   }, [user?.role]);
 
   // 역할에 맞는 레이아웃 설정 JSON 선택
+  // SUPER_ADMIN은 DB에 저장된 설정이 없으므로 항상 기본 레이아웃 사용
   const layoutConfigJson = useMemo(() => {
     if (!branding) return null;
 
     switch (layoutRole) {
+      case 'superAdmin':
+        return null; // SUPER_ADMIN은 기본 레이아웃 사용
       case 'tenantAdmin':
         return branding.layoutConfigTenantAdmin;
       case 'operator':

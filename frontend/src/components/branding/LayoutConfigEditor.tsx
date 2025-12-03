@@ -5,7 +5,6 @@ import type {
   WidgetConfig,
   MenuItemConfig,
   LayoutRole,
-  BannerConfig,
 } from '../../types/layout';
 import {
   parseLayoutConfigForRole,
@@ -24,7 +23,7 @@ export function LayoutConfigEditor({ layoutConfigJson, onChange, role = 'operato
   const [layoutConfig, setLayoutConfig] = useState<LayoutConfig>(() =>
     parseLayoutConfigForRole(layoutConfigJson, role)
   );
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'banner' | 'menu'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'menu'>('dashboard');
 
   useEffect(() => {
     setLayoutConfig(parseLayoutConfigForRole(layoutConfigJson, role));
@@ -55,17 +54,6 @@ export function LayoutConfigEditor({ layoutConfigJson, onChange, role = 'operato
       dashboard: {
         ...layoutConfig.dashboard!,
         widgets: updatedWidgets,
-      },
-    });
-  };
-
-  // 배너 설정 관리 (단순화)
-  const handleBannerChange = (updates: Partial<BannerConfig>) => {
-    handleConfigChange({
-      ...layoutConfig,
-      banner: {
-        ...layoutConfig.banner!,
-        ...updates,
       },
     });
   };
@@ -130,16 +118,6 @@ export function LayoutConfigEditor({ layoutConfigJson, onChange, role = 'operato
             대시보드 위젯
           </button>
           <button
-            onClick={() => setActiveTab('banner')}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === 'banner'
-                ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            배너
-          </button>
-          <button
             onClick={() => setActiveTab('menu')}
             className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'menu'
@@ -167,115 +145,6 @@ export function LayoutConfigEditor({ layoutConfigJson, onChange, role = 'operato
                 onReorder={handleDashboardReorder}
                 onToggle={handleDashboardToggle}
               />
-            </div>
-          )}
-
-          {activeTab === 'banner' && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h4 className="text-md font-medium text-gray-900">배너 관리</h4>
-                <label className="flex items-center gap-2">
-                  <span className="text-sm text-gray-600">배너 표시</span>
-                  <input
-                    type="checkbox"
-                    checked={layoutConfig.banner?.enabled}
-                    onChange={(e) => handleBannerChange({ enabled: e.target.checked })}
-                    className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                  />
-                </label>
-              </div>
-              {layoutConfig.banner?.enabled && (
-                <div className="space-y-4">
-                  {/* 배너 위치 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      배너 위치
-                    </label>
-                    <select
-                      value={layoutConfig.banner.position}
-                      onChange={(e) =>
-                        handleBannerChange({ position: e.target.value as 'top' | 'bottom' })
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="top">상단</option>
-                      <option value="bottom">하단</option>
-                    </select>
-                  </div>
-
-                  {/* 배너 제목 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      배너 제목
-                    </label>
-                    <input
-                      type="text"
-                      value={layoutConfig.banner.title || ''}
-                      onChange={(e) => handleBannerChange({ title: e.target.value })}
-                      placeholder="배너 제목을 입력하세요"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-
-                  {/* 배너 내용 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      배너 내용
-                    </label>
-                    <textarea
-                      value={layoutConfig.banner.content || ''}
-                      onChange={(e) => handleBannerChange({ content: e.target.value })}
-                      placeholder="배너 내용을 입력하세요"
-                      rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-                    />
-                  </div>
-
-                  {/* 배너 색상 */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        배경색
-                      </label>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="color"
-                          value={layoutConfig.banner.backgroundColor || '#EFF6FF'}
-                          onChange={(e) => handleBannerChange({ backgroundColor: e.target.value })}
-                          className="w-10 h-10 rounded border border-gray-300 cursor-pointer"
-                        />
-                        <input
-                          type="text"
-                          value={layoutConfig.banner.backgroundColor || ''}
-                          onChange={(e) => handleBannerChange({ backgroundColor: e.target.value })}
-                          placeholder="#EFF6FF"
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        텍스트 색상
-                      </label>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="color"
-                          value={layoutConfig.banner.textColor || '#1E40AF'}
-                          onChange={(e) => handleBannerChange({ textColor: e.target.value })}
-                          className="w-10 h-10 rounded border border-gray-300 cursor-pointer"
-                        />
-                        <input
-                          type="text"
-                          value={layoutConfig.banner.textColor || ''}
-                          onChange={(e) => handleBannerChange({ textColor: e.target.value })}
-                          placeholder="#1E40AF"
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           )}
 
@@ -334,47 +203,6 @@ export function LayoutConfigEditor({ layoutConfigJson, onChange, role = 'operato
             {LAYOUT_ROLE_LABELS[role]}가 보게 될 레이아웃 미리보기입니다
           </p>
         </div>
-
-        {/* 배너 미리보기 (상단) */}
-        {layoutConfig.banner?.enabled && layoutConfig.banner.position === 'top' && (
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <div className="text-xs font-semibold text-gray-500 uppercase mb-3">배너 (상단)</div>
-            <div
-              className="p-4 rounded-lg border"
-              style={{
-                backgroundColor: layoutConfig.banner.backgroundColor || '#EFF6FF',
-                borderColor: layoutConfig.banner.textColor || '#1E40AF',
-              }}
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-                  style={{ backgroundColor: layoutConfig.banner.textColor || '#1E40AF' }}
-                >
-                  <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <div
-                    className="font-semibold"
-                    style={{ color: layoutConfig.banner.textColor || '#1E40AF' }}
-                  >
-                    {layoutConfig.banner.title || '공지사항'}
-                  </div>
-                  <div className="text-sm text-gray-600 mt-1">
-                    {layoutConfig.banner.content || '배너 내용을 입력하세요'}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* 대시보드 위젯 미리보기 */}
         {layoutConfig.dashboard?.enabled && (
@@ -435,47 +263,6 @@ export function LayoutConfigEditor({ layoutConfigJson, onChange, role = 'operato
           </div>
         )}
 
-        {/* 배너 미리보기 (하단) */}
-        {layoutConfig.banner?.enabled && layoutConfig.banner.position === 'bottom' && (
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <div className="text-xs font-semibold text-gray-500 uppercase mb-3">배너 (하단)</div>
-            <div
-              className="p-4 rounded-lg border"
-              style={{
-                backgroundColor: layoutConfig.banner.backgroundColor || '#EFF6FF',
-                borderColor: layoutConfig.banner.textColor || '#1E40AF',
-              }}
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-                  style={{ backgroundColor: layoutConfig.banner.textColor || '#1E40AF' }}
-                >
-                  <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <div
-                    className="font-semibold"
-                    style={{ color: layoutConfig.banner.textColor || '#1E40AF' }}
-                  >
-                    {layoutConfig.banner.title || '공지사항'}
-                  </div>
-                  <div className="text-sm text-gray-600 mt-1">
-                    {layoutConfig.banner.content || '배너 내용을 입력하세요'}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* 요약 정보 */}
         <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4">
           <div className="text-xs font-semibold text-green-900 uppercase mb-3">활성화된 항목</div>
@@ -484,14 +271,6 @@ export function LayoutConfigEditor({ layoutConfigJson, onChange, role = 'operato
               <span className="text-gray-700">대시보드 위젯</span>
               <span className="font-semibold text-green-700">
                 {layoutConfig.dashboard?.widgets.filter((w) => w.enabled).length || 0}개
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-700">배너</span>
-              <span className="font-semibold text-green-700">
-                {layoutConfig.banner?.enabled
-                  ? `활성 (${layoutConfig.banner.position === 'top' ? '상단' : '하단'})`
-                  : '비활성'}
               </span>
             </div>
             <div className="flex justify-between">

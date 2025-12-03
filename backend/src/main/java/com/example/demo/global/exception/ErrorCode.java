@@ -104,6 +104,9 @@ public enum ErrorCode {
     INSTRUCTOR_NOT_ASSIGNED("I003", "배정되지 않은 강사입니다.", HttpStatus.BAD_REQUEST),
     INSTRUCTOR_HAS_ACTIVE_COURSES("I004", "진행 중인 강의가 있어 강사를 해제할 수 없습니다.", HttpStatus.CONFLICT),
 
+    // ==================== Notice (N0xx) ====================
+    NOTICE_NOT_FOUND("N001", "공지를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+
     // ==================== File (F0xx) ====================
     FILE_NOT_FOUND("F001", "파일을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     FILE_UPLOAD_FAILED("F002", "파일 업로드에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
