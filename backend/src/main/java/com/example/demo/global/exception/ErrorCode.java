@@ -104,6 +104,15 @@ public enum ErrorCode {
     INSTRUCTOR_NOT_ASSIGNED("I003", "배정되지 않은 강사입니다.", HttpStatus.BAD_REQUEST),
     INSTRUCTOR_HAS_ACTIVE_COURSES("I004", "진행 중인 강의가 있어 강사를 해제할 수 없습니다.", HttpStatus.CONFLICT),
 
+    // ==================== TermRequest (TR0xx) ====================
+    TERM_REQUEST_NOT_FOUND("TR001", "차수 요청을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    TERM_REQUEST_ALREADY_PROCESSED("TR002", "이미 처리된 요청입니다.", HttpStatus.CONFLICT),
+    TERM_REQUEST_NOT_PENDING("TR003", "대기 중인 요청만 처리할 수 있습니다.", HttpStatus.BAD_REQUEST),
+    TERM_REQUEST_DUPLICATE_PENDING("TR004", "해당 차수에 대기 중인 요청이 이미 존재합니다.", HttpStatus.CONFLICT),
+    TERM_REQUEST_HAS_ENROLLMENTS("TR005", "수강생이 있어 삭제 요청을 할 수 없습니다.", HttpStatus.BAD_REQUEST),
+    TERM_REQUEST_NOT_OWNER("TR006", "본인의 요청만 취소할 수 있습니다.", HttpStatus.FORBIDDEN),
+    TERM_REQUEST_NOT_INSTRUCTOR("TR007", "해당 차수의 담당 강사만 요청할 수 있습니다.", HttpStatus.FORBIDDEN),
+
     // ==================== Notice (N0xx) ====================
     NOTICE_NOT_FOUND("N001", "공지를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 

@@ -98,13 +98,20 @@ public class CourseApplicationServiceImpl implements CourseApplicationService {
         CourseApplication application = courseApplicationRepository.findById(id)
             .orElseThrow(() -> new CourseApplicationNotFoundException(id));
 
-        // 승인 시 Course 생성
+        log.info("Approving application: id={}, title={}, tenantId={}",
+            application.getId(), application.getTitle(), application.getTenantId());
+
+        // 승인 시 Course 생성 (CourseApplication의 tenantId를 명시적으로 전달)
         Course course = Course.create(
             application.getTitle(),
             application.getDescription(),
-            application.getMaxStudents()
+            application.getMaxStudents(),
+            application.getTenantId()
         );
         Course savedCourse = courseRepository.save(course);
+
+        log.info("Course created: id={}, title={}, tenantId={}",
+            savedCourse.getId(), savedCourse.getTitle(), savedCourse.getTenantId());
 
         // CourseApplication 승인 처리
         application.approve(savedCourse);

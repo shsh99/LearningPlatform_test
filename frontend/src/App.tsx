@@ -24,6 +24,7 @@ import { InstructorAssignmentManagementPage } from './pages/timeschedule/Instruc
 import { InstructorInformationSystemPage } from './pages/timeschedule/InstructorInformationSystemPage';
 import { StudentInformationSystemPage } from './pages/enrollment/StudentInformationSystemPage';
 import { MyLearningPage } from './pages/learning/MyLearningPage';
+import { MyAssignedCoursesPage } from './pages/instructor/MyAssignedCoursesPage';
 import { BrandingSettingsPage } from './pages/tenant-admin/BrandingSettingsPage';
 import { OperatorManagementPage } from './pages/tenant-admin/OperatorManagementPage';
 import { TenantAdminDashboardPage } from './pages/tenant-admin/TenantAdminDashboardPage';
@@ -63,6 +64,7 @@ function TenantRoutes() {
             <Route path="ts/iis" element={<InstructorInformationSystemPage />} />
             <Route path="enrollment/sis" element={<StudentInformationSystemPage />} />
             <Route path="my-learning" element={<MyLearningPage />} />
+            <Route path="my-assigned-courses" element={<MyAssignedCoursesPage />} />
             <Route path="tenant-admin/dashboard" element={<TenantAdminDashboardPage />} />
             <Route path="tenant-admin/branding" element={<BrandingSettingsPage />} />
             <Route path="tenant-admin/layout" element={<LayoutSettingsPage />} />

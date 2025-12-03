@@ -75,15 +75,19 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public List<CourseResponse> findAll() {
-        log.debug("Finding all courses");
-
         Long tenantId = TenantContext.getTenantId();
+        log.info("Finding all courses: tenantId={}", tenantId);
+
+        List<Course> courses;
         if (tenantId != null) {
-            return courseRepository.findByTenantId(tenantId).stream()
-                .map(CourseResponse::from)
-                .collect(Collectors.toList());
+            courses = courseRepository.findByTenantId(tenantId);
+            log.info("Found {} courses for tenantId={}", courses.size(), tenantId);
+        } else {
+            courses = courseRepository.findAll();
+            log.info("Found {} courses (all tenants)", courses.size());
         }
-        return courseRepository.findAll().stream()
+
+        return courses.stream()
             .map(CourseResponse::from)
             .collect(Collectors.toList());
     }
