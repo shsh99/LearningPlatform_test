@@ -2,6 +2,7 @@ package com.example.demo.domain.timeschedule.dto;
 
 import com.example.demo.domain.timeschedule.entity.CourseTerm;
 import com.example.demo.domain.timeschedule.entity.DayOfWeek;
+import com.example.demo.domain.timeschedule.entity.EnrollmentType;
 import com.example.demo.domain.timeschedule.entity.TermStatus;
 
 import java.time.LocalDate;
@@ -22,6 +23,11 @@ public record CourseTermResponse(
     Integer maxStudents,
     Integer currentStudents,
     TermStatus status,
+    // ===== 모집 관리 필드 =====
+    LocalDate enrollmentStartDate,
+    LocalDate enrollmentEndDate,
+    EnrollmentType enrollmentType,
+    Integer minStudents,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
 ) {
@@ -39,6 +45,10 @@ public record CourseTermResponse(
             term.getMaxStudents(),
             term.getCurrentStudents(),
             term.getStatus(),
+            term.getEnrollmentStartDate(),
+            term.getEnrollmentEndDate(),
+            term.getEnrollmentType(),
+            term.getMinStudents(),
             term.getCreatedAt(),
             term.getUpdatedAt()
         );

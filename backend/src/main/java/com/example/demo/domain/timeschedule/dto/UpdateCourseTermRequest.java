@@ -1,6 +1,7 @@
 package com.example.demo.domain.timeschedule.dto;
 
 import com.example.demo.domain.timeschedule.entity.DayOfWeek;
+import com.example.demo.domain.timeschedule.entity.EnrollmentType;
 import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
@@ -27,6 +28,16 @@ public record UpdateCourseTermRequest(
     @NotNull(message = "최대 학생 수는 필수입니다")
     @Min(value = 1, message = "최대 학생 수는 1명 이상이어야 합니다")
     @Max(value = 1000, message = "최대 학생 수는 1000명 이하여야 합니다")
-    Integer maxStudents
+    Integer maxStudents,
+
+    // ===== 모집 관리 필드 (선택) =====
+    LocalDate enrollmentStartDate,
+
+    LocalDate enrollmentEndDate,
+
+    EnrollmentType enrollmentType,
+
+    @Min(value = 0, message = "최소 학생 수는 0명 이상이어야 합니다")
+    Integer minStudents
 ) {
 }
