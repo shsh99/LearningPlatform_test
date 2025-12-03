@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react';
 import { LayoutBanner } from './LayoutBanner';
 import { TenantFooter } from './TenantFooter';
+import { DefaultFooter } from './DefaultFooter';
 import { useBanner } from '../../hooks/useBanner';
+import { useFooter } from '../../hooks/useFooter';
 
 interface TenantLayoutProps {
   children: ReactNode;
@@ -14,6 +16,7 @@ interface TenantLayoutProps {
  */
 export function TenantLayout({ children }: TenantLayoutProps) {
   const { hasBottomBanner } = useBanner();
+  const { isEnabled: isFooterEnabled } = useFooter();
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -23,8 +26,8 @@ export function TenantLayout({ children }: TenantLayoutProps) {
       {/* 하단 배너 */}
       {hasBottomBanner && <LayoutBanner position="bottom" />}
 
-      {/* 푸터 */}
-      <TenantFooter />
+      {/* 푸터 - 테넌트 푸터가 활성화되어 있으면 테넌트 푸터, 아니면 기본 푸터 */}
+      {isFooterEnabled ? <TenantFooter /> : <DefaultFooter />}
     </div>
   );
 }
