@@ -1602,72 +1602,153 @@ export const BrandingSettingsPage = () => {
               )}
             </div>
 
-            {/* 오른쪽: 테마 선택 + 미리보기 (sticky) - 브랜딩 탭에서만 표시 */}
-            {activeTab === 'branding' && (
+            {/* 오른쪽: 미리보기 (sticky) */}
             <div className="lg:sticky lg:top-8 lg:self-start space-y-6">
-              {/* 테마 프리셋 선택 */}
-              <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">테마 프리셋</h3>
-                <p className="text-sm text-gray-500 mb-4">원하는 테마를 선택하여 바로 적용하세요</p>
-                <div className="grid grid-cols-2 gap-3">
-                  {THEME_PRESETS.map((theme) => (
-                    <div
-                      key={theme.id}
-                      className={`relative p-3 rounded-lg border-2 cursor-pointer transition-all hover:shadow-md ${
-                        selectedTheme === theme.id
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                      onClick={() => handleApplyTheme(theme)}
-                    >
-                      {/* 색상 미리보기 */}
-                      <div className="flex gap-1 mb-2">
-                        {theme.colors.map((color, i) => (
-                          <div
-                            key={i}
-                            className="flex-1 h-6 rounded"
-                            style={{ backgroundColor: color }}
-                          />
-                        ))}
-                      </div>
-                      <div className="text-sm font-medium text-gray-900">{theme.name}</div>
-                      <div className="text-xs text-gray-500 line-clamp-1">{theme.description}</div>
-                      {selectedTheme === theme.id && (
-                        <div className="absolute top-2 right-2">
-                          <svg className="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                          </svg>
+              {/* 브랜딩 탭: 테마 프리셋 + 미리보기 */}
+              {activeTab === 'branding' && (
+                <>
+                  {/* 테마 프리셋 선택 */}
+                  <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-3">테마 프리셋</h3>
+                    <p className="text-sm text-gray-500 mb-4">원하는 테마를 선택하여 바로 적용하세요</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      {THEME_PRESETS.map((theme) => (
+                        <div
+                          key={theme.id}
+                          className={`relative p-3 rounded-lg border-2 cursor-pointer transition-all hover:shadow-md ${
+                            selectedTheme === theme.id
+                              ? 'border-blue-500 bg-blue-50'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                          onClick={() => handleApplyTheme(theme)}
+                        >
+                          {/* 색상 미리보기 */}
+                          <div className="flex gap-1 mb-2">
+                            {theme.colors.map((color, i) => (
+                              <div
+                                key={i}
+                                className="flex-1 h-6 rounded"
+                                style={{ backgroundColor: color }}
+                              />
+                            ))}
+                          </div>
+                          <div className="text-sm font-medium text-gray-900">{theme.name}</div>
+                          <div className="text-xs text-gray-500 line-clamp-1">{theme.description}</div>
+                          {selectedTheme === theme.id && (
+                            <div className="absolute top-2 right-2">
+                              <svg className="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                              </svg>
+                            </div>
+                          )}
                         </div>
-                      )}
+                      ))}
                     </div>
-                  ))}
-                </div>
-                {selectedTheme && (
-                  <div className="mt-4 flex gap-2">
-                    <button
-                      onClick={() => {
-                        const theme = THEME_PRESETS.find((t) => t.id === selectedTheme);
-                        if (theme) handleApplyAndSaveTheme(theme);
-                      }}
-                      disabled={isSaving}
-                      className="flex-1 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
-                    >
-                      {isSaving ? '적용 중...' : '테마 적용 및 저장'}
-                    </button>
-                    <button
-                      onClick={() => setSelectedTheme(null)}
-                      className="px-4 py-2 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-100 transition-colors"
-                    >
-                      취소
-                    </button>
+                    {selectedTheme && (
+                      <div className="mt-4 flex gap-2">
+                        <button
+                          onClick={() => {
+                            const theme = THEME_PRESETS.find((t) => t.id === selectedTheme);
+                            if (theme) handleApplyAndSaveTheme(theme);
+                          }}
+                          disabled={isSaving}
+                          className="flex-1 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                        >
+                          {isSaving ? '적용 중...' : '테마 적용 및 저장'}
+                        </button>
+                        <button
+                          onClick={() => setSelectedTheme(null)}
+                          className="px-4 py-2 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-100 transition-colors"
+                        >
+                          취소
+                        </button>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
 
-              {/* 미리보기 */}
-              <Preview branding={brandingForm} labels={labelsForm} />
+                  {/* 브랜딩 미리보기 */}
+                  <Preview branding={brandingForm} labels={labelsForm} />
+                </>
+              )}
+
+              {/* 라벨 탭: 미리보기 */}
+              {activeTab === 'labels' && (
+                <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">라벨 미리보기</h3>
+                  <p className="text-sm text-gray-500 mb-4">변경된 라벨이 어떻게 표시되는지 확인하세요</p>
+                  <Preview branding={brandingForm} labels={labelsForm} />
+                </div>
+              )}
+
+              {/* 배너 탭: 배너 미리보기 */}
+              {activeTab === 'banner' && (
+                <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">배너 미리보기</h3>
+                  <p className="text-sm text-gray-500 mb-4">설정한 배너가 어떻게 표시되는지 확인하세요</p>
+                  <div className="space-y-4">
+                    {/* 상단 배너 미리보기 */}
+                    {bannerConfig.top.enabled && (
+                      <div>
+                        <p className="text-xs font-medium text-gray-600 mb-2">상단 배너</p>
+                        <BannerCarousel slides={bannerConfig.top.slides} autoPlay={bannerConfig.top.autoPlay} interval={bannerConfig.top.interval} />
+                      </div>
+                    )}
+                    {/* 하단 배너 미리보기 */}
+                    {bannerConfig.bottom.enabled && (
+                      <div>
+                        <p className="text-xs font-medium text-gray-600 mb-2">하단 배너</p>
+                        <BannerCarousel slides={bannerConfig.bottom.slides} autoPlay={bannerConfig.bottom.autoPlay} interval={bannerConfig.bottom.interval} />
+                      </div>
+                    )}
+                    {!bannerConfig.top.enabled && !bannerConfig.bottom.enabled && (
+                      <p className="text-sm text-gray-400 text-center py-8">활성화된 배너가 없습니다</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* 푸터 탭: 푸터 미리보기 */}
+              {activeTab === 'footer' && (
+                <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">푸터 미리보기</h3>
+                  <p className="text-sm text-gray-500 mb-4">설정한 푸터가 어떻게 표시되는지 확인하세요</p>
+                  <div className="border border-gray-200 rounded-lg overflow-hidden">
+                    {footerConfig.enabled ? (
+                      <div
+                        style={{
+                          backgroundColor: footerConfig.backgroundColor,
+                          color: footerConfig.textColor,
+                        }}
+                        className="p-6 text-sm"
+                      >
+                        <div className="space-y-3">
+                          {footerConfig.companyName && (
+                            <div className="font-semibold">{footerConfig.companyName}</div>
+                          )}
+                          {footerConfig.companyDescription && (
+                            <div className="text-xs opacity-80">{footerConfig.companyDescription}</div>
+                          )}
+                          {footerConfig.links.filter(l => l.enabled).length > 0 && (
+                            <div className="flex gap-3 text-xs">
+                              {footerConfig.links.filter(l => l.enabled).map((link) => (
+                                <span key={link.id}>{link.label}</span>
+                              ))}
+                            </div>
+                          )}
+                          {footerConfig.copyrightText && (
+                            <div className="text-xs opacity-60 pt-2 border-t border-current">
+                              {footerConfig.copyrightText}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-400 text-center py-8">푸터가 비활성화되어 있습니다</p>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
-            )}
           </div>
         </div>
       </div>
