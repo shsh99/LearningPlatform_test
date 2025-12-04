@@ -35,45 +35,119 @@
 | **Database** | MySQL (prod) / H2 (dev) | 8.0 |
 | **Infra** | AWS (ECS, RDS, S3, CloudFront) | - |
 | **인증** | JWT (Access + Refresh Token) | - |
+| **멀티테넌시** | Row-level Isolation | - |
+
+---
+
+## 멀티테넌시 아키텍처
+
+### DB 분리 전략
+
+현재 프로젝트는 **Row-level Isolation (행 수준 분리)** 방식을 사용합니다.
+
+| 항목 | 구현 방식 |
+|------|----------|
+| **DB 구조** | 단일 데이터베이스, 단일 스키마 (공유) |
+| **분리 방식** | 모든 테이블에 `tenant_id` 컬럼으로 구분 |
+| **자동 필터링** | Hibernate `@Filter`로 쿼리 시 자동 적용 |
+
+### 동작 흐름
+
+```
+요청 → TenantFilter
+       ├─ 1. JWT에서 사용자의 tenantId 추출 (우선)
+       ├─ 2. X-Tenant-ID 헤더 확인
+       ├─ 3. 서브도메인에서 추출 (samsung.learning.com → samsung)
+       └─ 4. 기본값 사용 (개발용)
+       ↓
+TenantContext.setTenantId(tenantId)  ← ThreadLocal에 저장
+       ↓
+Hibernate Session Filter 활성화
+  session.enableFilter("tenantFilter")
+         .setParameter("tenantId", tenantId)
+       ↓
+모든 SELECT 쿼리에 자동으로 WHERE tenant_id = ? 조건 추가
+```
+
+### 핵심 파일
+
+| 파일 | 역할 |
+|------|------|
+| `TenantContext.java` | ThreadLocal로 현재 테넌트 관리 |
+| `TenantFilter.java` | 요청마다 테넌트 식별 및 필터 활성화 |
+| `TenantEntityListener.java` | 엔티티 저장 시 tenantId 자동 할당 |
+| `TenantAware.java` | 테넌트 인식 엔티티 마커 인터페이스 |
+| `TenantSecurityUtils.java` | 크로스 테넌트 접근 검증 |
+
+### Entity 적용 패턴
+
+```java
+@Entity
+@Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
+@EntityListeners(TenantEntityListener.class)
+public class User implements TenantAware {
+    @Column(name = "tenant_id")
+    private Long tenantId;  // 테넌트 식별 컬럼
+
+    @Override
+    public Long getTenantId() { return tenantId; }
+}
+```
+
+### 권한 계층
+
+| 역할 | 설명 | 테넌트 접근 |
+|------|------|------------|
+| **SUPER_ADMIN** | 전체 시스템 관리자 | 모든 테넌트 |
+| **TENANT_ADMIN** | 테넌트 관리자 | 자신의 테넌트만 |
+| **USER/INSTRUCTOR** | 일반 사용자 | 자신의 테넌트만 |
 
 ---
 
 ## 문서 구조
 
 ```
-📁 docss/
+📁 프로젝트 루트/
 ├── 📄 CLAUDE.md                 # AI 작업 가이드 (핵심 진입점)
 ├── 📄 PROJECT_CONTEXT.md        # 프로젝트 컨텍스트 & 현재 상태
 ├── 📄 MONOREPO.md               # 모노레포 설정 가이드
 ├── 📄 SEPARATED-REPOS.md        # 분리형 저장소 설정 가이드
 │
+├── 📁 .claude/templates/        # Claude Code 전용 템플릿
+│   ├── workflow-checklist.md   # 7단계 워크플로우
+│   ├── moscow-priority.md      # MoSCoW 우선순위
+│   └── prd.md                  # 기능 기획서
+│
 ├── 📁 conventions/              # 코딩 컨벤션 (24개)
-│   ├── 00-CONVENTIONS-CORE.md   # 공통 핵심 규칙
+│   ├── 00-CONVENTIONS-CORE.md  # 공통 핵심 규칙
 │   ├── 01~09: Backend 컨벤션
 │   ├── 10~16: Frontend 컨벤션
 │   ├── 17~20: Infrastructure 컨벤션
 │   └── 21~23: 품질 관련 컨벤션
 │
-├── 📁 docs/context/             # 프로젝트 컨텍스트
-│   ├── architecture.md          # 시스템 아키텍처
-│   ├── database.md              # DB 스키마
-│   ├── api.md                   # API 명세
-│   ├── pages.md                 # 페이지 기능 정의
-│   ├── design.md                # 디자인 시스템
-│   ├── infrastructure.md        # 인프라 구성
-│   ├── troubleshooting.md       # 문제 해결 가이드
-│   └── glossary.md              # 용어 사전
+├── 📁 docs/
+│   ├── 📁 context/             # 프로젝트 컨텍스트
+│   │   ├── architecture.md     # 시스템 아키텍처
+│   │   ├── database.md         # DB 스키마
+│   │   ├── api.md              # API 명세
+│   │   ├── pages.md            # 페이지 기능 정의
+│   │   ├── design.md           # 디자인 시스템
+│   │   ├── infrastructure.md   # 인프라 구성
+│   │   ├── troubleshooting.md  # 문제 해결 가이드
+│   │   ├── glossary.md         # 용어 사전
+│   │   └── feature-roadmap.md  # 기능 로드맵
+│   │
+│   ├── 📁 templates/           # 작업 템플릿
+│   │   ├── task-workflow.md    # AI 작업 진행 규칙
+│   │   ├── mcdonaldization.md  # 맥도날드화 원칙
+│   │   ├── code-review-checklist.md
+│   │   └── md-writing-guide.md
+│   │
+│   └── 📁 adr/                 # 아키텍처 결정 기록
+│       └── 000-template.md     # ADR 템플릿
 │
-├── 📁 docs/adr/                 # 아키텍처 결정 기록
-│   └── 000-template.md          # ADR 템플릿
-│
-└── 📁 templates/                # 작업 템플릿
-    ├── task-workflow.md         # AI 작업 진행 규칙
-    ├── workflow-checklist.md    # 7단계 워크플로우 체크리스트
-    ├── mcdonaldization.md       # 맥도날드화 원칙
-    ├── moscow-priority.md       # MoSCoW 우선순위 가이드
-    ├── prd.md                   # 기능 기획서 템플릿
-    └── code-review-checklist.md # 코드 리뷰 체크리스트
+└── 📁 issues/                  # 이슈 추적
+    └── README.md
 ```
 
 ---
